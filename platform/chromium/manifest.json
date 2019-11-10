@@ -1,0 +1,9 @@
+{
+	"manifest_version": 2,
+	"name": "bias-goggles",
+	"description": "Chromium webextension for bias-goggles",
+	"version": "0.0.1",
+	"icons": {
+		"64": "icons/icon.png"
+	}
+}
