@@ -14,10 +14,11 @@
 		  "19": "icons/toolbar-icon.png",
 		  "38": "icons/toolbar-icon.png"
 		},
-		"default_title": "bias goggles"
+		"default_title": "bias goggles",
+		"default_popup": "popup.html"
 	},
 	"permissions" : [
 		"<all_urls>",
-		"webRequest",
+		"webRequest"
 	]
 }
