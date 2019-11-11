@@ -26,6 +26,7 @@ function query(){
                activeTab = 'no-active-tab-found';
         
             console.log('requesting.....');
+            console.log(activeTab);
             console.log(getUrl(activeTab));
     
             get(getUrl(activeTab), res => {
@@ -42,13 +43,16 @@ function query(){
                     console.log('end of request....');
                     
                     //@ts-ignore
-                    chrome.browserAction.setBadgeText({text: (parseFloat(data.doc.pr.bias_score) * 100).toString()});
+                    chrome.browserAction.setBadgeText({text: (parseFloat(data.doc.pr.bias_score) * 100).toFixed(2)});
                 });
             });
     });
     
 }
 
-chrome.browserAction.onClicked.addListener(query);
+//@ts-ignore
+chrome.webRequest.onCompleted.addListener(query, {urls: ["<all_urls>"] ,types: ["main_frame"]});
+
+//chrome.browserAction.onClicked.addListener(query);
 
 console.log('installed.....');

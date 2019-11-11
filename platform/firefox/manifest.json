@@ -17,6 +17,7 @@
 		"default_title": "bias goggles"
 	},
 	"permissions" : [
-		"activeTab"
+		"<all_urls>",
+		"webRequest",
 	]
 }
