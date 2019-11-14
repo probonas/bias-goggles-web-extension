@@ -15,7 +15,7 @@ module.exports = {
   mode: 'development',
   entry: {
     background: sourceRoot + "/background.ts",
-    getbias: sourceRoot + "/getbias.ts"
+    popup: sourceRoot + "/popup.ts"
   },
   devtool: "inline-source-map",
   module: {

@@ -7,7 +7,8 @@
 		"64": "icons/toolbar-icon.png"
 	},
 	"background": {
-		"scripts": ["background.js"]
+		"scripts": ["background.js"],
+		"persistent" : true
 	},
 	"browser_action": {
 		"default_icon": {
@@ -19,6 +20,8 @@
 	},
 	"permissions" : [
 		"<all_urls>",
-		"webRequest"
+		"webRequest",
+		"storage",
+		"tabs"
 	]
 }
