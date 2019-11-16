@@ -35,11 +35,6 @@ export enum ExtRequestTypes {
     bias_stats = "bias-stats"
 }
 
-export interface ExtRespose {
-    data: JSON,
-    method: BiasScoresMethods
-}
-
 export interface ExtRequest {
     type: ExtRequestTypes
 }

@@ -1,7 +1,5 @@
 import { get as httpGet } from "http";
 import { BiasScoresMethods, BiasGoggles, ServiceResponse, Serializable, ExtRequestTypes, ExtRequest } from "./types"
-import { basename } from "path";
-import { log } from "util";
 
 class UserSettings {
     method: string;
@@ -173,8 +171,7 @@ function handleRequest(request: ExtRequest, sender: chrome.runtime.MessageSender
         (tabs) => {
 
             if (request.type === ExtRequestTypes.bias_stats) {
-                let localData = JSON.parse(window.localStorage.getItem(getDomainFromURL(tabs[0].url)));
-                sendRespone({ data: localData[userSetttings.method], method: userSetttings.method });
+                sendRespone(LocalStorage.get(getDomainFromURL(tabs[0].url)));
             } else {
                 throw new Error('Uknown request type ' + request.type);
             }
