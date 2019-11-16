@@ -1,5 +1,5 @@
 import { get as httpGet } from "http";
-import { BiasScoresMethods, BiasGoggles, ServiceResponse, Serializable, ExtRequestTypes, ExtRequest } from "./types"
+import { BiasScoresMethods, BiasGoggles, ServiceResponse, Serializable, SerializableValue, BiasStatsRequest, BiasStatsResponse } from "./types"
 
 class UserSettings {
     method: string;
@@ -31,7 +31,7 @@ class UserSettings {
 
 }
 
-let userSetttings = new UserSettings(BiasScoresMethods.independentCascade,
+let userSetttings = new UserSettings(BiasScoresMethods.pagerank,
     BiasGoggles.politicalParties, 10, '#0000FF');
 
 userSetttings.saveToLocalStorage();
@@ -75,26 +75,27 @@ class LocalStorage {
     }
 
 }
-function getDomainFromURL(target : string) : string{
-    
+
+function getDomainFromURL(target: string): string {
+
     target = target.split("/")[2];
     target = target.startsWith('www') ? target.substring(4) : target;
-    
+
     return target;
 }
 
 function updateBadge(domain: string, method: string) {
     //@ts-ignore
     let score = Math.fround(parseFloat(LocalStorage.get(domain).value[method].bias_score) * 100);
-    let badgeText : string = "";
-    
-    if( score == 100 )
+    let badgeText: string = "";
+
+    if (score == 100)
         badgeText = '100';
-    else if( score < 1)
+    else if (score < 1)
         badgeText = score.toFixed(2);
     else
         badgeText = score.toFixed(1);
-    
+
     console.log(score);
 
     chrome.browserAction.setBadgeText({ text: badgeText });
@@ -165,17 +166,20 @@ function getBiasData() {
         });
 }
 
-function handleRequest(request: ExtRequest, sender: chrome.runtime.MessageSender, sendRespone: any) {
+function handleBiasStatRequest(request: BiasStatsRequest, sender: chrome.runtime.MessageSender, sendResponse: any) {
 
     chrome.tabs.query({ 'active': true },
         (tabs) => {
 
-            if (request.type === ExtRequestTypes.bias_stats) {
-                sendRespone(LocalStorage.get(getDomainFromURL(tabs[0].url)));
-            } else {
-                throw new Error('Uknown request type ' + request.type);
+            let method = request.data.method;
+
+            if (request.data.set_as_default) {
+                userSetttings.method = method;
+                userSetttings.saveToLocalStorage();
             }
 
+            console.log('sending : ' + LocalStorage.get(getDomainFromURL(tabs[0].url)));
+            sendResponse(new BiasStatsResponse(LocalStorage.get(getDomainFromURL(tabs[0].url))));
         }
     );
 
@@ -183,7 +187,7 @@ function handleRequest(request: ExtRequest, sender: chrome.runtime.MessageSender
 }
 
 try {
-    chrome.runtime.onMessage.addListener(handleRequest);
+    chrome.runtime.onMessage.addListener(handleBiasStatRequest);
     chrome.webRequest.onCompleted.addListener(getBiasData, { urls: ["<all_urls>"], types: ["main_frame"] });
 } catch (e) {
     console.log(e);
