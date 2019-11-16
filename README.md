@@ -2,7 +2,7 @@
 
 ## How to install dependencies
 ```bash
-npm init
+npm install
 ```
 
 ## How to create the web extension
