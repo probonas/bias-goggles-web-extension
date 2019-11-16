@@ -7,6 +7,7 @@ const sourceRoot = path.resolve(__dirname, './src/ts');
 const sourceRootHTML = path.resolve( __dirname, './src');
 const sourceRootJS = path.resolve(__dirname, './src/js');
 const sourceRootIcons = path.resolve(__dirname, './src/img');
+const sourceRootFonts = path.resolve(__dirname, './src/fonts');
 
 const destinationRoot = path.resolve(__dirname, './dist');
 const platformSpecificsRoots = path.resolve(__dirname, './platform');
@@ -61,7 +62,12 @@ module.exports = {
               { source: sourceRootIcons + '/*', destination: destinationRoot + '/firefox/icons/' },
               { source: sourceRootIcons + '/*', destination: destinationRoot + '/opera/icons/' },
               { source: sourceRootIcons + '/*', destination: destinationRoot + '/safari/icons' },
-                
+              
+              { source: sourceRootFonts + '/*', destination: destinationRoot + '/chromium/fonts/' },
+              { source: sourceRootFonts + '/*', destination: destinationRoot + '/firefox/fonts/' },
+              { source: sourceRootFonts + '/*', destination: destinationRoot + '/opera/fonts/' },
+              { source: sourceRootFonts + '/*', destination: destinationRoot + '/safari/fonts' },
+              
               { source: platformSpecificsRoots + '/*/*', destination: destinationRoot }
             ]
         }
