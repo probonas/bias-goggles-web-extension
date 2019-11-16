@@ -1,11 +1,117 @@
 <!DOCTYPE html>
 <html>
+
   <head>
     <meta charset="UTF-8">
-    <title>popup</title>
+    <title>BiasGoggles-Popup</title>
     <script src="popup.js"></script>
+    
+    <style media="screen">
+      @font-face {
+        font-family: "Fira Sans";
+        /* https://design.firefox.com/photon/resources/fonts.html */
+        src: url('fonts/FiraSans-Regular.woff') format('woff');
+        font-weight: 100;
+        font-style: normal;
+      }
+
+      body {
+        min-width: 12rem;
+        font-family: 'Fira Sans';
+      }
+
+      #save-button {
+        color: white;
+        font-size: 16px;
+        height: 32px;
+        width: 132px;
+        text-align: center;
+        border-radius: 4px;
+        margin: 0;
+      }
+
+      .footer {
+        height: 64px;
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        padding: 8px 32px;
+      }
+
+      .main {
+        padding: 26px;
+        box-sizing: border-box;
+      }
+
+      button:disabled {
+        background-color: grey;
+        cursor: progress;
+      }
+
+      label {
+        display: block;
+      }
+
+      .popup-heading {
+        font-weight: 200;
+        font-size: 1rem;
+        margin: 0;
+        color: lightgrey;
+      }
+
+      input[type="text"] {
+        width: 100%;
+        display: block;
+      }
+
+      header {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 8px 16px;
+        border-bottom: 1px solid lightgrey;
+      }
+
+      .fat {
+        font-weight: bold;
+      }
+    </style>
   </head>
+
   <body>
-        <p>popup content</p>
+
+    <header>
+      <h1 class="popup-heading" id="heading">Bias Goggles</h1>
+    </header>
+
+    <form id="form" class="main">
+      
+      <div title="BiasScore">
+        <span class="fat">Select Bias Score</span>:</div>
+        <br>
+      <label for="method-ic">
+        <input type="radio" id="method-ic" name="bias_score" value="ic" required checked>
+        <i id="ic_txt">Independent Cascade</i>
+      </label>
+      <label for="method-lt">
+        <input type="radio" id="method-lt" name="bias_score" value="lt" required>
+         <i id="lt_txt">Linear Threshold</i>
+      </label>
+      <label for="method-pr">
+          <input type="radio" id="method-pr" name="bias_score" value="pr" required>
+          <i id="pr_txt">Page Rank</i>
+        </label>
+
+      <label for="set-as-default">
+        <input id="set-as-default" type="checkbox" name="bias_score">
+        <span class="fat">Set as default</span>
+      </label>
+    </form>
+
+    <div class="footer">
+      <button form="save" id="save-button" class="browser-style default">Save</button>
+    </div>
+
   </body>
+
 </html>
