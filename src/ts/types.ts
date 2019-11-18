@@ -10,53 +10,49 @@ export enum BiasGoggles {
     footballTeams = "sport-teams"
 }
 
-export interface BiasData {
+export interface AppData {
     domain: string;
-    ic: string;
-    lt: string;
-    pr: string;
+    appdata: DomainData
 }
 
-export interface ServiceResponse {
-    doc: BiasData;
-}
-
-export interface SerializableValue {
-    ic: string; //string represantation of JSON data
-    lt: string; //string represantation of JSON data
-    pr: string; //string represantation of JSON data
+export interface DomainData {
+    ic: ScoreData;
+    lt: ScoreData;
+    pr: ScoreData;
     limit: number;
+    date: Date
 }
 
-export interface Serializable {
-    key: string;
-    value: SerializableValue;
+export interface ScoreData {
+    bias_score: number;
+    rank: number;
+    support_score: number;
+    vector: string[]
 }
 
-export interface ReqBias {
-    method: string,
-    set_as_default: boolean,
+export enum RequestMessage {
+    GET_STATS = 'get-stats',
+    SET_AS_DEFAULT = 'set-as-default',
 }
 
-export class Message {
-    data: any
-    constructor(data?: any ) {
+export class ExtRequest {
+    messages: RequestMessage[];
+    extra : any;
+
+    constructor(messages: RequestMessage[], extra ?: any) {
+        this.messages = messages;
+        this.extra = extra;
+    }
+
+}
+
+export class ExtResponse {
+    data: AppData;
+    extra: any;
+
+    constructor(data: AppData, extra ?: any) {
         this.data = data;
+        this.extra = extra;
     }
-}
 
-export class BiasStatsResponse extends Message {
-    data: Serializable;
-
-    constructor(data: Serializable) {
-        super(data);
-    }
-}
-
-export class BiasStatsRequest extends Message {
-    data: ReqBias;
-
-    constructor(data: ReqBias) {
-        super(data);
-    }
 }

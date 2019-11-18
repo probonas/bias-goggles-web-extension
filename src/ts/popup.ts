@@ -1,4 +1,4 @@
-import { BiasScoresMethods, BiasStatsResponse, BiasStatsRequest } from "./types";
+import { BiasScoresMethods, ExtRequest, RequestMessage, ExtResponse } from "./types";
 import { Chart } from "chart.js";
 
 class HSL {
@@ -54,6 +54,10 @@ class DiscreteColorBuilder {
     }
 
 }
+
+(function checkDefault() {
+
+})();
 
 function drawChart(vector: any) {
     //@ts-ignore
@@ -125,19 +129,27 @@ document.getElementById('save-button').addEventListener('click', () => {
         as_default = true;
     }
 
-    chrome.runtime.sendMessage(
-        new BiasStatsRequest({ method: checked.value, set_as_default: as_default }),
-        (response: BiasStatsResponse) => {
-            let method = checked.value;
-            //@ts-ignore
-            let canvas = document.createElement('canvas');
-            canvas.id = 'polar-chart';
-            canvas.width = 220;
-            canvas.height = 300;
-
-            document.body.appendChild(canvas);
-            //@ts-ignore
-            drawChart(response.data.value[method].vector);
-        });
+    if (as_default) {
+        chrome.runtime.sendMessage(
+            new ExtRequest([RequestMessage.GET_STATS, RequestMessage.SET_AS_DEFAULT], checked.value), handleResponse);
+    } else {
+        chrome.runtime.sendMessage(
+            new ExtRequest([RequestMessage.GET_STATS], checked.value), handleResponse);
+    }
 
 });
+
+function handleResponse(response: ExtResponse) {
+    console.log('received response');
+    let method = response.extra;
+
+    //@ts-ignore
+    let canvas = document.createElement('canvas');
+    canvas.id = 'polar-chart';
+    canvas.width = 220;
+    canvas.height = 300;
+
+    document.body.appendChild(canvas);
+    //@ts-ignore
+    drawChart(response.data.appdata[method].vector);
+}

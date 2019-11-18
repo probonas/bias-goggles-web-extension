@@ -1,22 +1,27 @@
 import { get as httpGet } from "http";
-import { BiasScoresMethods, BiasGoggles, ServiceResponse, Serializable, SerializableValue, BiasStatsRequest, BiasStatsResponse } from "./types"
+import { BiasScoresMethods, BiasGoggles, AppData, ExtRequest, RequestMessage, ExtResponse } from "./types"
 
 class UserSettings {
-    method: string;
-    goggles: string;
-    limit: number;
-    badgeColor: string;
+    private method: string;
+    private goggles: string;
+    private limit: number;
+    private badgeColor: string;
 
     private key = "userSettings";
 
-    constructor(method: BiasScoresMethods, goggles: BiasGoggles, limit: number, badgeColor: string) {
+    private static instance: UserSettings;
+
+    private constructor(method: BiasScoresMethods, goggles: BiasGoggles, limit: number, badgeColor: string) {
+
         this.method = method;
         this.goggles = goggles;
         this.limit = limit;
         this.badgeColor = badgeColor;
+
+        this.saveToLocalStorage();
     }
 
-    public getSettings(): string {
+    private settingsToString(): string {
         return JSON.stringify({
             'method': this.method,
             'goggles': this.goggles,
@@ -25,16 +30,57 @@ class UserSettings {
         });
     }
 
+    public static getInstance(method: BiasScoresMethods, goggles: BiasGoggles, limit: number, badgeColor: string): UserSettings {
+        if (!UserSettings.instance) {
+            UserSettings.instance = new UserSettings(method, goggles, limit, badgeColor);
+        }
+
+        return UserSettings.instance;
+    }
+
     public saveToLocalStorage(): void {
-        window.localStorage.setItem(this.key, this.getSettings());
+        window.localStorage.setItem(this.key, this.settingsToString());
+    }
+
+    public updateMethod(method: string) {
+        this.method = method;
+        this.saveToLocalStorage();
+    }
+
+    public updateGoggles(goggles: string) {
+        this.goggles = goggles;
+        this.saveToLocalStorage();
+    }
+
+    public updateLimit(limit: number) {
+        this.limit = limit;
+        this.saveToLocalStorage();
+    }
+
+    public updateBadgeColor(badgeColor: string) {
+        this.badgeColor = badgeColor;
+        this.saveToLocalStorage();
+    }
+
+    public getMethod(): string {
+        return this.method;
+    }
+
+    public getGoggles(): string {
+        return this.goggles;
+    }
+
+    public getLimit(): number {
+        return this.limit;
+    }
+
+    public getBadgeColor(): string {
+        return this.badgeColor;
     }
 
 }
 
-let userSetttings = new UserSettings(BiasScoresMethods.pagerank,
-    BiasGoggles.politicalParties, 10, '#0000FF');
-
-userSetttings.saveToLocalStorage();
+let userSetttings = UserSettings.getInstance(BiasScoresMethods.pagerank, BiasGoggles.politicalParties, 10, '#0000FF');
 
 class LocalStorage {
 
@@ -42,34 +88,53 @@ class LocalStorage {
 
         let serialized = this.serialize(data);
 
-        window.localStorage.setItem(serialized.key, JSON.stringify(serialized.value));
+        window.localStorage.setItem(serialized.domain, JSON.stringify(serialized.appdata));
     }
 
-    public static update(data: Serializable) {
-        window.localStorage.setItem(data.key, JSON.stringify(data.value));
+    public static update(data: AppData) {
+        window.localStorage.setItem(data.domain, JSON.stringify(data.appdata));
     }
 
     public static delete(domain: string) {
         window.localStorage.removeItem(domain);
     }
 
-    public static get(domain: string): Serializable {
+    public static get(domain: string): AppData {
         return {
-            key: domain,
-            value: JSON.parse(window.localStorage.getItem(domain))
+            domain: domain,
+            appdata: JSON.parse(window.localStorage.getItem(domain))
         };
     }
 
-    private static serialize(data: string): Serializable {
-        let ret: ServiceResponse = JSON.parse(data);
+    private static serialize(data: string): AppData {
+        let ret = JSON.parse(data);
 
+
+        //the following are as returned from service
         return {
-            key: ret.doc.domain,
-            value: {
-                ic: ret.doc.ic,
-                lt: ret.doc.lt,
-                pr: ret.doc.pr,
-                limit: userSetttings.limit
+            //@ts-ignore
+            domain: ret.doc.domain,
+            appdata: {
+                ic: {
+                    bias_score: ret.doc.ic.bias_score,
+                    rank: ret.doc.ic.rank,
+                    support_score: ret.doc.ic.rank,
+                    vector: ret.doc.ic.vector
+                },
+                lt: {
+                    bias_score: ret.doc.lt.bias_score,
+                    rank: ret.doc.lt.rank,
+                    support_score: ret.doc.lt.rank,
+                    vector: ret.doc.lt.vector
+                },
+                pr: {
+                    bias_score: ret.doc.pr.bias_score,
+                    rank: ret.doc.pr.rank,
+                    support_score: ret.doc.pr.rank,
+                    vector: ret.doc.pr.vector
+                },
+                limit: userSetttings.getLimit(),
+                date: new Date()
             }
         };
     }
@@ -86,7 +151,7 @@ function getDomainFromURL(target: string): string {
 
 function updateBadge(domain: string, method: string) {
     //@ts-ignore
-    let score = Math.fround(parseFloat(LocalStorage.get(domain).value[method].bias_score) * 100);
+    let score = Math.fround(parseFloat(LocalStorage.get(domain).data[method].bias_score) * 100);
     let badgeText: string = "";
 
     if (score == 100)
@@ -105,7 +170,7 @@ function getRequestURL(target: string) {
 
     const prefix = 'http://139.91.183.23:3000/results?domain=';
 
-    const suffix = '&bc=' + userSetttings.goggles;
+    const suffix = '&bc=' + userSetttings.getGoggles();
 
     return prefix + encodeURIComponent(target) + suffix;
 }
@@ -126,7 +191,7 @@ function queryService(activeTab: string) {
                 throw new Error('HTTP Status code' + res.statusCode);
 
             LocalStorage.save(data);
-            updateBadge(getDomainFromURL(activeTab), userSetttings.method);
+            updateBadge(getDomainFromURL(activeTab), userSetttings.getMethod());
         });
     });
 }
@@ -134,7 +199,7 @@ function queryService(activeTab: string) {
 
 function getBiasData() {
 
-    chrome.browserAction.setBadgeBackgroundColor({ color: userSetttings.badgeColor });
+    chrome.browserAction.setBadgeBackgroundColor({ color: userSetttings.getBadgeColor() });
 
     chrome.tabs.query({ 'active': true },
         tabs => {
@@ -149,37 +214,40 @@ function getBiasData() {
 
             let localEntry = LocalStorage.get(getDomainFromURL(activeTab));
 
-            if (!localEntry.value) {
+            if (!localEntry.appdata) {
                 console.log(activeTab + " not found.");
                 queryService(activeTab);
             } else {
                 console.log(activeTab + " found.");
 
-                if (localEntry.value.limit === 0) {
+                if (localEntry.appdata.limit === 0) {
                     LocalStorage.delete(activeTab);
                     queryService(activeTab);
                 } else {
-                    localEntry.value.limit--;
+                    localEntry.appdata.limit--;
                     LocalStorage.update(localEntry);
                 }
             }
         });
 }
 
-function handleBiasStatRequest(request: BiasStatsRequest, sender: chrome.runtime.MessageSender, sendResponse: any) {
+function requestHandler(request: ExtRequest, sender: chrome.runtime.MessageSender, sendResponse: any) {
 
     chrome.tabs.query({ 'active': true },
         (tabs) => {
+            console.log('received request');
 
-            let method = request.data.method;
+            request.messages.forEach((message) => {
 
-            if (request.data.set_as_default) {
-                userSetttings.method = method;
-                userSetttings.saveToLocalStorage();
-            }
-
-            console.log('sending : ' + LocalStorage.get(getDomainFromURL(tabs[0].url)));
-            sendResponse(new BiasStatsResponse(LocalStorage.get(getDomainFromURL(tabs[0].url))));
+                switch (message) {
+                    case RequestMessage.GET_STATS:
+                        sendResponse(new ExtResponse(LocalStorage.get(getDomainFromURL(tabs[0].url)),request.extra));
+                        break;
+                    case RequestMessage.SET_AS_DEFAULT:
+                            userSetttings.updateMethod(request.extra);
+                        break;
+                }
+            });
         }
     );
 
@@ -187,7 +255,7 @@ function handleBiasStatRequest(request: BiasStatsRequest, sender: chrome.runtime
 }
 
 try {
-    chrome.runtime.onMessage.addListener(handleBiasStatRequest);
+    chrome.runtime.onMessage.addListener(requestHandler);
     chrome.webRequest.onCompleted.addListener(getBiasData, { urls: ["<all_urls>"], types: ["main_frame"] });
 } catch (e) {
     console.log(e);
