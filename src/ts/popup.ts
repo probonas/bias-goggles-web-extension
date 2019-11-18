@@ -13,7 +13,7 @@ class HSL {
     }
 
     public toCssHSL(): string {
-        return 'hsl(' + this.hue + 'deg,' + this.saturation + '%,' + this.lightness + '%);';
+        return 'hsl(' + this.hue + 'deg,' + this.saturation + '%,' + this.lightness + '%)';
     }
 
 }
@@ -70,7 +70,6 @@ function drawChart(vector: any) {
     //get all keys
     for (let i in vector) {
         dataLabels.push(i);
-
     }
 
     let dataPainter = new DiscreteColorBuilder(dataLabels.length, 100, dataColorLightnes);
