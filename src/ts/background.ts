@@ -241,10 +241,10 @@ function requestHandler(request: ExtRequest, sender: chrome.runtime.MessageSende
 
                 switch (message) {
                     case RequestMessage.GET_STATS:
-                        sendResponse(new ExtResponse(LocalStorage.get(getDomainFromURL(tabs[0].url)),request.extra));
+                        sendResponse(new ExtResponse(LocalStorage.get(getDomainFromURL(tabs[0].url)), request.extra));
                         break;
                     case RequestMessage.SET_AS_DEFAULT:
-                            userSetttings.updateMethod(request.extra);
+                        userSetttings.updateMethod(request.extra);
                         break;
                 }
             });

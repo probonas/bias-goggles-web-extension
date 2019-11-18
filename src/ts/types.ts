@@ -37,9 +37,9 @@ export enum RequestMessage {
 
 export class ExtRequest {
     messages: RequestMessage[];
-    extra : any;
+    extra: any;
 
-    constructor(messages: RequestMessage[], extra ?: any) {
+    constructor(messages: RequestMessage[], extra?: any) {
         this.messages = messages;
         this.extra = extra;
     }
@@ -50,7 +50,7 @@ export class ExtResponse {
     data: AppData;
     extra: any;
 
-    constructor(data: AppData, extra ?: any) {
+    constructor(data: AppData, extra?: any) {
         this.data = data;
         this.extra = extra;
     }
