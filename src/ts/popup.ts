@@ -1,149 +1,110 @@
 import { BiasScoresMethods, BiasStatsResponse, BiasStatsRequest } from "./types";
 import { Chart } from "chart.js";
 
-class Color {
-    red: number;
-    green: number;
-    blue: number;
+class HSL {
+    private hue: number;
+    private saturation: number;
+    private lightness: number;
 
-    constructor(color?: Color) {
-        this.red = color && color.red || 0;
-        this.green = color && color.green || 0;
-        this.blue = color && color.blue || 0;
+    constructor(hue: number, saturation: number, lightness: number) {
+        this.hue = hue,
+            this.saturation = saturation;
+        this.lightness = lightness;
+    }
+
+    public toCssHSL(): string {
+        return 'hsl(' + this.hue + 'deg,' + this.saturation + '%,' + this.lightness + '%);';
     }
 
 }
 
-class RGB {
+class DiscreteColorBuilder {
 
-    private minimumContrast = 35;
-    private resetHardLimit = 100;
+    private lightness: number;
+    private saturation: number;
+    private quantity: number;
 
-    private lastColor: Color;
+    private startDegrees: number;
+    private endDegrees: number;
+    private step: number;
+    private last: number;
 
-    private colorList: Array<Color>;
+    private colors: Array<HSL>;
 
-    constructor() {
-        this.colorList = [];
-        this.lastColor = undefined;
-    }
+    constructor(quantity: number, saturation: number, lightness: number) {
+        this.quantity = quantity;
+        this.lightness = lightness;
+        this.saturation = saturation;
+        this.colors = new Array();
 
-    private getRandomColor(): Color {
-        let color = new Color();
+        this.startDegrees = 0;
+        this.endDegrees = 359;
 
-        color.red = Math.floor(Math.random() * 255);
-        color.green = Math.floor(Math.random() * 255);
-        color.blue = Math.floor(Math.random() * 255);
+        this.step = Math.floor((this.endDegrees - this.startDegrees) / this.quantity);
 
-        return color;
-    }
+        this.last = 0;
 
-    private contrast(color1: Color, color2: Color): number {
-        return Math.sqrt(
-            0.3 * Math.pow(color1.red - color2.red, 2) +
-            0.59 * Math.pow(color1.green - color2.green, 2) +
-            0.11 * Math.pow(color1.blue - color2.blue, 2));
-    }
-
-    private checkContrast(color: Color) {
-        let timesResetted = 0;
-
-        if (this.colorList.length === 0)
-            this.colorList.push(color);
-        else {
-
-            for (let i = 0; i < this.colorList.length; i++) {
-
-                let curr = this.colorList[i];
-
-                //console.log('red ' + color.red + ' green ' + color.green + ' blue ' + color.blue);
-                //console.log('red ' + curr.red + ' green ' + curr.green + ' blue ' + curr.blue);
-                //console.log('===> ' + this.contrast(curr,color));
-
-                if (this.contrast(curr, color) < this.minimumContrast &&
-                    timesResetted < this.resetHardLimit) {
-
-                    color = this.getRandomColor();
-                    i = 0;
-                    timesResetted++;
-
-                }
-            }
-            
-            //console.log('resetted ' + timesResetted);
-            
-            this.colorList.push(color);
+        for (let i = 0; i < this.quantity; i++) {
+            this.colors.push(new HSL(this.startDegrees + i * this.step, this.saturation, this.lightness));
         }
     }
 
-    public getCssRGBA(opacity: string, useLastColor: boolean): string {
-        let color: Color;
-
-        if (!useLastColor) {
-            color = this.getRandomColor();
-            this.checkContrast(color);
-            this.lastColor = color;
-        } else {
-            color = this.lastColor;
-        }
-
-        return 'rgba(' +
-            color.red + ',' +
-            color.green + ',' +
-            color.blue + ',' +
-            opacity + ')';
+    public next(): HSL {
+        return this.colors[this.last++];
     }
 
 }
-
-
 
 function drawChart(vector: any) {
     //@ts-ignore
     let ctx = document.getElementById('polar-chart').getContext('2d');
 
-    let colorMaker = new RGB();
+    const dataColorLightnes = 70;
+    const dataBorderLightness = 50;
 
-    const backgroundOpacity = '0.3';
-    const borderOpacity = '1';
-
-    let vector_labels = new Array;
-    let vector_data = new Array;
-    let bgColors = new Array;
+    let dataLabels = new Array;
+    let data = new Array;
+    let dataColors = new Array;
     let borderColors = new Array;
 
     //get all keys
     for (let i in vector) {
-        vector_labels.push(i);
+        dataLabels.push(i);
+
     }
 
-    vector_labels.forEach((value) => {
-        vector_data.push(vector[value]);
-        bgColors.push(colorMaker.getCssRGBA(backgroundOpacity, false));
-        borderColors.push(colorMaker.getCssRGBA(borderOpacity, true));
+    let dataPainter = new DiscreteColorBuilder(dataLabels.length, 100, dataColorLightnes);
+    let borderPainter = new DiscreteColorBuilder(dataLabels.length, 100, dataBorderLightness);
+
+    dataLabels.forEach((value) => {
+        data.push(vector[value]);
+
+        dataColors.push(dataPainter.next().toCssHSL());
+        borderColors.push(borderPainter.next().toCssHSL());
+
     });
 
     new Chart(ctx, {
         type: 'polarArea',
         data: {
             datasets: [{
-                data: vector_data,
-                backgroundColor: bgColors,
+                data: data,
+                backgroundColor: dataColors,
                 borderColor: borderColors,
                 borderWidth: 1
             }],
-            labels: vector_labels
+            labels: dataLabels
         },
-        options :{
+        options: {
             legend: {
-                position : 'bottom',
+                position: 'bottom',
                 labels: {
                     usePointStyle: true,
                     fontSize: 11
 
                 }
             }
-        } 
+        }
     });
 }
 
