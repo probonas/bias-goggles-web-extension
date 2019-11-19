@@ -1,7 +1,7 @@
 
 export enum BiasScoresMethods {
     independentCascade = "ic",
-    linearThreshold = "lt",
+    gnearThreshold = "lt",
     pagerank = "pr"
 }
 
