@@ -17,7 +17,7 @@ module.exports = {
   entry: {
     background: sourceRoot + "/background.ts",
     popup: sourceRoot + "/popup.ts",
-    onhover : sourceRoot + '/onhover.ts'
+    popover : sourceRoot + '/popover.ts'
   },
   devtool: "inline-source-map",
   module: {

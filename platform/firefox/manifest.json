@@ -21,7 +21,8 @@
 	"content_scripts" :[
 		{
 			"matches" : ["<all_urls>"],
-			"js" : ["onhover.js"]
+			"js" : ["popover.js"],
+			"css" : ["popover.css"]
 		}
 	],
 	"permissions" : [
