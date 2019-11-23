@@ -56,6 +56,8 @@ export namespace chart {
 
     }
 
+    //elem must be present in the dom tree for the canvas to 
+    //render properly
     export function draw(vector: any, elem?: HTMLElement) {
         const id = 'polar-chart';
         let canvas: HTMLCanvasElement;

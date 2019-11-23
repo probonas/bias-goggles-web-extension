@@ -1,0 +1,8 @@
+ .popover_content {
+   background-color: #bfbfbf;
+   box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.26);
+   padding: 1.5rem;
+   width: auto;
+   text-align: center;
+ }
+
