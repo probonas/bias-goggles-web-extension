@@ -56,7 +56,7 @@ export namespace chart {
 
     }
 
-    export function draw(vector: any) {
+    export function draw(vector: any, elem?: HTMLElement) {
         const id = 'polar-chart';
         let canvas: HTMLCanvasElement;
 
@@ -66,7 +66,10 @@ export namespace chart {
             canvas.width = 220;
             canvas.height = 300;
 
-            document.body.appendChild(canvas);
+            if (!elem)
+                document.body.appendChild(canvas);
+            else
+                elem.appendChild(canvas);
         } else {
             canvas = <HTMLCanvasElement>document.getElementById(id);
         }
