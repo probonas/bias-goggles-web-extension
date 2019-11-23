@@ -191,42 +191,41 @@ function queryService(activeTab: string) {
                 throw new Error('HTTP Status code' + res.statusCode);
 
             LocalStorage.save(data);
-            updateBadge(getDomainFromURL(activeTab), userSetttings.getMethod());
+            //updateBadge(getDomainFromURL(activeTab), userSetttings.getMethod());
         });
     });
 }
 
 
-function getBiasData() {
+function getBiasData(url: string) {
 
-    chrome.browserAction.setBadgeBackgroundColor({ color: userSetttings.getBadgeColor() });
+    //chrome.browserAction.setBadgeBackgroundColor({ color: userSetttings.getBadgeColor() });
 
+    let localEntry = LocalStorage.get(getDomainFromURL(url));
+
+    if (!localEntry.appdata) {
+        console.log(url + " not found.");
+        queryService(url);
+    } else {
+        console.log(url + " found.");
+
+        if (localEntry.appdata.limit === 0) {
+            LocalStorage.delete(url);
+            queryService(url);
+        } else {
+            localEntry.appdata.limit--;
+            LocalStorage.update(localEntry);
+        }
+    }
+}
+
+function getBiasDataCurrentTab() {
     chrome.tabs.query({ 'active': true },
         tabs => {
-
-            let activeTab: string = '';
-
             if (typeof tabs[0].url === 'string')
-                activeTab = tabs[0].url;
+                getBiasData(tabs[0].url);
             else {
                 throw new Error('no-active-tab-found');
-            }
-
-            let localEntry = LocalStorage.get(getDomainFromURL(activeTab));
-
-            if (!localEntry.appdata) {
-                console.log(activeTab + " not found.");
-                queryService(activeTab);
-            } else {
-                console.log(activeTab + " found.");
-
-                if (localEntry.appdata.limit === 0) {
-                    LocalStorage.delete(activeTab);
-                    queryService(activeTab);
-                } else {
-                    localEntry.appdata.limit--;
-                    LocalStorage.update(localEntry);
-                }
             }
         });
 }
@@ -246,6 +245,15 @@ function requestHandler(request: ExtRequest, sender: chrome.runtime.MessageSende
                     case RequestMessage.SET_AS_DEFAULT:
                         userSetttings.updateMethod(request.extra);
                         break;
+                    case RequestMessage.GET_DEFAULT_STATS:
+                        getBiasData(<string>request.extra);
+                        //only on domains as for now...
+                        let data = LocalStorage.get(getDomainFromURL(request.extra));
+                        let method = userSetttings.getMethod();
+                        sendResponse(new ExtResponse(data, method));
+                        break;
+                    default:
+                        throw new Error('Unknown request ' + message);
                 }
             });
         }
@@ -256,7 +264,7 @@ function requestHandler(request: ExtRequest, sender: chrome.runtime.MessageSende
 
 try {
     chrome.runtime.onMessage.addListener(requestHandler);
-    chrome.webRequest.onCompleted.addListener(getBiasData, { urls: ["<all_urls>"], types: ["main_frame"] });
+    chrome.webRequest.onCompleted.addListener(getBiasDataCurrentTab, { urls: ["<all_urls>"], types: ["main_frame"] });
 } catch (e) {
     console.log(e);
 }

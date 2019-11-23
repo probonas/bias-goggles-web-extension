@@ -33,6 +33,7 @@ export interface ScoreData {
 export enum RequestMessage {
     GET_STATS = 'get-stats',
     SET_AS_DEFAULT = 'set-as-default',
+    GET_DEFAULT_STATS = 'get-stats-default'
 }
 
 export class ExtRequest {
