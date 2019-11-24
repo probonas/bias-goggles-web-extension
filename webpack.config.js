@@ -49,10 +49,10 @@ module.exports = {
               destinationRoot + '/*'
             ],
             copy: [
-              { source: sourceRootHTML + '/*.html', destination: destinationRoot + '/chromium/' },
-              { source: sourceRootHTML + '/*.html', destination: destinationRoot + '/firefox/' },
-              { source: sourceRootHTML + '/*.html', destination: destinationRoot + '/opera/' },
-              { source: sourceRootHTML + '/*.html', destination: destinationRoot + '/safari/' }, 
+              { source: sourceRootHTML + '/*.{html,css}', destination: destinationRoot + '/chromium/' },
+              { source: sourceRootHTML + '/*.{html,css}', destination: destinationRoot + '/firefox/' },
+              { source: sourceRootHTML + '/*.{html,css}', destination: destinationRoot + '/opera/' },
+              { source: sourceRootHTML + '/*.{html,css}', destination: destinationRoot + '/safari/' },
                 
               { source: sourceRootJS + '/*', destination: destinationRoot + '/chromium/' },
               { source: sourceRootJS + '/*', destination: destinationRoot + '/firefox/' },

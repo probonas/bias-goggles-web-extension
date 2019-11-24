@@ -7,7 +7,6 @@ const id = 'bias-popover';
 function createPopover(data: ScoreData, refElem: HTMLElement) {
     let canvasWrapper = document.createElement('div');
     canvasWrapper.id = id;
-    canvasWrapper.classList.add("popover_content");
 
     refElem.appendChild(canvasWrapper);
     chart.draw(data.vector, canvasWrapper);
@@ -16,8 +15,7 @@ function createPopover(data: ScoreData, refElem: HTMLElement) {
         placement: "right",
         onCreate: (data) => {
             console.log(data);
-        },
-        removeOnDestroy: true
+        }
     });
 }
 

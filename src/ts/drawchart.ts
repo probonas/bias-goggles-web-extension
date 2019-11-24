@@ -62,6 +62,8 @@ export namespace chart {
         const id = 'polar-chart';
         let canvas: HTMLCanvasElement;
 
+        elem.classList.add("popover_wrapper");
+
         if (!document.getElementById(id)) {
             canvas = document.createElement('canvas');
             canvas.id = id;
