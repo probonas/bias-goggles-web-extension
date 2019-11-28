@@ -3,6 +3,8 @@ import { chart } from "./drawchart";
 import { ExtRequest, ExtResponse, RequestMessage, DomainData, ScoreData, AppData, MethodsAndNames } from "./types";
 
 const id = 'bias-popover';
+const timeout = 1500; //ms
+let timeFocused = 0;
 
 function createPopover(data: DomainData, method: string, refElem: HTMLElement) {
     let canvasWrapper = document.createElement('div');
@@ -48,31 +50,54 @@ function handleResponse(response: ExtResponse, target: EventTarget) {
     target.addEventListener('mouseleave', removeCanvas);
 }
 
-function handleFocus(event: FocusEvent): void {
-    if (event.target instanceof HTMLAreaElement || event.target instanceof HTMLAnchorElement) {
-        if (event.target.href[0] === '#'
-            || event.target.href[0] === '/'
-            || event.target.href.includes(window.location.origin)
-        )
+function timeOutClosure(event: FocusEvent) {
+
+    let e = event;
+
+    return function () {
+        if (timeFocused === 0) {
+            console.log('timeout....');
             return;
+        }
 
-        //console.log('link found!' + event.target.href);
+        console.log('ok....');
 
-        chrome.runtime.sendMessage(new ExtRequest([RequestMessage.GET_DEFAULT_STATS], event.target.href), (response) => {
-            handleResponse(response, event.target);
+        //@ts-ignore
+        chrome.runtime.sendMessage(new ExtRequest([RequestMessage.GET_DEFAULT_STATS], e.target.href), (response) => {
+            handleResponse(response, e.target);
         });
+    }
+}
+
+function handleFocus(event: FocusEvent): void {
+
+
+    if (event.target instanceof HTMLAreaElement || event.target instanceof HTMLAnchorElement) {
+        if (event.target.href[0] === '#' || event.target.href[0] === '/'
+            || event.target.href.includes(window.location.origin)) {
+            console.log('skipped for this link....');
+            return;
+        }
+
+        console.log('link found!' + event.target.href);
+        timeFocused = new Date().getMilliseconds();
+
+        setTimeout(timeOutClosure(event), timeout);
+
     }
 
 }
 
 function removeCanvas() {
-
     if (document.getElementById(id))
         document.getElementById(id).remove();
+}
 
+function resetTimer() {
+    timeFocused = 0;
 }
 
 //bubble down event
 document.body.addEventListener("mouseover", handleFocus);
-//not bubble down event
-//document.body.addEventListener("mouseleave", removeCanvas);
+//bubble up event
+document.body.addEventListener("mouseout", resetTimer);
