@@ -11,15 +11,12 @@ function createPopover(data: DomainData, method: string, refElem: HTMLElement) {
     addScoreInfo(data, method, canvasWrapper);
 
     refElem.appendChild(canvasWrapper);
-    
+
     //@ts-ignore
     chart.draw(data[method].vector, 150, 200, canvasWrapper);
 
     new Popper(refElem, canvasWrapper, {
-        placement: "right",
-        onCreate: (data) => {
-            console.log(data);
-        }
+        placement: "right"
     });
 }
 
@@ -43,19 +40,23 @@ function addScoreInfo(data: DomainData, method: string, elem: HTMLElement) {
     elem.appendChild(scoreWrapper);
 }
 
-function handleResponse(response: ExtResponse, target: any) {
+function handleResponse(response: ExtResponse, target: EventTarget) {
     let m = <string>response.extra;
-    //@ts-check
-    createPopover(response.data.appdata, m, target);
+
+    createPopover(response.data.appdata, m, <HTMLElement>target);
+
+    target.addEventListener('mouseleave', removeCanvas);
 }
 
 function handleFocus(event: FocusEvent): void {
-
     if (event.target instanceof HTMLAreaElement || event.target instanceof HTMLAnchorElement) {
-        if (event.target.href[0] === '#' || event.target.href[0] === '/')
+        if (event.target.href[0] === '#'
+            || event.target.href[0] === '/'
+            || event.target.href.includes(window.location.origin)
+        )
             return;
 
-        console.log('link found!' + event.target.href);
+        //console.log('link found!' + event.target.href);
 
         chrome.runtime.sendMessage(new ExtRequest([RequestMessage.GET_DEFAULT_STATS], event.target.href), (response) => {
             handleResponse(response, event.target);
@@ -65,13 +66,13 @@ function handleFocus(event: FocusEvent): void {
 }
 
 function removeCanvas() {
+
     if (document.getElementById(id))
         document.getElementById(id).remove();
 
-    console.log('out!');
 }
 
 //bubble down event
 document.body.addEventListener("mouseover", handleFocus);
 //not bubble down event
-document.body.addEventListener("mouseout", removeCanvas);
+//document.body.addEventListener("mouseleave", removeCanvas);

@@ -139,7 +139,13 @@ export namespace chart {
                         borderColor: borderColors,
                         borderWidth: 1
                     }],
+                    labels: dataLabels
                 },
+                options: {
+                    legend: {
+                        display: false
+                    }
+                }
             });
         }
     }
