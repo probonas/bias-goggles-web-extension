@@ -1,15 +1,19 @@
 import Popper from "popper.js";
 import { chart } from "./drawchart";
-import { ExtRequest, ExtResponse, RequestMessage, DomainData, ScoreData } from "./types";
+import { ExtRequest, ExtResponse, RequestMessage, DomainData, ScoreData, AppData, MethodsAndNames } from "./types";
 
 const id = 'bias-popover';
 
-function createPopover(data: ScoreData, refElem: HTMLElement) {
+function createPopover(data: DomainData, method: string, refElem: HTMLElement) {
     let canvasWrapper = document.createElement('div');
     canvasWrapper.id = id;
 
+    addScoreInfo(data, method, canvasWrapper);
+
     refElem.appendChild(canvasWrapper);
-    chart.draw(data.vector, canvasWrapper);
+    
+    //@ts-ignore
+    chart.draw(data[method].vector, 150, 200, canvasWrapper);
 
     new Popper(refElem, canvasWrapper, {
         placement: "right",
@@ -19,10 +23,30 @@ function createPopover(data: ScoreData, refElem: HTMLElement) {
     });
 }
 
+function addScoreInfo(data: DomainData, method: string, elem: HTMLElement) {
+
+    let scoreWrapper = document.createElement('div');
+    let scoreText = document.createElement('p');
+
+    //@ts-ignore
+    let score: string = data[method].bias_score;
+    score = Math.fround(parseFloat(score) * 100).toFixed(2);
+
+    scoreText.innerText = 'Bias Score : ' + score;
+
+    let methodInfo = document.createElement('p');
+    methodInfo.classList.add("popover_method_info");
+    methodInfo.innerText = 'using ' + MethodsAndNames[method];
+
+    scoreWrapper.appendChild(scoreText);
+    scoreWrapper.appendChild(methodInfo);
+    elem.appendChild(scoreWrapper);
+}
+
 function handleResponse(response: ExtResponse, target: any) {
     let m = <string>response.extra;
-    //@ts-ignore
-    createPopover(response.data.appdata[m], target);
+    //@ts-check
+    createPopover(response.data.appdata, m, target);
 }
 
 function handleFocus(event: FocusEvent): void {
@@ -46,6 +70,7 @@ function removeCanvas() {
 
     console.log('out!');
 }
+
 //bubble down event
 document.body.addEventListener("mouseover", handleFocus);
 //not bubble down event

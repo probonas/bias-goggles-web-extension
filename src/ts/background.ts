@@ -109,8 +109,9 @@ class LocalStorage {
     private static serialize(data: string): AppData {
         let ret = JSON.parse(data);
 
-
         //the following are as returned from service
+        //if anything changes in service
+        //the following should be updated as well
         return {
             //@ts-ignore
             domain: ret.doc.domain,

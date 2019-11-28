@@ -10,6 +10,18 @@ export enum BiasGoggles {
     footballTeams = "sport-teams"
 }
 
+export const MethodsAndNames: { [index: string]: string } = {
+    'ic': 'Independent Cascade',
+    'lt': 'Linear Threshold',
+    'pr': 'Page Rank',
+    
+    'Independent Cascade': 'ic',
+    'Linear Threshold': 'lt',
+    'Page Rank': 'pr'
+};
+
+
+
 export interface AppData {
     domain: string;
     appdata: DomainData

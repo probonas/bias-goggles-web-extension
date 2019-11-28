@@ -40,6 +40,6 @@ function handleResponse(response: ExtResponse) {
 
     //@ts-ignore
     let vector = response.data.appdata[method].vector
-    
-    chart.draw(vector);
+
+    chart.draw(vector, 220, 300);
 }

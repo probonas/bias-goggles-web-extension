@@ -58,22 +58,24 @@ export namespace chart {
 
     //elem must be present in the dom tree for the canvas to 
     //render properly
-    export function draw(vector: any, elem?: HTMLElement) {
+    export function draw(vector: any, width: number, height: number, elem?: HTMLElement, showLabels?: boolean) {
         const id = 'polar-chart';
         let canvas: HTMLCanvasElement;
-
-        elem.classList.add("popover_wrapper");
 
         if (!document.getElementById(id)) {
             canvas = document.createElement('canvas');
             canvas.id = id;
-            canvas.width = 220;
-            canvas.height = 300;
+            canvas.width = width;
+            canvas.height = height;
 
-            if (!elem)
+            if (!elem) {
+                canvas.classList.add('popover_wrapper');
                 document.body.appendChild(canvas);
-            else
+            }
+            else {
                 elem.appendChild(canvas);
+                elem.classList.add("popover_wrapper");
+            }
         } else {
             canvas = <HTMLCanvasElement>document.getElementById(id);
         }
@@ -104,27 +106,41 @@ export namespace chart {
 
         });
 
-        new Chart(ctx, {
-            type: 'polarArea',
-            data: {
-                datasets: [{
-                    data: data,
-                    backgroundColor: dataColors,
-                    borderColor: borderColors,
-                    borderWidth: 1
-                }],
-                labels: dataLabels
-            },
-            options: {
-                legend: {
-                    position: 'bottom',
-                    labels: {
-                        usePointStyle: true,
-                        fontSize: 11
+        if (showLabels) {
+            new Chart(ctx, {
+                type: 'polarArea',
+                data: {
+                    datasets: [{
+                        data: data,
+                        backgroundColor: dataColors,
+                        borderColor: borderColors,
+                        borderWidth: 1
+                    }],
+                    labels: dataLabels
+                },
+                options: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            usePointStyle: true,
+                            fontSize: 11
 
+                        }
                     }
                 }
-            }
-        });
+            });
+        } else {
+            new Chart(ctx, {
+                type: 'polarArea',
+                data: {
+                    datasets: [{
+                        data: data,
+                        backgroundColor: dataColors,
+                        borderColor: borderColors,
+                        borderWidth: 1
+                    }],
+                },
+            });
+        }
     }
 }

@@ -2,12 +2,15 @@
   background-color: whitesmoke;
   box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.26);
   padding: 1.5rem;
-  width: 230px;
   opacity: 100;
   position: absolute;
   z-index: 100;
-  margin-top: -1x;
-  margin-right: -1px;
-  margin-left: -1px;
-  margin-right: -1px;
+  align-content: center;
+}
+
+.popover_method_info {
+  font-size: 12px;
+  font-style: italic;
+  color: lightgrey;
+  opacity: 90;
 }
