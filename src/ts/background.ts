@@ -223,7 +223,13 @@ function getBiasData(url: string) {
 function getBiasDataCurrentTab() {
     chrome.tabs.query({ 'active': true, 'lastFocusedWindow': true, 'currentWindow': true },
         (tabs) => {
-            getBiasData(tabs[0].url);
+            if (tabs[0].url.startsWith('http') || tabs[0].url.startsWith('https')) {
+                chrome.pageAction.show(tabs[0].id);
+                getBiasData(tabs[0].url);
+            } else {
+                console.log('not running for this');
+                chrome.pageAction.hide(tabs[0].id);
+            }
         });
 }
 
