@@ -1,5 +1,6 @@
 import { BiasScoresMethods, ExtRequest, RequestMessage, ExtResponse } from "./types";
 import { chart } from "./drawchart";
+import { uncrawled } from "./uncrawled";
 
 (function checkDefault() {
     //TODO
@@ -36,10 +37,17 @@ document.getElementById('save-button').addEventListener('click', () => {
 
 function handleResponse(response: ExtResponse) {
     console.log('received response');
-    let method = response.extra;
 
-    //@ts-ignore
-    let vector = response.data.appdata[method].vector
+    if (response.data === null) {
+        uncrawled.show404Error(response.extra, ['main', 'fat']);
+    } else {
 
-    chart.draw(vector, 220, 300);
+        if (uncrawled.errorMessageExists())
+            uncrawled.removeCrawlErrorMessage();
+
+        let method = response.extra;
+        //@ts-ignore
+        let vector = response.data.appdata[method].vector
+        chart.draw(vector, 220, 300);
+    }
 }

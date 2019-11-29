@@ -241,7 +241,12 @@ function requestHandler(request: ExtRequest, sender: chrome.runtime.MessageSende
 
                 switch (message) {
                     case RequestMessage.GET_STATS:
-                        sendResponse(new ExtResponse(LocalStorage.get(getDomainFromURL(tabs[0].url)), request.extra));
+                        let domainData = LocalStorage.get(getDomainFromURL(tabs[0].url));
+                        if (!domainData.appdata) {
+                            sendResponse(new ExtResponse(null, getDomainFromURL(tabs[0].url)));
+                        } else {
+                            sendResponse(new ExtResponse(LocalStorage.get(getDomainFromURL(tabs[0].url)), request.extra));
+                        }
                         break;
                     case RequestMessage.SET_AS_DEFAULT:
                         userSetttings.updateMethod(request.extra);
