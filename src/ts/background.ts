@@ -221,19 +221,15 @@ function getBiasData(url: string) {
 }
 
 function getBiasDataCurrentTab() {
-    chrome.tabs.query({ 'active': true },
-        tabs => {
-            if (typeof tabs[0].url === 'string')
-                getBiasData(tabs[0].url);
-            else {
-                throw new Error('no-active-tab-found');
-            }
+    chrome.tabs.query({ 'active': true, 'lastFocusedWindow': true, 'currentWindow': true },
+        (tabs) => {
+            getBiasData(tabs[0].url);
         });
 }
 
 function requestHandler(request: ExtRequest, sender: chrome.runtime.MessageSender, sendResponse: any) {
 
-    chrome.tabs.query({ 'active': true },
+    chrome.tabs.query({ 'active': true, 'lastFocusedWindow': true, 'currentWindow': true },
         (tabs) => {
             console.log('received request');
 
