@@ -44,7 +44,7 @@ header h1 {
     text-align: center;
 }
 
-.options-container button {
+button {
     display: block;
     width: 100%;
     height: 40px;
@@ -86,8 +86,8 @@ header h1 {
     height: 40px;
     background-color: lightgrey !important;
     text-align: center;
-    animation-duration: 1s;
-    -webkit-animation-duration: 1s;
+    animation-duration: 0.25s;
+    -webkit-animation-duration: 0.25s;
     animation-name: slidein;
     -webkit-animation-name: slidein;
 }
@@ -103,7 +103,7 @@ header h1 {
     }
 }
 
-@-keyframes slidein {
+@keyframes slidein {
     from {
         height: 0px;
         opacity: 0;
@@ -114,6 +114,39 @@ header h1 {
     }
 }
 
-.slidein:hover {
+/* ============= */
+
+figure div {
+    display: block;
+    height: 40px;
+}
+
+span {
+    position: absolute;
+    width:100%;
+
+}
+
+span:nth-child(1) {
+    width: 100%;
+    transform: translate3d(0, 0, 40px);
+    -webkit-transform: translate3d((0, 0, 40px));
+}
+
+span:nth-child(2) {
+    width: 100%;
     background-color: lightgreen !important;
+    transform: rotateX(90deg) translate3d(0, 0, 40px);
+    -webkit-transform: rotateX(90deg) translate3d((0, 0, 40px));
+}
+
+figure div {
+    transform-style: preserve-3d;
+    -webkit-transform-style: preserve-3d;
+    transition: 0.25s;
+    -webkit-transition: 0.25s;
+}
+
+.rotate div {
+    transform: rotateX(-90deg);
 }

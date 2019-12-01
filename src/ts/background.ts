@@ -40,17 +40,32 @@ class UserSettings {
     }
 
     public saveToLocalStorage(): void {
-        window.localStorage.setItem(this.key, this.settingsToString());
+        try {
+            window.localStorage.setItem(this.key, this.settingsToString());
+        } catch (e) {
+            //QuotaExceededError
+            throw e;
+        }
     }
 
-    public updateMethod(method: string) {
+    public updateMethod(method: string): boolean {
         this.method = method;
-        this.saveToLocalStorage();
+        try {
+            this.saveToLocalStorage();
+            return true;
+        } catch (e) {
+            return false;
+        }
     }
 
-    public updateGoggles(goggles: string) {
+    public updateGoggles(goggles: string): boolean {
         this.goggles = goggles;
-        this.saveToLocalStorage();
+        try {
+            this.saveToLocalStorage();
+            return true;
+        } catch (e) {
+            return false;
+        }
     }
 
     public updateLimit(limit: number) {
@@ -201,7 +216,7 @@ function queryService(activeTab: string) {
 }
 
 
-function getBiasData(url: string, tabID: number) {
+function getBiasData(url: string) {
 
     //chrome.browserAction.setBadgeBackgroundColor({ color: userSetttings.getBadgeColor() });
 
@@ -244,11 +259,13 @@ function messageHandler(request: ExtRequest, sender: chrome.runtime.MessageSende
                         }
                         break;
                     case RequestMessage.SET_AS_DEFAULT:
-                        userSetttings.updateMethod(request.extra);
+                        if (userSetttings.updateMethod(request.extra))
+                            sendResponse(new ExtResponse(null, 1));
+                        else
+                            sendResponse(new ExtResponse(null, 0));
                         break;
                     case RequestMessage.GET_DEFAULT_STATS:
-                        debugger;
-                        getBiasData(<string>request.extra,tabs[0].id);
+                        getBiasData(<string>request.extra);
                         //only on domains as for now...
                         let data = LocalStorage.get(getDomainFromURL(request.extra));
                         let method = userSetttings.getMethod();
@@ -267,7 +284,7 @@ function messageHandler(request: ExtRequest, sender: chrome.runtime.MessageSende
 try {
     chrome.runtime.onMessage.addListener(messageHandler);
     chrome.webRequest.onCompleted.addListener((details) => {
-        getBiasData(details.url,details.tabId);
+        getBiasData(details.url);
     }, { urls: ["<all_urls>"], types: ["main_frame"] });
 } catch (e) {
     console.log(e);
