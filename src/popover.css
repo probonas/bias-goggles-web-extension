@@ -1,17 +1,48 @@
-.popover_wrapper {
-  color: black;
-  background-color: whitesmoke;
-  box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.26);
-  padding: 1.5rem;
-  opacity: 100;
-  position: absolute;
-  z-index: 100;
-  align-content: center;
+@font-face {
+    font-family: "Fira Sans Regular";
+    src: url('chrome-extension://__MSG_@@extension_id__/fonts/FiraSans-Regular.ttf') format('truetype');
 }
 
-.popover_method_info {
-  font-size: 12px;
-  font-style: italic;
-  color: lightgrey;
-  opacity: 90;
+.bgcontent-wrapper {
+    margin: 8px;
+    font-family: 'Fira Sans Regular', serif;
+    color: black;
+    text-align: center;
+    border: 1px solid black;
+}
+
+.bgpopper {
+    background-color: whitesmoke;
+    display: block;
+    /* borders */
+    border-radius: 2px 2px 2px 2px;
+    -moz-border-radius: 2px 2px 2px 2px;
+    -webkit-border-radius: 2px 2px 2px 2px;
+    border: 0px solid #000000;
+    /* shadows */
+    -webkit-box-shadow: 0px 0px 2px 2px rgba(168, 168, 168, 0.6);
+    -moz-box-shadow: 0px 0px 2px 2px rgba(168, 168, 168, 0.6);
+    box-shadow: 0px 0px 2px 2px rgba(168, 168, 168, 0.6);
+    /* dimensions */
+    width: 200px;
+    /* compatibility */
+    position: absolute;
+    z-index: 999999;
+    opacity: 100;
+}
+
+.bgpopper .bgtitle {
+    display: block;
+    color: grey;
+    margin-top: 8px;
+    margin-bottom: 8px;
+    font-size: medium;
+    text-align: center;
+}
+
+.bgpopper .bgtitle .bginfo {
+    font-size: 12px;
+    font-style: italic;
+    color: lightgrey;
+    opacity: 90;
 }

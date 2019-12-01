@@ -1,7 +1,7 @@
 export namespace uncrawled {
     const errorMsgId = 'error';
 
-    export function show404Error(url: string, cssClasses?: string[]) {
+    export function create404Msg(url: string, cssClasses?: string[]) : HTMLElement {
         if (errorMessageExists())
             return;
 
@@ -12,7 +12,7 @@ export namespace uncrawled {
         if (cssClasses !== undefined)
             err.classList.add(...cssClasses);
 
-        document.getElementById('messagebox').appendChild(err);
+        return err;
     }
 
     export function errorMessageExists(): boolean {

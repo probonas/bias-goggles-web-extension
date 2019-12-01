@@ -8,7 +8,8 @@ function handleResponse(response: ExtResponse) {
     console.log('received response');
 
     if (response.data.appdata === null) {
-        uncrawled.show404Error(response.data.domain, ['error']);
+        let err = uncrawled.create404Msg(response.data.domain, ['error']);
+        document.getElementById('messagebox').appendChild(err);
     } else {
         let figure = document.createElement('figure');
         document.getElementById('figure-container').appendChild(figure);
@@ -46,7 +47,6 @@ function handleResponse(response: ExtResponse) {
                 figure.classList.add('rotate');
             });
         });
-
 
         //@ts-ignore
         let vector = response.data.appdata[methodSelected].vector;

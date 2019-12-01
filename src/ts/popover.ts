@@ -1,28 +1,64 @@
 import Popper from "popper.js";
 import { chart } from "./drawchart";
-import { ExtRequest, ExtResponse, RequestMessage, DomainData, ScoreData, AppData, MethodsAndNames } from "./types";
+import { ExtRequest, ExtResponse, RequestMessage, DomainData, AppData, MethodsAndNames } from "./types";
+import { uncrawled } from "./uncrawled";
 
-const id = 'bias-popover';
-const timeout = 1500; //ms
-let timeFocused = 0;
+const popperid = 'popper';
+const timeout = 500; //ms
+let focus = 0;
 
-function createPopover(data: DomainData, method: string, refElem: HTMLElement) {
-    let canvasWrapper = document.createElement('div');
-    canvasWrapper.id = id;
+function createPopover(response: AppData, method: string, anchorElement: HTMLElement) {
+    let popperDiv = document.createElement('div');
+    popperDiv.id = popperid;
+    popperDiv.classList.add('bgpopper');
+    anchorElement.appendChild(popperDiv);
 
-    addScoreInfo(data, method, canvasWrapper);
+    let content = document.createElement('div');
+    content.classList.add('bgcontent-wrapper');
+    popperDiv.appendChild(content);
 
-    refElem.appendChild(canvasWrapper);
+    let title = document.createElement('h2');
+    title.classList.add('bgtitle');
+    title.innerText = 'Bias Goggles';
 
-    //@ts-ignore
-    chart.draw(data[method].vector, 150, 200, canvasWrapper);
+    content.appendChild(title);
 
-    new Popper(refElem, canvasWrapper, {
-        placement: "right"
-    });
+    if (response.appdata === null) {
+        console.log('empty response');
+
+        let err = uncrawled.create404Msg(response.domain, ['bginfo']);
+        content.appendChild(err);
+
+        new Popper(anchorElement, popperDiv, {
+            modifiers: {
+                arrow: {
+                    enabled: true,
+                    element: anchorElement
+                }
+            }
+        });
+
+    } else {
+        let score = createScoreInfoDiv(response.appdata, method);
+        score.classList.add('bginfo');
+        content.appendChild(score);
+
+        console.log('drawing chart');
+        //@ts-ignore
+        chart.draw(response.appdata[method].vector, 150, 200, canvasWrapper);
+        new Popper(anchorElement, popperDiv, {
+            placement: "right",
+            modifiers: {
+                arrow: {
+                    enabled: true,
+                    element: popperDiv
+                }
+            }
+        });
+    }
 }
 
-function addScoreInfo(data: DomainData, method: string, elem: HTMLElement) {
+function createScoreInfoDiv(data: DomainData, method: string): HTMLElement {
 
     let scoreWrapper = document.createElement('div');
     let scoreText = document.createElement('p');
@@ -34,28 +70,25 @@ function addScoreInfo(data: DomainData, method: string, elem: HTMLElement) {
     scoreText.innerText = 'Bias Score : ' + score;
 
     let methodInfo = document.createElement('p');
-    methodInfo.classList.add("popover_method_info");
+    methodInfo.classList.add("bginfo");
     methodInfo.innerText = 'using ' + MethodsAndNames[method];
 
     scoreWrapper.appendChild(scoreText);
     scoreWrapper.appendChild(methodInfo);
-    elem.appendChild(scoreWrapper);
+
+    return scoreWrapper;
 }
 
 function handleResponse(response: ExtResponse, target: EventTarget) {
-    let m = <string>response.extra;
-
-    createPopover(response.data.appdata, m, <HTMLElement>target);
-
-    target.addEventListener('mouseleave', removeCanvas);
+    createPopover(response.data, <string>response.extra, <HTMLElement>target);
+    target.addEventListener('mouseleave', closePopper);
 }
 
 function timeOutClosure(event: FocusEvent) {
-
     let e = event;
 
     return function () {
-        if (timeFocused === 0) {
+        if (focus === 0) {
             console.log('timeout....');
             return;
         }
@@ -64,6 +97,7 @@ function timeOutClosure(event: FocusEvent) {
 
         //@ts-ignore
         chrome.runtime.sendMessage(new ExtRequest([RequestMessage.GET_DEFAULT_STATS], e.target.href), (response) => {
+            console.log('received response');
             handleResponse(response, e.target);
         });
     }
@@ -71,33 +105,27 @@ function timeOutClosure(event: FocusEvent) {
 
 function handleFocus(event: FocusEvent): void {
 
-
     if (event.target instanceof HTMLAreaElement || event.target instanceof HTMLAnchorElement) {
+        /*
         if (event.target.href[0] === '#' || event.target.href[0] === '/'
             || event.target.href.includes(window.location.origin)) {
             console.log('skipped for this link....');
             return;
         }
-
+        */
         console.log('link found!' + event.target.href);
-        timeFocused = new Date().getMilliseconds();
-
+        focus = new Date().getMilliseconds();
         setTimeout(timeOutClosure(event), timeout);
-
     }
 
 }
 
-function removeCanvas() {
-    if (document.getElementById(id))
-        document.getElementById(id).remove();
-}
-
-function resetTimer() {
-    timeFocused = 0;
+function closePopper() {
+    if (document.getElementById(popperid))
+        document.getElementById(popperid).remove();
 }
 
 //bubble down event
 document.body.addEventListener("mouseover", handleFocus);
 //bubble up event
-document.body.addEventListener("mouseout", resetTimer);
+document.body.addEventListener("mouseout", () => { focus = 0; });
