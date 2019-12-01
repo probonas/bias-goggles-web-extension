@@ -1,53 +1,56 @@
-import { BiasScoresMethods, ExtRequest, RequestMessage, ExtResponse } from "./types";
+import { ExtRequest, RequestMessage, ExtResponse, MethodsAndNames } from "./types";
 import { chart } from "./drawchart";
 import { uncrawled } from "./uncrawled";
 
-(function checkDefault() {
-    //TODO
-    //check default user option in list
-})();
-
-document.getElementById('save-button').addEventListener('click', () => {
-    let checked: HTMLInputElement;
-    let as_default: boolean = false;
-
-    for (let item in BiasScoresMethods) {
-
-        if ((<HTMLInputElement>document.getElementById(item)).checked) {
-            checked = <HTMLInputElement>document.getElementById(item);
-            console.log(checked.value + ' checked');
-        }
-
-    }
-
-    if ((<HTMLInputElement>document.getElementById('set-as-default')).checked) {
-        console.log('set as default on');
-        as_default = true;
-    }
-
-    if (as_default) {
-        chrome.runtime.sendMessage(
-            new ExtRequest([RequestMessage.GET_STATS, RequestMessage.SET_AS_DEFAULT], checked.value), handleResponse);
-    } else {
-        chrome.runtime.sendMessage(
-            new ExtRequest([RequestMessage.GET_STATS], checked.value), handleResponse);
-    }
-
-});
+let methodSelected : string = null;
 
 function handleResponse(response: ExtResponse) {
     console.log('received response');
 
-    if (response.data === null) {
-        uncrawled.show404Error(response.extra, ['main', 'fat']);
+    if (response.data.appdata === null) {
+        uncrawled.show404Error(response.data.domain, ['error']);
     } else {
 
         if (uncrawled.errorMessageExists())
             uncrawled.removeCrawlErrorMessage();
 
+        if( !document.getElementById('default') ){
+            let btn = document.createElement('button');
+            btn.id = 'default';
+            btn.innerText = 'Set as default';
+            btn.classList.add('slidein');
+            
+            btn.addEventListener('click', () => {
+                if(methodSelected)
+                    chrome.runtime.sendMessage(new ExtRequest([RequestMessage.SET_AS_DEFAULT],methodSelected));
+            });
+            
+            document.getElementById('messagebox').appendChild(btn);
+        }
+
         let method = response.extra;
         //@ts-ignore
-        let vector = response.data.appdata[method].vector
-        chart.draw(vector, 220, 300);
+        let vector = response.data.appdata[method].vector;
+        chart.draw(vector, 220, 300,document.getElementById('chartbox'),true);
     }
 }
+
+const methods = ['ic', 'lt', 'pr'];
+
+methods.forEach(method => {
+
+    function closure() {
+        let m = method;
+
+        function getData() {
+            methodSelected = m;
+            chrome.runtime.sendMessage(
+                new ExtRequest([RequestMessage.GET_STATS], m), handleResponse);
+        };
+
+        return getData;
+    };
+
+    document.getElementById(method).addEventListener('click', closure());
+});
+

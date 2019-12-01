@@ -4,120 +4,33 @@
   <head>
     <meta charset="UTF-8">
     <title>BiasGoggles-Popup</title>
-    <style media="screen">
-      @font-face {
-        font-family: "Fira Sans";
-        /* https://design.firefox.com/photon/resources/fonts.html */
-        src: url('fonts/FiraSans-Regular.woff') format('woff');
-        font-weight: 100;
-        font-style: normal;
-      }
-
-      body {
-        min-width: 14rem;
-        font-family: 'Fira Sans';
-      }
-
-      #save-button {
-        color: white;
-        font-size: 16px;
-        height: 32px;
-        width: 132px;
-        text-align: center;
-        border-radius: 4px;
-        margin: 0;
-      }
-
-      .footer {
-        height: 64px;
-        display: flex;
-        justify-content: flex-end;
-        align-items: center;
-        padding: 8px 32px;
-      }
-
-      .main {
-        padding: 26px;
-        box-sizing: border-box;
-      }
-
-      /*
-      button:disabled {
-        background-color: grey;
-        cursor: progress;
-      }
-      */
-
-      button {
-        background-color: lightblue;
-      }
-
-      label {
-        display: block;
-      }
-
-      .popup-heading {
-        font-weight: 200;
-        font-size: 1rem;
-        margin: 0;
-        color: lightgrey;
-      }
-
-      input[type="text"] {
-        width: 100%;
-        display: block;
-      }
-
-      header {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 8px 16px;
-        border-bottom: 1px solid lightgrey;
-      }
-
-      .fat {
-        font-weight: bold;
-      }
-    </style>
+    <link rel="stylesheet" href="style.css">
   </head>
 
   <body>
 
     <header>
-      <h1 class="popup-heading" id="heading">Bias Goggles</h1>
+      <h1>Bias Goggles</h1>
     </header>
 
-    <div id="options" class="main">
-      <div title="BiasScore">
-        <span class="fat">Select Bias Score</span>:</div>
-      <br>
-      <label for="independentCascade">
-        <input type="radio" id="independentCascade" name="bias_score" value="ic" required>
-        <i id="ic_txt">Independent Cascade</i>
-      </label>
-      <label for="linearThreshold">
-        <input type="radio" id="linearThreshold" name="bias_score" value="lt" required>
-        <i id="lt_txt">Linear Threshold</i>
-      </label>
-      <label for="pagerank">
-        <input type="radio" id="pagerank" name="bias_score" value="pr" required>
-        <i id="pr_txt">Page Rank</i>
-      </label>
+    <div class='options-container'>
 
-      <label for="set-as-default">
-        <input id="set-as-default" type="checkbox" name="set_as_default">
-        <span class="fat">Set as default</span>
-      </label>
+      <h2>Show graph for:</h2>
+
+      <button id='ic' type="button"> Independent Cascade </button>
+
+      <button id='lt' type="button"> Linear Threshold </button>
+
+      <button id='pr' type="button"> Page Rank </button>
+
     </div>
 
-    <div class="footer">
-      <button id="save-button" class="browser-style default">Save</button>
+    <div id='messagebox' class="options-container">
     </div>
 
-    <!--
-      <canvas id="polar-chart" width="200" height="300"></canvas>
-    -->
+    <div id='chartbox' class='options-container'>
+    </div>
+
     <script src="popup.js"></script>
   </body>
 

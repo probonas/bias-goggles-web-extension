@@ -1,5 +1,6 @@
 import { get as httpGet } from "http";
-import { BiasScoresMethods, BiasGoggles, AppData, ExtRequest, RequestMessage, ExtResponse } from "./types"
+import { BiasGoggles, AppData, ExtRequest, RequestMessage, ExtResponse } from "./types"
+import { CodeNode } from "source-list-map";
 
 class UserSettings {
     private method: string;
@@ -11,7 +12,7 @@ class UserSettings {
 
     private static instance: UserSettings;
 
-    private constructor(method: BiasScoresMethods, goggles: BiasGoggles, limit: number, badgeColor: string) {
+    private constructor(method: string, goggles: BiasGoggles, limit: number, badgeColor: string) {
 
         this.method = method;
         this.goggles = goggles;
@@ -30,7 +31,7 @@ class UserSettings {
         });
     }
 
-    public static getInstance(method: BiasScoresMethods, goggles: BiasGoggles, limit: number, badgeColor: string): UserSettings {
+    public static getInstance(method: string, goggles: BiasGoggles, limit: number, badgeColor: string): UserSettings {
         if (!UserSettings.instance) {
             UserSettings.instance = new UserSettings(method, goggles, limit, badgeColor);
         }
@@ -80,7 +81,7 @@ class UserSettings {
 
 }
 
-let userSetttings = UserSettings.getInstance(BiasScoresMethods.pagerank, BiasGoggles.politicalParties, 10, '#0000FF');
+let userSetttings = UserSettings.getInstance('pr', BiasGoggles.politicalParties, 10, '#0000FF');
 
 class LocalStorage {
 
@@ -188,8 +189,10 @@ function queryService(activeTab: string) {
         });
 
         res.on('close', () => {
-            if (res.statusCode !== 200)
-                throw new Error('HTTP Status code' + res.statusCode);
+            if (res.statusCode !== 200) {
+                console.log('HTTP Status code ' + res.statusCode);
+                return;
+            }
 
             LocalStorage.save(data);
             //updateBadge(getDomainFromURL(activeTab), userSetttings.getMethod());
@@ -198,44 +201,34 @@ function queryService(activeTab: string) {
 }
 
 
-function getBiasData(url: string) {
+function getBiasData(url: string, tabID: number) {
 
     //chrome.browserAction.setBadgeBackgroundColor({ color: userSetttings.getBadgeColor() });
 
-    let localEntry = LocalStorage.get(getDomainFromURL(url));
+    if (url.startsWith('http') || url.startsWith('https')) {
 
-    if (!localEntry.appdata) {
-        console.log(url + " not found.");
-        queryService(url);
-    } else {
-        console.log(url + " found.");
+        let localEntry = LocalStorage.get(getDomainFromURL(url));
 
-        if (localEntry.appdata.limit === 0) {
-            LocalStorage.delete(url);
+        if (!localEntry.appdata) {
+            console.log(url + " not found.");
             queryService(url);
         } else {
-            localEntry.appdata.limit--;
-            LocalStorage.update(localEntry);
+            console.log(url + " found.");
+
+            if (localEntry.appdata.limit === 0) {
+                LocalStorage.delete(url);
+                queryService(url);
+            } else {
+                localEntry.appdata.limit--;
+                LocalStorage.update(localEntry);
+            }
         }
     }
 }
 
-function getBiasDataCurrentTab() {
-    chrome.tabs.query({ 'active': true, 'lastFocusedWindow': true, 'currentWindow': true },
-        (tabs) => {
-            if (tabs[0].url.startsWith('http') || tabs[0].url.startsWith('https')) {
-                chrome.pageAction.show(tabs[0].id);
-                getBiasData(tabs[0].url);
-            } else {
-                console.log('not running for this');
-                chrome.pageAction.hide(tabs[0].id);
-            }
-        });
-}
+function messageHandler(request: ExtRequest, sender: chrome.runtime.MessageSender, sendResponse: any) {
 
-function requestHandler(request: ExtRequest, sender: chrome.runtime.MessageSender, sendResponse: any) {
-
-    chrome.tabs.query({ 'active': true, 'lastFocusedWindow': true, 'currentWindow': true },
+    chrome.tabs.query({ 'active': true, 'currentWindow': true, 'lastFocusedWindow': true },
         (tabs) => {
             console.log('received request');
 
@@ -244,7 +237,7 @@ function requestHandler(request: ExtRequest, sender: chrome.runtime.MessageSende
                 switch (message) {
                     case RequestMessage.GET_STATS:
                         let domainData = LocalStorage.get(getDomainFromURL(tabs[0].url));
-                        if (!domainData.appdata) {
+                        if (!domainData) {
                             sendResponse(new ExtResponse(null, getDomainFromURL(tabs[0].url)));
                         } else {
                             sendResponse(new ExtResponse(LocalStorage.get(getDomainFromURL(tabs[0].url)), request.extra));
@@ -254,7 +247,8 @@ function requestHandler(request: ExtRequest, sender: chrome.runtime.MessageSende
                         userSetttings.updateMethod(request.extra);
                         break;
                     case RequestMessage.GET_DEFAULT_STATS:
-                        getBiasData(<string>request.extra);
+                        debugger;
+                        getBiasData(<string>request.extra,tabs[0].id);
                         //only on domains as for now...
                         let data = LocalStorage.get(getDomainFromURL(request.extra));
                         let method = userSetttings.getMethod();
@@ -271,8 +265,10 @@ function requestHandler(request: ExtRequest, sender: chrome.runtime.MessageSende
 }
 
 try {
-    chrome.runtime.onMessage.addListener(requestHandler);
-    chrome.webRequest.onCompleted.addListener(getBiasDataCurrentTab, { urls: ["<all_urls>"], types: ["main_frame"] });
+    chrome.runtime.onMessage.addListener(messageHandler);
+    chrome.webRequest.onCompleted.addListener((details) => {
+        getBiasData(details.url,details.tabId);
+    }, { urls: ["<all_urls>"], types: ["main_frame"] });
 } catch (e) {
     console.log(e);
 }

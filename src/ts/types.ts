@@ -1,10 +1,3 @@
-
-export enum BiasScoresMethods {
-    independentCascade = "ic",
-    linearThreshold = "lt",
-    pagerank = "pr"
-}
-
 export enum BiasGoggles {
     politicalParties = "political-parties",
     footballTeams = "sport-teams"

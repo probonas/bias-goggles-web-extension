@@ -68,14 +68,8 @@ export namespace chart {
             canvas.width = width;
             canvas.height = height;
 
-            if (!elem) {
-                canvas.classList.add('popover_wrapper');
-                document.body.appendChild(canvas);
-            }
-            else {
-                elem.appendChild(canvas);
-                elem.classList.add("popover_wrapper");
-            }
+            elem.appendChild(canvas);
+            elem.classList.add("popover_wrapper");
         } else {
             canvas = <HTMLCanvasElement>document.getElementById(id);
         }
