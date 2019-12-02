@@ -9,19 +9,23 @@ let focus = 0;
 
 function createPopover(response: AppData, method: string, anchorElement: HTMLElement) {
     let popperDiv = document.createElement('div');
-    popperDiv.id = popperid;
-    popperDiv.classList.add('bgpopper');
-    anchorElement.appendChild(popperDiv);
-
-    let content = document.createElement('div');
-    content.classList.add('bgcontent-wrapper');
-    popperDiv.appendChild(content);
-
     let title = document.createElement('h2');
+    let content = document.createElement('div');
+    let arrow = document.createElement('div');
+
+    popperDiv.classList.add('bgpopper');
     title.classList.add('bgtitle');
+    content.classList.add('bgcontent-wrapper');
+    arrow.classList.add('bgarrow');
+
+    popperDiv.id = popperid;
     title.innerText = 'Bias Goggles';
 
+    popperDiv.appendChild(content);
     content.appendChild(title);
+    popperDiv.appendChild(arrow);
+
+    anchorElement.appendChild(popperDiv);
 
     if (response.appdata === null) {
         console.log('empty response');
@@ -30,11 +34,14 @@ function createPopover(response: AppData, method: string, anchorElement: HTMLEle
         content.appendChild(err);
 
         new Popper(anchorElement, popperDiv, {
+            placement: 'right',
             modifiers: {
                 arrow: {
-                    enabled: true,
-                    element: anchorElement
+                    element: arrow
                 }
+            },
+            onUpdate: function (data) {
+                console.log(data.arrowElement);
             }
         });
 
@@ -45,14 +52,16 @@ function createPopover(response: AppData, method: string, anchorElement: HTMLEle
 
         console.log('drawing chart');
         //@ts-ignore
-        chart.draw(response.appdata[method].vector, 150, 200, canvasWrapper);
+        chart.draw(response.appdata[method].vector, 150, 200, content);
         new Popper(anchorElement, popperDiv, {
-            placement: "right",
+            placement: 'right',
             modifiers: {
                 arrow: {
-                    enabled: true,
-                    element: popperDiv
+                    element: arrow
                 }
+            },
+            onUpdate: function (data) {
+                console.log(data.arrowElement);
             }
         });
     }

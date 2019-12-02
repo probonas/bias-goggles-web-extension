@@ -46,3 +46,63 @@
     color: lightgrey;
     opacity: 90;
 }
+
+.bgarrow {
+    position: absolute;
+}
+
+.bgpopper[x-placement="top"] .bgarrow {
+    bottom: -8px;
+    /**/
+    border-top: 8px solid whitesmoke;
+    border-left: 8px solid transparent;
+    border-right: 8px solid transparent;
+    /* shadow */
+    filter: drop-shadow(0 1 4 rgba(168, 168, 168, 0.6));
+}
+
+.bgpopper[x-placement="bottom"] .bgarrow {
+    top: -8px;
+    /**/
+    border-left: 8px solid transparent;
+    border-right: 8px solid transparent;
+    border-bottom: 8px solid whitesmoke;
+    /* shadow */
+    filter: drop-shadow(0 1 4 rgba(168, 168, 168, 0.6));
+}
+
+.bgpopper[x-placement="left"] .bgarrow {
+    right: -8px;
+    /**/
+    border-top: 8px solid transparent;
+    border-left: 8px solid whitesmoke;
+    border-bottom: 8px solid transparent;
+    /* shadow */
+    filter: drop-shadow(-1 0 4 rgba(168, 168, 168, 0.6));
+}
+
+.bgpopper[x-placement="right"] .bgarrow {
+    left: -8px;
+    /**/
+    border-top: 8px solid transparent;
+    border-right: 8px solid whitesmoke;
+    border-bottom: 8px solid transparent;
+    /* shadow */
+    filter: drop-shadow(1 0 4 rgba(168, 168, 168, 0.6));
+}
+
+.bgpopper[x-placement="top"]{
+    margin-bottom: -10px;;
+}
+
+.bgpopper[x-placement="bottom"]{
+    margin-top: 10px;;
+}
+
+.bgpopper[x-placement="left"]{
+    margin-right: -10px;;
+}
+
+.bgpopper[x-placement="right"]{
+    margin-left: 10px;;
+}
