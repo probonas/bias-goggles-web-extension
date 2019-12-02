@@ -3,7 +3,7 @@ import { chart } from "./drawchart";
 import { ExtRequest, ExtResponse, RequestMessage, DomainData, AppData, MethodsAndNames } from "./types";
 import { uncrawled } from "./uncrawled";
 
-const popperid = 'popper';
+const popperid = 'bg-popper';
 const timeout = 500; //ms
 let focus = 0;
 
@@ -28,7 +28,6 @@ function createPopover(response: AppData, method: string, anchorElement: HTMLEle
     anchorElement.appendChild(popperDiv);
 
     if (response.appdata === null) {
-        console.log('empty response');
 
         let err = uncrawled.create404Msg(response.domain, ['bginfo']);
         content.appendChild(err);
@@ -50,7 +49,6 @@ function createPopover(response: AppData, method: string, anchorElement: HTMLEle
         score.classList.add('bginfo');
         content.appendChild(score);
 
-        console.log('drawing chart');
         //@ts-ignore
         chart.draw(response.appdata[method].vector, 150, 200, content);
         new Popper(anchorElement, popperDiv, {
@@ -88,31 +86,23 @@ function createScoreInfoDiv(data: DomainData, method: string): HTMLElement {
     return scoreWrapper;
 }
 
-function handleResponse(response: ExtResponse, target: EventTarget) {
-    createPopover(response.data, <string>response.extra, <HTMLElement>target);
-    target.addEventListener('mouseleave', closePopper);
-}
-
-function timeOutClosure(event: FocusEvent) {
+function checkifUserWaited(event: FocusEvent) {
     let e = event;
 
     return function () {
         if (focus === 0) {
-            console.log('timeout....');
             return;
         }
 
-        console.log('ok....');
-
         //@ts-ignore
         chrome.runtime.sendMessage(new ExtRequest([RequestMessage.GET_DEFAULT_STATS], e.target.href), (response) => {
-            console.log('received response');
-            handleResponse(response, e.target);
+            createPopover(response.data, <string>response.extra, <HTMLElement>e.target);
+            e.target.addEventListener('mouseleave', closePopper);
         });
     }
 }
 
-function handleFocus(event: FocusEvent): void {
+function elementMouseOver(event: FocusEvent): void {
 
     if (event.target instanceof HTMLAreaElement || event.target instanceof HTMLAnchorElement) {
         /*
@@ -122,9 +112,8 @@ function handleFocus(event: FocusEvent): void {
             return;
         }
         */
-        console.log('link found!' + event.target.href);
         focus = new Date().getMilliseconds();
-        setTimeout(timeOutClosure(event), timeout);
+        setTimeout(checkifUserWaited(event), timeout);
     }
 
 }
@@ -135,6 +124,6 @@ function closePopper() {
 }
 
 //bubble down event
-document.body.addEventListener("mouseover", handleFocus);
+document.body.addEventListener("mouseover", elementMouseOver);
 //bubble up event
 document.body.addEventListener("mouseout", () => { focus = 0; });
