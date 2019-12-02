@@ -4,8 +4,7 @@ import { ExtRequest, ExtResponse, RequestMessage, DomainData, AppData, MethodsAn
 import { uncrawled } from "./uncrawled";
 
 const popperid = 'bg-popper';
-const timeout = 500; //ms
-let focus = 0;
+const timeout = 800; //ms
 
 function createPopover(response: AppData, method: string, anchorElement: HTMLElement) {
     let popperDiv = document.createElement('div');
@@ -35,12 +34,12 @@ function createPopover(response: AppData, method: string, anchorElement: HTMLEle
         new Popper(anchorElement, popperDiv, {
             placement: 'right',
             modifiers: {
+                preventOverflow: {
+                    enabled: true
+                },
                 arrow: {
                     element: arrow
-                }
-            },
-            onUpdate: function (data) {
-                console.log(data.arrowElement);
+                },
             }
         });
 
@@ -57,9 +56,6 @@ function createPopover(response: AppData, method: string, anchorElement: HTMLEle
                 arrow: {
                     element: arrow
                 }
-            },
-            onUpdate: function (data) {
-                console.log(data.arrowElement);
             }
         });
     }
@@ -86,22 +82,6 @@ function createScoreInfoDiv(data: DomainData, method: string): HTMLElement {
     return scoreWrapper;
 }
 
-function checkifUserWaited(event: FocusEvent) {
-    let e = event;
-
-    return function () {
-        if (focus === 0) {
-            return;
-        }
-
-        //@ts-ignore
-        chrome.runtime.sendMessage(new ExtRequest([RequestMessage.GET_DEFAULT_STATS], e.target.href), (response) => {
-            createPopover(response.data, <string>response.extra, <HTMLElement>e.target);
-            e.target.addEventListener('mouseleave', closePopper);
-        });
-    }
-}
-
 function elementMouseOver(event: FocusEvent): void {
 
     if (event.target instanceof HTMLAreaElement || event.target instanceof HTMLAnchorElement) {
@@ -112,8 +92,33 @@ function elementMouseOver(event: FocusEvent): void {
             return;
         }
         */
-        focus = new Date().getMilliseconds();
-        setTimeout(checkifUserWaited(event), timeout);
+
+        let stop = 0;
+
+        event.target.addEventListener('mouseout', () => {
+            closePopper();
+            stop = 1;
+        });
+
+        let hasWaited = function (event: FocusEvent) {
+            let e = event;
+
+            return function () {
+
+                if( stop ){
+                    return;
+                }
+
+                //@ts-ignore
+                chrome.runtime.sendMessage(new ExtRequest([RequestMessage.GET_DEFAULT_STATS], e.target.href), (response) => {
+                    createPopover(response.data, <string>response.extra, <HTMLElement>e.target);
+                });
+
+                event.target.removeEventListener('mouseout', () => { });
+            }
+        }
+
+       setTimeout(hasWaited(event),timeout);
     }
 
 }
@@ -125,5 +130,3 @@ function closePopper() {
 
 //bubble down event
 document.body.addEventListener("mouseover", elementMouseOver);
-//bubble up event
-document.body.addEventListener("mouseout", () => { focus = 0; });
