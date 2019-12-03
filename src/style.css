@@ -150,3 +150,20 @@ figure div {
 .rotate div {
     transform: rotateX(-90deg);
 }
+
+.center {
+    text-align: center;
+    border: 1px solid black;
+    background: whitesmoke
+}
+
+.options_body {
+    padding-right: 15%;
+    padding-left: 15%;
+    width: 70%;
+    border: 0px;
+    background: white;
+    background-image: url('img/goggles.png');
+    background-repeat: space;
+    background-size: 32px 32px;
+};
