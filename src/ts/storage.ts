@@ -1,5 +1,5 @@
 
-import { AppData } from "./types";
+import { AppDataMap, DomainData } from "./types";
 import { userSettings } from "./usersettings";
 
 export namespace extension {
@@ -8,7 +8,7 @@ export namespace extension {
 
     export namespace storage {
 
-        export function set(data: string | AppData): void {
+        export function set(data: string | AppDataMap, callback?: () => void): void {
 
             userSettings.get((settings) => {
                 let syncEnabled = settings[userSettings.settingsKey].syncEnabled;
@@ -24,53 +24,67 @@ export namespace extension {
 
                 if (typeof data === 'string') {
                     let dataObj = parseDataFromService(data, limit);
-                    st.set(dataObj);
+                    st.set(dataObj, callback);
                 } else {
-                    st.set(data);
+                    st.set(data, callback);
                 }
             });
         };
 
-        export function get(key: string, callback: (item: AppData) => void): void {
-            if (syncEnabled) {
-                chrome.storage.sync.get(key, callback);
+        function nullIfKeyDoesNotExist(item: AppDataMap,key:string): DomainData | null {
+            if (Object.keys(item).length === 0) {
+                return null;
             } else {
-                chrome.storage.local.get(key, callback);
+                return item[key];
             }
         }
 
-        export function remove(key: string) {
+        export function get(key: string, callback?: (item: DomainData) => void): void {
             if (syncEnabled) {
-                chrome.storage.sync.remove(key);
+                chrome.storage.sync.get(key, (item) => {
+                    callback(nullIfKeyDoesNotExist(item,key));
+                });
             } else {
-                chrome.storage.local.remove(key);
+                chrome.storage.local.get(key, (item) => {
+                    callback(nullIfKeyDoesNotExist(item,key));
+                });
+            }
+        }
+
+        export function remove(key: string, callback?: () => void) {
+            if (syncEnabled) {
+                chrome.storage.sync.remove(key, callback);
+            } else {
+                chrome.storage.local.remove(key, callback);
             }
         }
     }
 
-    function parseDataFromService(data: string, limit: number): AppData {
+    function parseDataFromService(data: string, limit: number): AppDataMap {
         let ret = JSON.parse(data);
 
         //the following are as returned from service
         //if anything changes in service
         //the following should be updated as well
 
-        let obj = {} as AppData;
+        let obj = {} as AppDataMap;
+
+        //@ts-ignore
         obj[ret.doc.domain] = {
-            ic: {
+            'ic': {
                 //@ts-ignore
                 bias_score: ret.doc.ic.bias_score,
                 rank: ret.doc.ic.rank,
                 support_score: ret.doc.ic.rank,
                 vector: ret.doc.ic.vector
             },
-            lt: {
+            'lt': {
                 bias_score: ret.doc.lt.bias_score,
                 rank: ret.doc.lt.rank,
                 support_score: ret.doc.lt.rank,
                 vector: ret.doc.lt.vector
             },
-            pr: {
+            'pr': {
                 bias_score: ret.doc.pr.bias_score,
                 rank: ret.doc.pr.rank,
                 support_score: ret.doc.pr.rank,

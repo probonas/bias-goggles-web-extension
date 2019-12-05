@@ -52,8 +52,7 @@ function fillPopup(domain: string, data: DomainData, method: string) {
             figure.classList.add('rotate');
         });
 
-        //@ts-ignore
-        let vector = data.vector;
+        let vector = data[method].vector;
         chart.draw(vector, 220, 300, document.getElementById('chartbox'), true);
     }
 }
@@ -67,7 +66,7 @@ methods.forEach(method => {
 
         function getData() {
 
-            utils.getDataForActiveTab(m, (domain: string, data: DomainData) => {
+            utils.getDataForActiveTab((domain: string, data: DomainData) => {
 
                 if (document.getElementById('figure-container').hasChildNodes()) {
                     document.getElementById('figure-container').firstChild.remove();

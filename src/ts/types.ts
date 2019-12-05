@@ -26,19 +26,24 @@ export interface UserData {
     syncEnabled: boolean;
 }
 
-export interface AppData {
+export interface AppDataMap {
     [key: string]: DomainData;
 }
 
-export interface DomainData {
-    ic: ScoreData;
-    lt: ScoreData;
-    pr: ScoreData;
-    limit: number;
-    date: Date
+interface DomainDataMap {
+    [key: string]: ScoreData;
 }
 
-export interface ScoreData {
+export type DomainData = DomainDataMap & {
+    limit: number;
+    date: Date;
+}
+
+interface ScoreDataMap {
+    [key: string]: ScoreData;
+}
+
+export type ScoreData = ScoreDataMap & {
     bias_score: number;
     rank: number;
     support_score: number;

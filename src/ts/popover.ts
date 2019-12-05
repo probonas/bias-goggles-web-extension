@@ -1,10 +1,9 @@
 import Popper from "popper.js";
 import { chart } from "./drawchart";
-import { DomainData, AppData, MethodsAndNames, ScoreData } from "./types";
+import { DomainData, AppDataMap, MethodsAndNames, ScoreData } from "./types";
 import { uncrawled } from "./uncrawled";
 import { utils } from "./utils";
 import { userSettings } from "./usersettings";
-import { extension } from "./storage";
 
 const popperid = 'bg-popper';
 const timeout = 800; //ms
@@ -47,11 +46,10 @@ function createPopover(data: DomainData, domain: string, method: string, anchorE
         });
 
     } else {
-        let score = createScoreInfoDiv(data, method);
+        let score = createScoreInfoDiv(data[method], method);
         score.classList.add('bginfo');
         content.appendChild(score);
 
-        //@ts-ignore
         chart.draw(data[method].vector, 150, 200, content);
         new Popper(anchorElement, popperDiv, {
             placement: 'right',
@@ -64,14 +62,12 @@ function createPopover(data: DomainData, domain: string, method: string, anchorE
     }
 }
 
-function createScoreInfoDiv(data: DomainData, method: string): HTMLElement {
+function createScoreInfoDiv(data: ScoreData, method: string): HTMLElement {
 
     let scoreWrapper = document.createElement('div');
     let scoreText = document.createElement('p');
 
-    //@ts-ignore
-    let score: string = data[method].bias_score;
-    score = Math.fround(parseFloat(score) * 100).toFixed(2);
+    let score: string = Math.fround(data.bias_score * 100).toFixed(2);
 
     scoreText.innerText = 'Bias Score : ' + score;
 
@@ -111,20 +107,18 @@ function elementMouseOver(event: FocusEvent): void {
                 if (stop) {
                     return;
                 }
+
                 //@ts-ignore
-                utils.getBiasData(event.target.href, () => {
+                let domain = event.target.href;
+
+                utils.getBiasData(domain, (data: DomainData) => {
                     userSettings.get((settings) => {
+
                         let method = settings[userSettings.settingsKey].method;
-                        //@ts-ignore
-                        let domain = event.target.href;
-                        extension.storage.get(domain, (item) => {
-                            if (Object.keys(item).length === 0)
-                                createPopover(null, domain, method, <HTMLElement>e.target);
-                            else
-                                createPopover(item[domain], domain, method, <HTMLElement>e.target);
-                        });
+                        createPopover(data, domain, method, <HTMLElement>e.target);
                     })
                 });
+
                 event.target.removeEventListener('mouseout', () => { });
             }
         }

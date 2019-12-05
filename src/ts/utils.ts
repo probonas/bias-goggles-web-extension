@@ -1,4 +1,4 @@
-import { AppData, DomainData } from './types';
+import { AppDataMap, DomainData } from './types';
 import { extension } from "./storage";
 import { service } from './service';
 
@@ -29,47 +29,52 @@ export namespace utils {
         chrome.browserAction.setBadgeText({ text: badgeText });
     }
 
-    export function getBiasData(url: string, callback?: () => void) {
+    export function getBiasData(url: string, callback?: (data: DomainData) => void) {
 
         //chrome.browserAction.setBadgeBackgroundColor({ color: userSettings.data.badgeColor });
 
         if (url.startsWith('http') || url.startsWith('https')) {
             let domain = getDomainFromURL(url);
 
-            extension.storage.get(domain, (items) => {
-                console.error('storage get returned ' + items.length + ' number of items!');
-                console.error(items);
+            extension.storage.get(domain, (item: DomainData) => {
 
-                if (Object.keys(items).length === 0) {
+                if (item === null) {
                     console.log(url + " not found.");
-                    service.query(domain);
+                    service.query(domain, (data: any) => {
+                        extension.storage.set(data, () => {
+                            extension.storage.get(domain, callback);
+                        });
+                    });
                 } else {
                     console.log(url + " found.");
-                    let data: AppData = <AppData>items;
 
-                    if (data[domain].limit === 0) {
-                        extension.storage.remove(domain);
-                        service.query(domain);
+                    if (item.limit === 0) {
+                        extension.storage.remove(domain, () => {
+                            extension.storage.set({ domain: item }, () => {
+                                callback(item);
+                            });
+                        });
                     } else {
-                        data[domain].limit--;
-                        extension.storage.set(data);
+                        item.limit--;
+                        extension.storage.set({ domain: item }, () => {
+                            callback(item);
+                        });
                     }
                 }
             });
         }
     }
 
-    export function getDataForActiveTab(method: string, callback: (domain: string, data: DomainData) => void): void {
+    export function getDataForActiveTab(callback: (domain: string, data: DomainData) => void): void {
         chrome.tabs.query({ 'active': true, 'currentWindow': true, 'lastFocusedWindow': true },
             (tabs) => {
                 extension.storage.get(utils.getDomainFromURL(tabs[0].url), (items) => {
 
-                    if (Object.keys(items).length === 0) {
+                    if (items === null) {
                         callback(tabs[0].url, null);
                     } else {
                         let domain = utils.getDomainFromURL(tabs[0].url);
-                        //@ts-ignore
-                        callback(domain, items[domain][method]);
+                        callback(domain, items);
                     }
                 });
             });

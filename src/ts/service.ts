@@ -13,7 +13,7 @@ export namespace service {
         return prefix + encodeURIComponent(domain) + suffix;
     }
 
-    export function query(activeTab: string, callback?: () => void): void {
+    export function query(activeTab: string, callback?: (data: any) => void): void {
 
         let data: any = '';
 
@@ -31,13 +31,15 @@ export namespace service {
                 res.on('close', () => {
                     if (res.statusCode !== 200) {
                         console.log('HTTP Status code ' + res.statusCode);
+                        callback(null);
                         return;
                     }
 
-                    extension.storage.set(data);
+                    callback(data);
+
                     //updateBadge(getDomainFromURL(activeTab), userSetttings.getMethod());
                 });
-            } );
+            });
         });
 
     }
