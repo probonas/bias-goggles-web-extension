@@ -69,7 +69,6 @@ export namespace chart {
             canvas.height = height;
 
             elem.appendChild(canvas);
-            elem.classList.add("popover_wrapper");
         } else {
             canvas = <HTMLCanvasElement>document.getElementById(id);
         }

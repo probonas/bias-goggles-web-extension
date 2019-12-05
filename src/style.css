@@ -72,6 +72,7 @@ button {
     height: 40px;
     font-size: medium;
     color: black;
+    overflow-wrap: break-word;
 }
 
 .options-container .error {

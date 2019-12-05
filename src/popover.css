@@ -9,6 +9,8 @@
     color: black;
     text-align: center;
     border: 1px solid black;
+    overflow-wrap: break-word;
+    white-space: pre-wrap;
 }
 
 .bgpopper {
@@ -40,11 +42,9 @@
     text-align: center;
 }
 
-.bgpopper .bgtitle .bginfo {
-    font-size: 12px;
-    font-style: italic;
-    color: lightgrey;
-    opacity: 90;
+.bgcontent-wrapper .bginfo {
+    font-size: large;
+    color: black;
 }
 
 .bgarrow {
@@ -91,18 +91,27 @@
     filter: drop-shadow(1 0 4 rgba(168, 168, 168, 0.6));
 }
 
-.bgpopper[x-placement="top"]{
-    margin-bottom: -10px;;
+.bgpopper[x-placement="top"] {
+    margin-bottom: -10px;
 }
 
-.bgpopper[x-placement="bottom"]{
-    margin-top: 10px;;
+.bgpopper[x-placement="bottom"] {
+    margin-top: 10px;
 }
 
-.bgpopper[x-placement="left"]{
-    margin-right: -10px;;
+.bgpopper[x-placement="left"] {
+    margin-right: -10px;
 }
 
-.bgpopper[x-placement="right"]{
-    margin-left: 10px;;
+.bgpopper[x-placement="right"] {
+    margin-left: 10px;
+}
+
+.bgerror {
+    background-color: lightcoral;
+    display: block;
+    font-size: medium;
+    color: black;
+    margin-right: 5%;
+    margin-left: 5%;
 }

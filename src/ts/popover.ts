@@ -47,7 +47,6 @@ function createPopover(data: DomainData, domain: string, method: string, anchorE
 
     } else {
         let score = createScoreInfoDiv(data[method], method);
-        score.classList.add('bginfo');
         content.appendChild(score);
 
         chart.draw(data[method].vector, 150, 200, content);
@@ -65,14 +64,14 @@ function createPopover(data: DomainData, domain: string, method: string, anchorE
 function createScoreInfoDiv(data: ScoreData, method: string): HTMLElement {
 
     let scoreWrapper = document.createElement('div');
+    scoreWrapper.classList.add('bginfo');
     let scoreText = document.createElement('p');
 
     let score: string = Math.fround(data.bias_score * 100).toFixed(2);
 
-    scoreText.innerText = 'Bias Score : ' + score;
+    scoreText.innerText = 'Score : ' + score;
 
     let methodInfo = document.createElement('p');
-    methodInfo.classList.add("bginfo");
     methodInfo.innerText = 'using ' + MethodsAndNames[method];
 
     scoreWrapper.appendChild(scoreText);
