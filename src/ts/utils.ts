@@ -1,6 +1,7 @@
 import { AppDataMap, DomainData } from './types';
 import { extension } from "./storage";
 import { service } from './service';
+import { userSettings } from './usersettings';
 
 export namespace utils {
 
@@ -51,13 +52,15 @@ export namespace utils {
                     if (item.limit === 0) {
                         extension.storage.remove(domain, () => {
                             extension.storage.set({ domain: item }, () => {
-                                callback(item);
+                                if (callback !== undefined)
+                                    callback(item);
                             });
                         });
                     } else {
                         item.limit--;
                         extension.storage.set({ domain: item }, () => {
-                            callback(item);
+                            if (callback !== undefined)
+                                callback(item);
                         });
                     }
                 }
@@ -78,6 +81,37 @@ export namespace utils {
                     }
                 });
             });
+    }
+
+    export function removeExpiredDomains(except?: string[]): void {
+
+        userSettings.get((settings) => {
+            extension.storage.getAll((items: AppDataMap) => {
+
+                let keys = Object.keys(items);
+                let now = new Date();
+
+                for (let i = 0; i < keys.length; i++) {
+
+                    let key = keys[i];
+                    if (key in except)
+                        continue;
+
+                    let todel = false;
+
+                    if (now.getFullYear() - items[key].date.getFullYear() > 1) {
+                        todel = true;
+                    } else if (now.getMonth() - items[key].date.getMonth() > 1) {
+                        todel = true;
+                    } else if (now.getDay() - items[key].date.getDay() > settings.deleteAfter) {
+                        todel = true;
+                    }
+
+                    if (todel)
+                        extension.storage.remove(key);
+                }
+            });
+        });
     }
 }
 

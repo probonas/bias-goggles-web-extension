@@ -4,8 +4,6 @@ import { userSettings } from "./usersettings";
 
 export namespace extension {
 
-    let syncEnabled: boolean;
-
     export namespace storage {
 
         export function set(data: string | AppDataMap, callback?: () => void): void {
@@ -31,7 +29,7 @@ export namespace extension {
             });
         };
 
-        function nullIfKeyDoesNotExist(item: AppDataMap,key:string): DomainData | null {
+        function nullIfKeyDoesNotExist(item: AppDataMap, key: string): DomainData | null {
             if (Object.keys(item).length === 0) {
                 return null;
             } else {
@@ -39,25 +37,39 @@ export namespace extension {
             }
         }
 
-        export function get(key: string, callback?: (item: DomainData) => void): void {
-            if (syncEnabled) {
-                chrome.storage.sync.get(key, (item) => {
-                    callback(nullIfKeyDoesNotExist(item,key));
-                });
-            } else {
-                chrome.storage.local.get(key, (item) => {
-                    callback(nullIfKeyDoesNotExist(item,key));
-                });
-            }
+        function getStorageObj(callback: (storage: chrome.storage.StorageArea) => void) {
+            userSettings.get(settings => {
+                if (settings.syncEnabled) {
+                    callback(chrome.storage.sync);
+                } else {
+                    callback(chrome.storage.local);
+                }
+            });
         }
 
-        export function remove(key: string, callback?: () => void) {
-            if (syncEnabled) {
-                chrome.storage.sync.remove(key, callback);
-            } else {
-                chrome.storage.local.remove(key, callback);
-            }
+        export function get(key: string, callback?: (item: DomainData) => void): void {
+            getStorageObj((storage) => {
+                storage.get(key, (item) => {
+                    if (callback !== undefined)
+                        callback(nullIfKeyDoesNotExist(item, key));
+                });
+            });
         }
+
+        export function getAll(callback: (item: AppDataMap) => void): void {
+            getStorageObj((storage) => {
+                storage.get(null, (items: AppDataMap) => {
+                    callback(items);
+                });
+            });
+        }
+
+        export function remove(key: string, callback?: () => void): void {
+            getStorageObj((storage) => {
+                storage.remove(key, callback);
+            });
+        }
+
     }
 
     function parseDataFromService(data: string, limit: number): AppDataMap {

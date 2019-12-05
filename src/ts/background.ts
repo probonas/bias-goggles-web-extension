@@ -8,13 +8,12 @@ chrome.runtime.onInstalled.addListener((details) => {
 });
 
 chrome.runtime.onStartup.addListener(() => {
-    //TODO
-    //remove old ones!
+    utils.removeExpiredDomains([userSettings.settingsKey]);
     console.log('restored user settings!');
 });
 
 chrome.webRequest.onCompleted.addListener((details) => {
-    utils.getBiasData(details.url);
+    utils.getBiasData(details.url, undefined);
 
 },
     { urls: ["<all_urls>"], types: ["main_frame"] }
