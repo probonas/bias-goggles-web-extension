@@ -1,14 +1,14 @@
-import { ExtRequest, RequestMessage, ExtResponse, MethodsAndNames } from "./types";
 import { chart } from "./drawchart";
 import { uncrawled } from "./uncrawled";
+import { utils } from "./utils";
+import { DomainData, UserData } from "./types";
+import { userSettings } from "./usersettings";
 
-let methodSelected: string = null;
-
-function handleResponse(response: ExtResponse) {
+function fillPopup(domain: string, data: DomainData, method: string) {
     console.log('received response');
 
-    if (response.data.appdata === null) {
-        let err = uncrawled.create404Msg(response.data.domain, ['error']);
+    if (data === null) {
+        let err = uncrawled.create404Msg(domain, ['error']);
         document.getElementById('messagebox').appendChild(err);
     } else {
         let figure = document.createElement('figure');
@@ -35,21 +35,25 @@ function handleResponse(response: ExtResponse) {
         messagebox.appendChild(infospan);
 
         btn.addEventListener('click', () => {
-            chrome.runtime.sendMessage(new ExtRequest([RequestMessage.SET_AS_DEFAULT], methodSelected), (response: ExtResponse) => {
-                if (response.extra) {
-                    info.innerText = 'Success!';
-                }
-                else {
-                    info.innerText = 'Failed!';
-                    info.classList.add('error');
-                }
 
-                figure.classList.add('rotate');
+            userSettings.get((data) => {
+                let settings: UserData = data[userSettings.settingsKey];
+
+                info.innerText = 'Failed!';
+                info.classList.add('error');
+
+                userSettings.save(method, settings.goggles, settings.forceRefreshLimit,
+                    settings.badgeColor, settings.syncEnabled, () => {
+                        info.innerText = 'Success!';
+                        info.classList.remove('error');
+                    });
             });
+
+            figure.classList.add('rotate');
         });
 
         //@ts-ignore
-        let vector = response.data.appdata[methodSelected].vector;
+        let vector = data.vector;
         chart.draw(vector, 220, 300, document.getElementById('chartbox'), true);
     }
 }
@@ -63,19 +67,17 @@ methods.forEach(method => {
 
         function getData() {
 
-            methodSelected = m;
-            chrome.runtime.sendMessage(
-                new ExtRequest([RequestMessage.GET_STATS], m), (response) => {
+            utils.getDataForActiveTab(m, (domain: string, data: DomainData) => {
 
-                    if (document.getElementById('figure-container').hasChildNodes()) {
-                        document.getElementById('figure-container').firstChild.remove();
-                    }
+                if (document.getElementById('figure-container').hasChildNodes()) {
+                    document.getElementById('figure-container').firstChild.remove();
+                }
 
-                    if (uncrawled.errorMessageExists())
-                        uncrawled.removeCrawlErrorMessage();
+                if (uncrawled.errorMessageExists())
+                    uncrawled.removeCrawlErrorMessage();
 
-                    handleResponse(response);
-                });
+                fillPopup(domain, data, m);
+            });
         };
 
         return getData;

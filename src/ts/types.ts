@@ -1,4 +1,4 @@
-export enum BiasGoggles {
+export enum BiasGogglesAvailable {
     politicalParties = "political-parties",
     footballTeams = "sport-teams"
 }
@@ -7,17 +7,27 @@ export const MethodsAndNames: { [index: string]: string } = {
     'ic': 'Independent Cascade',
     'lt': 'Linear Threshold',
     'pr': 'Page Rank',
-    
+
     'Independent Cascade': 'ic',
     'Linear Threshold': 'lt',
     'Page Rank': 'pr'
 };
 
+export interface UserSettings {
+    [key: string]: UserData;
+}
 
+export interface UserData {
+    method: string;
+    goggles: string;
+    forceRefreshLimit: number;
+    deleteAfter: number; //in days
+    badgeColor: string;
+    syncEnabled: boolean;
+}
 
 export interface AppData {
-    domain: string;
-    appdata: DomainData
+    [key: string]: DomainData;
 }
 
 export interface DomainData {
@@ -33,32 +43,4 @@ export interface ScoreData {
     rank: number;
     support_score: number;
     vector: string[]
-}
-
-export enum RequestMessage {
-    GET_STATS = 'get-stats',
-    SET_AS_DEFAULT = 'set-as-default',
-    GET_DEFAULT_STATS = 'get-stats-default'
-}
-
-export class ExtRequest {
-    messages: RequestMessage[];
-    extra: any;
-
-    constructor(messages: RequestMessage[], extra?: any) {
-        this.messages = messages;
-        this.extra = extra;
-    }
-
-}
-
-export class ExtResponse {
-    data: AppData;
-    extra: any;
-
-    constructor(data: AppData, extra?: any) {
-        this.data = data;
-        this.extra = extra;
-    }
-
 }

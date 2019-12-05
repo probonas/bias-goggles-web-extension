@@ -1,12 +1,15 @@
 import Popper from "popper.js";
 import { chart } from "./drawchart";
-import { ExtRequest, ExtResponse, RequestMessage, DomainData, AppData, MethodsAndNames } from "./types";
+import { DomainData, AppData, MethodsAndNames, ScoreData } from "./types";
 import { uncrawled } from "./uncrawled";
+import { utils } from "./utils";
+import { userSettings } from "./usersettings";
+import { extension } from "./storage";
 
 const popperid = 'bg-popper';
 const timeout = 800; //ms
 
-function createPopover(response: AppData, method: string, anchorElement: HTMLElement) {
+function createPopover(data: DomainData, domain: string, method: string, anchorElement: HTMLElement) {
     let popperDiv = document.createElement('div');
     let title = document.createElement('h2');
     let content = document.createElement('div');
@@ -26,9 +29,9 @@ function createPopover(response: AppData, method: string, anchorElement: HTMLEle
 
     anchorElement.appendChild(popperDiv);
 
-    if (response.appdata === null) {
+    if (data === null) {
 
-        let err = uncrawled.create404Msg(response.domain, ['bginfo']);
+        let err = uncrawled.create404Msg(domain, ['bginfo']);
         content.appendChild(err);
 
         new Popper(anchorElement, popperDiv, {
@@ -44,12 +47,12 @@ function createPopover(response: AppData, method: string, anchorElement: HTMLEle
         });
 
     } else {
-        let score = createScoreInfoDiv(response.appdata, method);
+        let score = createScoreInfoDiv(data, method);
         score.classList.add('bginfo');
         content.appendChild(score);
 
         //@ts-ignore
-        chart.draw(response.appdata[method].vector, 150, 200, content);
+        chart.draw(data[method].vector, 150, 200, content);
         new Popper(anchorElement, popperDiv, {
             placement: 'right',
             modifiers: {
@@ -105,20 +108,28 @@ function elementMouseOver(event: FocusEvent): void {
 
             return function () {
 
-                if( stop ){
+                if (stop) {
                     return;
                 }
-
                 //@ts-ignore
-                chrome.runtime.sendMessage(new ExtRequest([RequestMessage.GET_DEFAULT_STATS], e.target.href), (response) => {
-                    createPopover(response.data, <string>response.extra, <HTMLElement>e.target);
+                utils.getBiasData(event.target.href, () => {
+                    userSettings.get((settings) => {
+                        let method = settings[userSettings.settingsKey].method;
+                        //@ts-ignore
+                        let domain = event.target.href;
+                        extension.storage.get(domain, (item) => {
+                            if (Object.keys(item).length === 0)
+                                createPopover(null, domain, method, <HTMLElement>e.target);
+                            else
+                                createPopover(item[domain], domain, method, <HTMLElement>e.target);
+                        });
+                    })
                 });
-
                 event.target.removeEventListener('mouseout', () => { });
             }
         }
 
-       setTimeout(hasWaited(event),timeout);
+        setTimeout(hasWaited(event), timeout);
     }
 
 }
