@@ -20,7 +20,7 @@ export namespace service {
         console.log('requesting: ' + activeTab);
 
         userSettings.get((settings) => {
-            let targetURL = getRequestURL(activeTab, settings[userSettings.settingsKey].goggles);
+            let targetURL = getRequestURL(activeTab, settings.goggles);
 
             httpGet(targetURL, res => {
 

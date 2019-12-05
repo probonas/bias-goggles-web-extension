@@ -11,8 +11,8 @@ export namespace extension {
         export function set(data: string | AppDataMap, callback?: () => void): void {
 
             userSettings.get((settings) => {
-                let syncEnabled = settings[userSettings.settingsKey].syncEnabled;
-                let limit = settings[userSettings.settingsKey].forceRefreshLimit;
+                let syncEnabled = settings.syncEnabled;
+                let limit = settings.forceRefreshLimit;
 
                 let st: chrome.storage.StorageArea;
 

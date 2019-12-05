@@ -114,7 +114,7 @@ function elementMouseOver(event: FocusEvent): void {
                 utils.getBiasData(domain, (data: DomainData) => {
                     userSettings.get((settings) => {
 
-                        let method = settings[userSettings.settingsKey].method;
+                        let method = settings.method;
                         createPopover(data, domain, method, <HTMLElement>e.target);
                     })
                 });

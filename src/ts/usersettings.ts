@@ -1,4 +1,4 @@
-import { UserSettings } from "./types";
+import { UserSettings, UserSettingsMap } from "./types";
 
 export namespace userSettings {
 
@@ -8,7 +8,7 @@ export namespace userSettings {
         limit: number, badgeColor: string, syncEnabled: boolean,
         callback?: () => void) {
 
-        let settings = {} as UserSettings;
+        let settings = {} as UserSettingsMap;
 
         settings[settingsKey] = {
             method: method,
@@ -29,7 +29,9 @@ export namespace userSettings {
     }
 
     export function get(callback: (item: UserSettings) => void) {
-        chrome.storage.local.get(settingsKey, callback);
+        chrome.storage.local.get(settingsKey, (settings: UserSettingsMap) => {
+            callback(settings[settingsKey]);
+        });
     };
 
 }

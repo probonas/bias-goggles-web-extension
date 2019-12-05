@@ -1,7 +1,7 @@
 import { chart } from "./drawchart";
 import { uncrawled } from "./uncrawled";
 import { utils } from "./utils";
-import { DomainData, UserData } from "./types";
+import { DomainData, UserSettings } from "./types";
 import { userSettings } from "./usersettings";
 
 function fillPopup(domain: string, data: DomainData, method: string) {
@@ -36,8 +36,7 @@ function fillPopup(domain: string, data: DomainData, method: string) {
 
         btn.addEventListener('click', () => {
 
-            userSettings.get((data) => {
-                let settings: UserData = data[userSettings.settingsKey];
+            userSettings.get((settings) => {
 
                 info.innerText = 'Failed!';
                 info.classList.add('error');

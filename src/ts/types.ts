@@ -13,11 +13,11 @@ export const MethodsAndNames: { [index: string]: string } = {
     'Page Rank': 'pr'
 };
 
-export interface UserSettings {
-    [key: string]: UserData;
+export interface UserSettingsMap {
+    [key: string]: UserSettings;
 }
 
-export interface UserData {
+export interface UserSettings {
     method: string;
     goggles: string;
     forceRefreshLimit: number;
