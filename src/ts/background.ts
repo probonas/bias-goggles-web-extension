@@ -13,11 +13,7 @@ chrome.runtime.onStartup.addListener(() => {
 });
 
 chrome.webRequest.onCompleted.addListener((details) => {
-    userSettings.get((extension) => {
-        if (extension.enabled)
-            utils.getBiasData(details.url, undefined);
-    });
-
+    utils.getBiasData(details.url, undefined);
 },
     { urls: ["<all_urls>"], types: ["main_frame"] }
 );

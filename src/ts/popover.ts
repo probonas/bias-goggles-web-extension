@@ -45,15 +45,15 @@ function createPopover(data: DomainData, domain: string, method: string, anchorE
         },
         onCreate: (data: Data) => {
             popperDiv.addEventListener('mouseenter', () => {
-               
+
                 data.instance.options.modifiers.hovering.value = true;
-                
+
                 popperDiv.addEventListener('mouseleave', () => {
                     setTimeout(() => {
                         data.instance.destroy();
                     }, fadeout);
                 });
-                
+
             });
         }
     };

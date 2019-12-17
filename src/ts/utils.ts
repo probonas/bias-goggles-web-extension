@@ -32,40 +32,47 @@ export namespace utils {
 
     export function getBiasData(url: string, callback?: (data: DomainData) => void) {
 
-        //chrome.browserAction.setBadgeBackgroundColor({ color: userSettings.data.badgeColor });
+        userSettings.get(settings => {
+            if (settings.enabled) {
+                //chrome.browserAction.setBadgeBackgroundColor({ color: userSettings.data.badgeColor });
 
-        if (url.startsWith('http') || url.startsWith('https')) {
-            let domain = getDomainFromURL(url);
+                if (url.startsWith('http') || url.startsWith('https')) {
+                    let domain = getDomainFromURL(url);
 
-            extension.storage.get(domain, (item: DomainData) => {
+                    extension.storage.get(domain, (item: DomainData) => {
 
-                if (item === null) {
-                    console.log(url + " not found.");
-                    service.query(domain, (data: any) => {
-                        extension.storage.set(data, () => {
-                            extension.storage.get(domain, callback);
-                        });
-                    });
-                } else {
-                    console.log(url + " found.");
-
-                    if (item.limit === 0) {
-                        extension.storage.remove(domain, () => {
-                            extension.storage.set({ domain: item }, () => {
-                                if (callback !== undefined)
-                                    callback(item);
+                        if (item === null) {
+                            console.log(url + " not found.");
+                            service.query(domain, (data: any) => {
+                                extension.storage.set(data, () => {
+                                    extension.storage.get(domain, callback);
+                                });
                             });
-                        });
-                    } else {
-                        item.limit--;
-                        extension.storage.set({ domain: item }, () => {
-                            if (callback !== undefined)
-                                callback(item);
-                        });
-                    }
+                        } else {
+                            console.log(url + " found.");
+
+                            if (item.limit === 0) {
+                                extension.storage.remove(domain, () => {
+                                    extension.storage.set({ domain: item }, () => {
+                                        if (callback !== undefined)
+                                            callback(item);
+                                    });
+                                });
+                            } else {
+                                item.limit--;
+                                extension.storage.set({ domain: item }, () => {
+                                    if (callback !== undefined)
+                                        callback(item);
+                                });
+                            }
+                        }
+                    });
                 }
-            });
-        }
+                return true;
+            } else {
+                return false;
+            }
+        });
     }
 
     export function getDataForActiveTab(callback: (domain: string, data: DomainData) => void): void {
