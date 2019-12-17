@@ -24,6 +24,7 @@ export interface UserSettings {
     deleteAfter: number; //in days
     badgeColor: string;
     syncEnabled: boolean;
+    enabled: boolean;
 }
 
 export interface AppDataMap {

@@ -1,4 +1,4 @@
-import { AppDataMap, DomainData } from './types';
+import { AppDataMap, DomainData, UserSettings } from './types';
 import { extension } from "./storage";
 import { service } from './service';
 import { userSettings } from './usersettings';
@@ -111,6 +111,36 @@ export namespace utils {
                         extension.storage.remove(key);
                 }
             });
+        });
+    }
+
+    function disableExtension(settings: UserSettings) {
+        settings.enabled = false;
+        chrome.browserAction.setIcon({
+            path: {
+                "32": "icons/icon-disabled-32.png"
+            }
+        });
+        userSettings.update(settings);
+    }
+
+    function enableExtension(settings: UserSettings) {
+        settings.enabled = true;
+        chrome.browserAction.setIcon({
+            path: {
+                "32": "icons/icon-32.png"
+            }
+        });
+        userSettings.update(settings);
+    }
+
+    export function toggle() {
+        userSettings.get((settings) => {
+            if (settings.enabled) {
+                disableExtension(settings);
+            } else {
+                enableExtension(settings);
+            }
         });
     }
 }

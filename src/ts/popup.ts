@@ -1,7 +1,7 @@
 import { chart } from "./drawchart";
 import { uncrawled } from "./uncrawled";
 import { utils } from "./utils";
-import { DomainData, UserSettings } from "./types";
+import { DomainData } from "./types";
 import { userSettings } from "./usersettings";
 
 function fillPopup(domain: string, data: DomainData, method: string) {
@@ -40,12 +40,11 @@ function fillPopup(domain: string, data: DomainData, method: string) {
 
                 info.innerText = 'Failed!';
                 info.classList.add('error');
-
-                userSettings.save(method, settings.goggles, settings.forceRefreshLimit,
-                    settings.badgeColor, settings.syncEnabled, () => {
-                        info.innerText = 'Success!';
-                        info.classList.remove('error');
-                    });
+                settings.method = method;
+                userSettings.update(settings, () => {
+                    info.innerText = 'Success!';
+                    info.classList.remove('error');
+                });
             });
 
             figure.classList.add('rotate');
@@ -83,3 +82,24 @@ methods.forEach(method => {
 
     document.getElementById(method).addEventListener('click', closure());
 });
+
+function toggle(btn: HTMLButtonElement) {
+    userSettings.get((settings) => {
+        if (settings.enabled) {
+            btn.innerText = 'Disable Extension';
+        } else {
+            btn.innerText = 'Enable Extension';
+        }
+        utils.toggle();
+    });
+}
+
+
+let toggleBtn = document.createElement('button');
+document.getElementById('on-off').appendChild(toggleBtn);
+
+toggleBtn.addEventListener('click', () => {
+    toggle(toggleBtn);
+});
+
+toggle(toggleBtn);

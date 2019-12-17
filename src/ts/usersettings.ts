@@ -4,8 +4,12 @@ export namespace userSettings {
 
     export let settingsKey: string = 'settings';
 
+    export function update(settings: UserSettings, callback?: () => void) {
+        save(settings.method, settings.goggles, settings.forceRefreshLimit, settings.badgeColor, settings.syncEnabled, settings.enabled, callback);
+    }
+
     export function save(method: string, goggles: string,
-        limit: number, badgeColor: string, syncEnabled: boolean,
+        limit: number, badgeColor: string, syncEnabled: boolean, enabled: boolean,
         callback?: () => void) {
 
         let settings = {} as UserSettingsMap;
@@ -16,8 +20,8 @@ export namespace userSettings {
             forceRefreshLimit: limit,
             deleteAfter: 7,
             badgeColor: badgeColor,
-            syncEnabled: syncEnabled
-
+            syncEnabled: syncEnabled,
+            enabled: enabled
         };
 
         if (syncEnabled) {

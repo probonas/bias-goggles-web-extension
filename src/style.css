@@ -33,7 +33,6 @@ header h1 {
 }
 
 .options-container {
-    display: block;
     margin-top: 4px;
     margin-bottom: 4px;
 }
@@ -117,15 +116,23 @@ button {
 
 /* ============= */
 
-figure div {
+figure {
     display: block;
+    width: 100%;
     height: 40px;
+}
+
+figure div {
+    width: 100%;
+    transform-style: preserve-3d;
+    -webkit-transform-style: preserve-3d;
+    transition: 0.25s;
+    -webkit-transition: 0.25s;
 }
 
 span {
     position: absolute;
-    width:100%;
-
+    width: 100%;
 }
 
 span:nth-child(1) {
@@ -139,13 +146,6 @@ span:nth-child(2) {
     background-color: lightgreen !important;
     transform: rotateX(90deg) translate3d(0, 0, 40px);
     -webkit-transform: rotateX(90deg) translate3d((0, 0, 40px));
-}
-
-figure div {
-    transform-style: preserve-3d;
-    -webkit-transform-style: preserve-3d;
-    transition: 0.25s;
-    -webkit-transition: 0.25s;
 }
 
 .rotate div {
@@ -167,4 +167,6 @@ figure div {
     background-image: url('img/goggles.png');
     background-repeat: space;
     background-size: 32px 32px;
-};
+}
+
+;
