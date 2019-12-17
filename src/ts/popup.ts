@@ -4,37 +4,48 @@ import { utils } from "./utils";
 import { DomainData } from "./types";
 import { userSettings } from "./usersettings";
 
-function toggle(btn: HTMLButtonElement) {
-    userSettings.get((settings) => {
-        if (settings.enabled) {
-            btn.innerText = 'Disable Extension';
-        } else {
-            btn.innerText = 'Enable Extension';
-        }
-        utils.toggle();
-    });
-}
-
-
 let toggleBtn = document.createElement('button');
-document.getElementById('on-off').appendChild(toggleBtn);
 
 toggleBtn.addEventListener('click', () => {
-    toggle(toggleBtn);
+    userSettings.get((settings) => {
+        showBtnMessage(!settings.enabled);
+        if (!settings.enabled)
+            showDetails();
+        else
+            removeDetails();
+
+        utils.toggle();
+    });
 });
 
-toggle(toggleBtn);
+function removeDetails() {
+    document.getElementById(chart.id).remove();
+}
 
-userSettings.get((settings) => {
+function showDetails() {
     utils.getDataForActiveTab((domain: string, data: DomainData) => {
-
         if (data === null) {
             let err = uncrawled.create404Msg(domain, ['error']);
             document.getElementById('chartbox').appendChild(err);
         } else {
-            let vector = data[settings.method].vector;
+            let vector = data['pr'].vector;
             chart.draw(vector, 220, 300, document.getElementById('chartbox'), true);
         }
-        
+
     });
+};
+
+function showBtnMessage(extensionEnabled: boolean) {
+    if (extensionEnabled) {
+        toggleBtn.innerText = 'Disable Extension';
+    } else {
+        toggleBtn.innerText = 'Enable Extension';
+    }
+}
+
+userSettings.get((settings) => {
+    showBtnMessage(settings.enabled);
+    if (settings.enabled)
+        showDetails();
+    document.getElementById('on-off').appendChild(toggleBtn);
 });
