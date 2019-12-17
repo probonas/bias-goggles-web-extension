@@ -38,8 +38,14 @@ function showDetails() {
 function showBtnMessage(extensionEnabled: boolean) {
     if (extensionEnabled) {
         toggleBtn.innerText = 'Disable Extension';
+        if (toggleBtn.classList.contains('on'))
+            toggleBtn.classList.remove('on');
+        toggleBtn.classList.add('off');
     } else {
         toggleBtn.innerText = 'Enable Extension';
+        if (toggleBtn.classList.contains('off'))
+            toggleBtn.classList.remove('off');
+        toggleBtn.classList.add('on');
     }
 }
 
