@@ -28,12 +28,12 @@
     /* dimensions */
     width: 200px;
     /* compatibility */
-    position: absolute;
-    z-index: 999999;
+    position: relative;
+    z-index: 3;
     opacity: 100;
 }
 
-.bgpopper .bgtitle {
+.bgpopper .bgcontent-wrapper .bgtitle {
     display: block;
     color: grey;
     margin-top: 8px;

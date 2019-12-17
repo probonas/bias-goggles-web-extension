@@ -1,12 +1,13 @@
-import Popper from "popper.js";
+import Popper, { PopperOptions, Data } from "popper.js";
 import { chart } from "./drawchart";
-import { DomainData, AppDataMap, MethodsAndNames, ScoreData } from "./types";
+import { DomainData, MethodsAndNames, ScoreData } from "./types";
 import { uncrawled } from "./uncrawled";
 import { utils } from "./utils";
 import { userSettings } from "./usersettings";
 
 const popperid = 'bg-popper';
-const timeout = 800; //ms
+const fadein = 800; //ms
+const fadeout = 300; //ms
 
 function createPopover(data: DomainData, domain: string, method: string, anchorElement: HTMLElement) {
     let popperDiv = document.createElement('div');
@@ -26,39 +27,56 @@ function createPopover(data: DomainData, domain: string, method: string, anchorE
     content.appendChild(title);
     popperDiv.appendChild(arrow);
 
-    anchorElement.appendChild(popperDiv);
+    document.body.appendChild(popperDiv);
+
+    let options: PopperOptions = {
+        placement: 'right',
+        removeOnDestroy: true,
+        modifiers: {
+            arrow: {
+                element: arrow
+            },
+            creation: {
+                timestamp: Date.now()
+            },
+            hovering: {
+                value: false
+            }
+        },
+        onCreate: (data: Data) => {
+            popperDiv.addEventListener('mouseenter', () => {
+               
+                data.instance.options.modifiers.hovering.value = true;
+                
+                popperDiv.addEventListener('mouseleave', () => {
+                    setTimeout(() => {
+                        data.instance.destroy();
+                    }, fadeout);
+                });
+                
+            });
+        }
+    };
 
     if (data === null) {
-
         let err = uncrawled.create404Msg(domain, ['bginfo']);
         content.appendChild(err);
-
-        new Popper(anchorElement, popperDiv, {
-            placement: 'right',
-            modifiers: {
-                preventOverflow: {
-                    enabled: true
-                },
-                arrow: {
-                    element: arrow
-                },
-            }
-        });
 
     } else {
         let score = createScoreInfoDiv(data[method], method);
         content.appendChild(score);
 
         chart.draw(data[method].vector, 150, 200, content);
-        new Popper(anchorElement, popperDiv, {
-            placement: 'right',
-            modifiers: {
-                arrow: {
-                    element: arrow
-                }
-            }
-        });
     }
+
+    let popper = new Popper(anchorElement, popperDiv, options);
+
+    anchorElement.addEventListener('mouseleave', () => {
+        setTimeout(() => {
+            if (!popper.options.modifiers.hovering.value)
+                popper.destroy();
+        }, fadeout);
+    });
 }
 
 function createScoreInfoDiv(data: ScoreData, method: string): HTMLElement {
@@ -94,7 +112,6 @@ function elementMouseOver(event: FocusEvent): void {
         let stop = 0;
 
         event.target.addEventListener('mouseout', () => {
-            closePopper();
             stop = 1;
         });
 
@@ -118,18 +135,12 @@ function elementMouseOver(event: FocusEvent): void {
                     })
                 });
 
-                event.target.removeEventListener('mouseout', () => { });
             }
         }
 
-        setTimeout(hasWaited(event), timeout);
+        setTimeout(hasWaited(event), fadein);
     }
 
-}
-
-function closePopper() {
-    if (document.getElementById(popperid))
-        document.getElementById(popperid).remove();
 }
 
 //bubble down event
