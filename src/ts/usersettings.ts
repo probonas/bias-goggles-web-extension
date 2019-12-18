@@ -5,7 +5,7 @@ export namespace userSettings {
     export let settingsKey: string = 'settings';
 
     export function update(settings: UserSettings, callback?: () => void) {
-        save(settings.method, settings.goggles, settings.forceRefreshLimit, settings.syncEnabled,
+        return save(settings.method, settings.goggles, settings.forceRefreshLimit, settings.syncEnabled,
             settings.enabled, settings.scoreIndex, callback);
     }
 
@@ -25,9 +25,9 @@ export namespace userSettings {
         };
 
         if (syncEnabled) {
-            chrome.storage.sync.set(settings, callback);
+            return chrome.storage.sync.set(settings, callback);
         } else {
-            chrome.storage.local.set(settings, callback);
+            return chrome.storage.local.set(settings, callback);
         }
 
     }

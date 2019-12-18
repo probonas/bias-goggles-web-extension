@@ -13,12 +13,6 @@ export namespace utils {
         return target;
     }
 
-    export function updateBadge(domain: string, method: string) {
-        //TODO
-        //show on/off
-        //on badge instead of score
-    }
-
     export function refreshDataForDomain(domain: string, domainData: DomainData, callback: (domainData: DomainData) => void) {
 
         if (domainData === null) {
@@ -85,7 +79,7 @@ export namespace utils {
                 "32": "icons/icon-disabled-32.png"
             }
         });
-        userSettings.update(settings);
+        userSettings.update(settings,updateBadge);
     }
 
     function enableExtension(settings: UserSettings) {
@@ -95,7 +89,19 @@ export namespace utils {
                 "32": "icons/icon-32.png"
             }
         });
-        userSettings.update(settings);
+        userSettings.update(settings,updateBadge);
+    }
+
+    export function updateBadge() {
+        userSettings.get((settings) => {
+            if (settings.enabled) {
+                chrome.browserAction.setBadgeBackgroundColor({ color: '#3CB371' });
+                chrome.browserAction.setBadgeText({ text: 'on' });
+            } else {
+                chrome.browserAction.setBadgeBackgroundColor({ color: '#f08080' });
+                chrome.browserAction.setBadgeText({ text: 'off' });
+            }
+        });
     }
 
     export function toggle() {
