@@ -45,7 +45,7 @@ export namespace utils {
 
     }
 
-    export function getBiasData(url: string, callback?: (data: Score) => void) {
+    export function getBiasData(url: string, callback?: (data: Score, scoreIndex: number) => void) {
         userSettings.get(settings => {
             if (settings.enabled) {
                 if (url.startsWith('http') || url.startsWith('https')) {
@@ -61,6 +61,8 @@ export namespace utils {
         chrome.tabs.query({ 'active': true, 'currentWindow': true, 'lastFocusedWindow': true },
             (tabs) => {
                 extension.storage.getDomainData(utils.getDomainFromURL(tabs[0].url), (items) => {
+                    if (callback === undefined)
+                        return;
 
                     if (items === null) {
                         callback(tabs[0].url, null);
@@ -79,7 +81,7 @@ export namespace utils {
                 "32": "icons/icon-disabled-32.png"
             }
         });
-        userSettings.update(settings,updateBadge);
+        userSettings.update(settings, updateBadge);
     }
 
     function enableExtension(settings: UserSettings) {
@@ -89,7 +91,7 @@ export namespace utils {
                 "32": "icons/icon-32.png"
             }
         });
-        userSettings.update(settings,updateBadge);
+        userSettings.update(settings, updateBadge);
     }
 
     export function updateBadge() {
