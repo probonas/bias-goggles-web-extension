@@ -1,4 +1,4 @@
-import { AppDataMap, DomainData, UserSettings } from './types';
+import { AppData, DomainData, UserSettings, Score } from './types';
 import { extension } from "./storage";
 import { service } from './service';
 import { userSettings } from './usersettings';
@@ -14,63 +14,51 @@ export namespace utils {
     }
 
     export function updateBadge(domain: string, method: string) {
-        //@ts-ignore
-        let score = Math.fround(parseFloat(LocalStorage.get(domain).data[method].bias_score) * 100);
-        let badgeText: string = "";
-
-        if (score == 100)
-            badgeText = '100';
-        else if (score < 1)
-            badgeText = score.toFixed(2);
-        else
-            badgeText = score.toFixed(1);
-
-        console.log(score);
-
-        chrome.browserAction.setBadgeText({ text: badgeText });
+        //TODO
+        //show on/off
+        //on badge instead of score
     }
 
-    export function getBiasData(url: string, callback?: (data: DomainData) => void) {
+    export function refreshDataForDomain(domain: string, domainData: DomainData, callback: (domainData: DomainData) => void) {
 
+        if (domainData === null) {
+            console.log(domain + " not found.");
+
+            service.query(domain, (data: any) => {
+                extension.storage.set(data, () => {
+                    callback(domainData);
+                });
+            });
+        } else if (domainData.limit === 0) {
+            console.log(domain + " found. But data is considered obsolete. Updating scoreIndex!");
+
+            service.query(domain, (data: any) => {
+                extension.storage.set(data, () => {
+                    callback(domainData);
+                });
+            });
+        } else {
+            console.log(domain + " found.");
+
+            domainData.limit--;
+            let appdata = {} as AppData;
+            appdata[domain] = domainData;
+
+            extension.storage.set(appdata, () => {
+                callback(domainData);
+            });
+        }
+
+    }
+
+    export function getBiasData(url: string, callback?: (data: Score) => void) {
         userSettings.get(settings => {
             if (settings.enabled) {
-                //chrome.browserAction.setBadgeBackgroundColor({ color: userSettings.data.badgeColor });
-
                 if (url.startsWith('http') || url.startsWith('https')) {
-                    let domain = getDomainFromURL(url);
+                    let domain = getDomainFromURL(url)
 
-                    extension.storage.get(domain, (item: DomainData) => {
-
-                        if (item === null) {
-                            console.log(url + " not found.");
-                            service.query(domain, (data: any) => {
-                                extension.storage.set(data, () => {
-                                    extension.storage.get(domain, callback);
-                                });
-                            });
-                        } else {
-                            console.log(url + " found.");
-
-                            if (item.limit === 0) {
-                                extension.storage.remove(domain, () => {
-                                    extension.storage.set({ domain: item }, () => {
-                                        if (callback !== undefined)
-                                            callback(item);
-                                    });
-                                });
-                            } else {
-                                item.limit--;
-                                extension.storage.set({ domain: item }, () => {
-                                    if (callback !== undefined)
-                                        callback(item);
-                                });
-                            }
-                        }
-                    });
+                    extension.storage.getScoresForDomain(domain, callback);
                 }
-                return true;
-            } else {
-                return false;
             }
         });
     }
@@ -78,7 +66,7 @@ export namespace utils {
     export function getDataForActiveTab(callback: (domain: string, data: DomainData) => void): void {
         chrome.tabs.query({ 'active': true, 'currentWindow': true, 'lastFocusedWindow': true },
             (tabs) => {
-                extension.storage.get(utils.getDomainFromURL(tabs[0].url), (items) => {
+                extension.storage.getDomainData(utils.getDomainFromURL(tabs[0].url), (items) => {
 
                     if (items === null) {
                         callback(tabs[0].url, null);
@@ -88,37 +76,6 @@ export namespace utils {
                     }
                 });
             });
-    }
-
-    export function removeExpiredDomains(except?: string[]): void {
-
-        userSettings.get((settings) => {
-            extension.storage.getAll((items: AppDataMap) => {
-
-                let keys = Object.keys(items);
-                let now = new Date();
-
-                for (let i = 0; i < keys.length; i++) {
-
-                    let key = keys[i];
-                    if (key in except)
-                        continue;
-
-                    let todel = false;
-
-                    if (now.getFullYear() - items[key].date.getFullYear() > 1) {
-                        todel = true;
-                    } else if (now.getMonth() - items[key].date.getMonth() > 1) {
-                        todel = true;
-                    } else if (now.getDay() - items[key].date.getDay() > settings.deleteAfter) {
-                        todel = true;
-                    }
-
-                    if (todel)
-                        extension.storage.remove(key);
-                }
-            });
-        });
     }
 
     function disableExtension(settings: UserSettings) {

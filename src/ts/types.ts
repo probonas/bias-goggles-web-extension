@@ -1,3 +1,5 @@
+import { extension } from "./storage";
+
 export enum BiasGogglesAvailable {
     politicalParties = "political-parties",
     footballTeams = "sport-teams"
@@ -21,32 +23,32 @@ export interface UserSettings {
     method: string;
     goggles: string;
     forceRefreshLimit: number;
-    deleteAfter: number; //in days
-    badgeColor: string;
     syncEnabled: boolean;
     enabled: boolean;
+    scoreIndex: number;
 }
 
-export interface AppDataMap {
-    [key: string]: DomainData;
+export type AppData = {
+    [key: string]: DomainData | Score;
 }
 
-interface DomainDataMap {
-    [key: string]: ScoreData;
-}
-
-export type DomainData = DomainDataMap & {
+export type DomainData = {
     limit: number;
+    scoreIndex: number;
+}
+
+export type Score = {
     date: Date;
+    scores: Scores;
+};
+
+type Scores = {
+    [key: string]: ScoreValue
 }
 
-interface ScoreDataMap {
-    [key: string]: ScoreData;
-}
-
-export type ScoreData = ScoreDataMap & {
+export type ScoreValue = {
     bias_score: number;
     rank: number;
     support_score: number;
     vector: string[]
-}
+};

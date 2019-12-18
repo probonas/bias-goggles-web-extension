@@ -1,15 +1,16 @@
 import Popper, { PopperOptions, Data } from "popper.js";
 import { chart } from "./drawchart";
-import { DomainData, MethodsAndNames, ScoreData } from "./types";
+import { ScoreValue, MethodsAndNames, Score, AppData } from "./types";
 import { uncrawled } from "./uncrawled";
 import { utils } from "./utils";
 import { userSettings } from "./usersettings";
+import { extension } from "./storage";
 
 const popperid = 'bg-popper';
 const fadein = 800; //ms
 const fadeout = 300; //ms
 
-function createPopover(data: DomainData, domain: string, method: string, anchorElement: HTMLElement) {
+function createPopover(data: ScoreValue, domain: string, method: string, anchorElement: HTMLElement) {
     let popperDiv = document.createElement('div');
     let title = document.createElement('h2');
     let content = document.createElement('div');
@@ -63,10 +64,10 @@ function createPopover(data: DomainData, domain: string, method: string, anchorE
         content.appendChild(err);
 
     } else {
-        let score = createScoreInfoDiv(data[method], method);
+        let score = createScoreInfoDiv(data, method);
         content.appendChild(score);
 
-        chart.draw(data[method].vector, 150, 200, content);
+        chart.draw(data.vector, 150, 200, content);
     }
 
     let popper = new Popper(anchorElement, popperDiv, options);
@@ -79,7 +80,7 @@ function createPopover(data: DomainData, domain: string, method: string, anchorE
     });
 }
 
-function createScoreInfoDiv(data: ScoreData, method: string): HTMLElement {
+function createScoreInfoDiv(data: ScoreValue, method: string): HTMLElement {
 
     let scoreWrapper = document.createElement('div');
     scoreWrapper.classList.add('bginfo');
@@ -127,14 +128,13 @@ function elementMouseOver(event: FocusEvent): void {
                 //@ts-ignore
                 let domain = event.target.href;
 
-                utils.getBiasData(domain, (data: DomainData) => {
-                    userSettings.get((settings) => {
-
+                userSettings.get((settings) => {
+                    utils.getBiasData(domain, (data) => {
                         let method = settings.method;
-                        createPopover(data, domain, method, <HTMLElement>e.target);
-                    })
-                });
+                        createPopover(data.scores[method], domain, method, <HTMLElement>e.target);
+                    });
 
+                });
             }
         }
 

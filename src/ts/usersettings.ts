@@ -5,11 +5,12 @@ export namespace userSettings {
     export let settingsKey: string = 'settings';
 
     export function update(settings: UserSettings, callback?: () => void) {
-        save(settings.method, settings.goggles, settings.forceRefreshLimit, settings.badgeColor, settings.syncEnabled, settings.enabled, callback);
+        save(settings.method, settings.goggles, settings.forceRefreshLimit, settings.syncEnabled,
+            settings.enabled, settings.scoreIndex, callback);
     }
 
     export function save(method: string, goggles: string,
-        limit: number, badgeColor: string, syncEnabled: boolean, enabled: boolean,
+        limit: number, syncEnabled: boolean, enabled: boolean, scoreIndex: number,
         callback?: () => void) {
 
         let settings = {} as UserSettingsMap;
@@ -18,10 +19,9 @@ export namespace userSettings {
             method: method,
             goggles: goggles,
             forceRefreshLimit: limit,
-            deleteAfter: 7,
-            badgeColor: badgeColor,
             syncEnabled: syncEnabled,
-            enabled: enabled
+            enabled: enabled,
+            scoreIndex: scoreIndex
         };
 
         if (syncEnabled) {

@@ -1,8 +1,9 @@
 import { chart } from "./drawchart";
 import { uncrawled } from "./uncrawled";
 import { utils } from "./utils";
-import { DomainData } from "./types";
+import { Score, DomainData } from "./types";
 import { userSettings } from "./usersettings";
+import { extension } from "./storage";
 
 let toggleBtn = document.createElement('button');
 
@@ -28,8 +29,10 @@ function showDetails() {
             let err = uncrawled.create404Msg(domain, ['error']);
             document.getElementById('chartbox').appendChild(err);
         } else {
-            let vector = data['pr'].vector;
-            chart.draw(vector, 220, 300, document.getElementById('chartbox'), true);
+            extension.storage.getScoresForDomain(domain, (data) => {
+                let vector = data.scores['pr'].vector;
+                chart.draw(vector, 220, 300, document.getElementById('chartbox'), true);
+            });
         }
 
     });
