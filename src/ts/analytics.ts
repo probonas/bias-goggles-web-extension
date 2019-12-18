@@ -1,4 +1,4 @@
-import { PopoverAnalytics, AnalyticsData } from "./types";
+import { PopoverAnalytics } from "./types";
 import { extension } from "./storage";
 
 export namespace popoverAnalytics {
@@ -25,15 +25,16 @@ export namespace popoverAnalytics {
 
         extension.storage.getAnalytics(items => {
             let oldIndex = items.total;
-            advanceIndex();
-            callback(analytics, oldIndex);
+            advanceIndex(() => {
+                callback(analytics, oldIndex)
+            });
         });
     }
 
-    function advanceIndex() {
+    function advanceIndex(callback: () => void) {
         extension.storage.getAnalytics(item => {
             item.total++;
-            extension.storage.set({ 'analytics': item });
+            extension.storage.set({ 'analytics': item }, callback);
         });
     }
 
