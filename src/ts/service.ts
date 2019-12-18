@@ -37,7 +37,6 @@ export namespace service {
 
                     callback(data);
 
-                    //updateBadge(getDomainFromURL(activeTab), userSetttings.getMethod());
                 });
             });
         });

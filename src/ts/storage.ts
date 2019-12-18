@@ -1,5 +1,5 @@
 
-import { AppData, DomainData, Score } from "./types";
+import { AppData, DomainData, Score, Analytics, AnalyticsData } from "./types";
 import { userSettings } from "./usersettings";
 import { utils } from "./utils";
 
@@ -7,7 +7,7 @@ export namespace extension {
 
     export namespace storage {
 
-        export function set(data: string | AppData, callback?: () => void): void {
+        export function set(data: string | AppData | Analytics, callback?: () => void): void {
 
             userSettings.get((settings) => {
                 let syncEnabled = settings.syncEnabled;
@@ -88,6 +88,10 @@ export namespace extension {
                     callback(items);
                 });
             });
+        }
+
+        export function getAnalytics(callback: (item: AnalyticsData) => void) {
+            get('analytics',callback);
         }
 
         export function remove(key: string, callback?: () => void): void {

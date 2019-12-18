@@ -1,5 +1,3 @@
-import { extension } from "./storage";
-
 export enum BiasGogglesAvailable {
     politicalParties = "political-parties",
     footballTeams = "sport-teams"
@@ -52,3 +50,23 @@ export type ScoreValue = {
     support_score: number;
     vector: string[]
 };
+
+export type PopoverAnalytics = {
+    userFollowedLink: boolean;
+    userHoveredPopover: boolean;
+    sourceScoreIndex: number;
+    destScoreIndedx: number;
+    totalTimeShown: number; //ms
+    totalTimeUserHovered: number; //ms
+}
+
+export type Analytics = {
+    [key: string]: AnalyticsData
+}
+
+export type AnalyticsData = {
+    total: number;
+    data: {
+        [key: number]: PopoverAnalytics
+    };
+}

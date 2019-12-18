@@ -1,9 +1,10 @@
 import Popper, { PopperOptions, Data } from "popper.js";
 import { chart } from "./drawchart";
-import { ScoreValue, MethodsAndNames, Score, AppData } from "./types";
+import { ScoreValue, MethodsAndNames, PopoverAnalytics } from "./types";
 import { uncrawled } from "./uncrawled";
 import { utils } from "./utils";
 import { userSettings } from "./usersettings";
+import { popoverAnalytics } from "./analytics";
 import { extension } from "./storage";
 
 const popperid = 'bg-popper';
@@ -30,53 +31,74 @@ function createPopover(data: ScoreValue, domain: string, method: string, anchorE
 
     document.body.appendChild(popperDiv);
 
-    let options: PopperOptions = {
-        placement: 'right',
-        removeOnDestroy: true,
-        modifiers: {
-            arrow: {
-                element: arrow
-            },
-            creation: {
-                timestamp: Date.now()
-            },
-            hovering: {
-                value: false
-            }
-        },
-        onCreate: (data: Data) => {
-            popperDiv.addEventListener('mouseenter', () => {
+    popoverAnalytics.createNew((analytics, current) => {
+        
+        anchorElement.addEventListener('click', () => {
+            analytics.userFollowedLink = true;
+            popoverAnalytics.update(analytics, current);
+        });
 
-                data.instance.options.modifiers.hovering.value = true;
+        let options: PopperOptions = {
+            placement: 'right',
+            removeOnDestroy: true,
+            modifiers: {
+                arrow: {
+                    element: arrow
+                },
+                creation: {
+                    timestamp: Date.now()
+                },
+                hovering: {
+                    value: false
+                }
+            },
+            onCreate: (data: Data) => {
+                console.log('created popover');
 
-                popperDiv.addEventListener('mouseleave', () => {
-                    setTimeout(() => {
-                        data.instance.destroy();
-                    }, fadeout);
+                analytics.totalTimeShown = + Date.now();
+
+                popperDiv.addEventListener('mouseenter', () => {
+
+                    data.instance.options.modifiers.hovering.value = true;
+                    analytics.userHoveredPopover = true;
+                    analytics.totalTimeUserHovered = + Date.now();
+
+                    popperDiv.addEventListener('mouseleave', () => {
+                        setTimeout(() => {
+                            let now = + Date.now();
+
+                            analytics.totalTimeShown = now - analytics.totalTimeShown;
+                            analytics.totalTimeUserHovered = now - analytics.totalTimeUserHovered;
+
+                            popoverAnalytics.update(analytics, current);
+
+                            data.instance.destroy();
+                        }, fadeout);
+                    });
+
                 });
+            }
+        };
 
-            });
+        if (data === null) {
+            let err = uncrawled.create404Msg(domain, ['bginfo']);
+            content.appendChild(err);
+
+        } else {
+            let score = createScoreInfoDiv(data, method);
+            content.appendChild(score);
+
+            chart.draw(data.vector, 150, 200, content);
         }
-    };
 
-    if (data === null) {
-        let err = uncrawled.create404Msg(domain, ['bginfo']);
-        content.appendChild(err);
+        let popper = new Popper(anchorElement, popperDiv, options);
 
-    } else {
-        let score = createScoreInfoDiv(data, method);
-        content.appendChild(score);
-
-        chart.draw(data.vector, 150, 200, content);
-    }
-
-    let popper = new Popper(anchorElement, popperDiv, options);
-
-    anchorElement.addEventListener('mouseleave', () => {
-        setTimeout(() => {
-            if (!popper.options.modifiers.hovering.value)
-                popper.destroy();
-        }, fadeout);
+        anchorElement.addEventListener('mouseleave', () => {
+            setTimeout(() => {
+                if (!popper.options.modifiers.hovering.value)
+                    popper.destroy();
+            }, fadeout);
+        });
     });
 }
 
