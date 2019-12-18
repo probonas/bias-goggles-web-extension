@@ -1,17 +1,18 @@
 import Popper, { PopperOptions, Data } from "popper.js";
 import { chart } from "./drawchart";
-import { ScoreValue, MethodsAndNames, PopoverAnalytics } from "./types";
+import { ScoreValue, MethodsAndNames } from "./types";
 import { uncrawled } from "./uncrawled";
 import { utils } from "./utils";
-import { userSettings } from "./usersettings";
 import { popoverAnalytics } from "./analytics";
 import { extension } from "./storage";
+import { userSettings } from "./usersettings";
 
 const popperid = 'bg-popper';
 const fadein = 800; //ms
 const fadeout = 300; //ms
 
-function createPopover(data: ScoreValue, domain: string, method: string, anchorElement: HTMLElement) {
+function createPopover(data: ScoreValue, domain: string, method: string,
+    anchorElement: HTMLElement, srcIndex: number, destIndex: number) {
     let popperDiv = document.createElement('div');
     let title = document.createElement('h2');
     let content = document.createElement('div');
@@ -32,9 +33,18 @@ function createPopover(data: ScoreValue, domain: string, method: string, anchorE
     document.body.appendChild(popperDiv);
 
     popoverAnalytics.createNew((analytics, current) => {
-        
+
+        console.log('index is ' + current);
+
+        analytics.sourceScoreIndex = srcIndex; //main frame
+        analytics.destScoreIndedx = destIndex; //link
+
         anchorElement.addEventListener('click', () => {
+            let now = + Date.now();
+
             analytics.userFollowedLink = true;
+            analytics.totalTimeShown = now - analytics.totalTimeShown;
+
             popoverAnalytics.update(analytics, current);
         });
 
@@ -56,22 +66,27 @@ function createPopover(data: ScoreValue, domain: string, method: string, anchorE
                 console.log('created popover');
 
                 analytics.totalTimeShown = + Date.now();
+                popoverAnalytics.update(analytics, current);
 
                 popperDiv.addEventListener('mouseenter', () => {
-
                     data.instance.options.modifiers.hovering.value = true;
+
+                    //hover started!
                     analytics.userHoveredPopover = true;
                     analytics.totalTimeUserHovered = + Date.now();
 
+                    popoverAnalytics.update(analytics, current);
+
                     popperDiv.addEventListener('mouseleave', () => {
+                        //hover ended!
+                        let now = + Date.now();
+                        analytics.totalTimeUserHovered = now - analytics.totalTimeUserHovered;
+                        analytics.totalTimeShown = now - analytics.totalTimeShown;
+                        analytics.totalTimeShown = now - analytics.totalTimeShown;
+
+                        popoverAnalytics.update(analytics, current);
+
                         setTimeout(() => {
-                            let now = + Date.now();
-
-                            analytics.totalTimeShown = now - analytics.totalTimeShown;
-                            analytics.totalTimeUserHovered = now - analytics.totalTimeUserHovered;
-
-                            popoverAnalytics.update(analytics, current);
-
                             data.instance.destroy();
                         }, fadeout);
                     });
@@ -94,9 +109,16 @@ function createPopover(data: ScoreValue, domain: string, method: string, anchorE
         let popper = new Popper(anchorElement, popperDiv, options);
 
         anchorElement.addEventListener('mouseleave', () => {
+
             setTimeout(() => {
-                if (!popper.options.modifiers.hovering.value)
+                if (!popper.options.modifiers.hovering.value) {
+                    let now = + Date.now();
+
+                    analytics.totalTimeShown = now - analytics.totalTimeShown;
+                    popoverAnalytics.update(analytics, current);
+
                     popper.destroy();
+                }
             }, fadeout);
         });
     });
@@ -151,12 +173,14 @@ function elementMouseOver(event: FocusEvent): void {
                 let domain = event.target.href;
 
                 userSettings.get((settings) => {
-                    utils.getBiasData(domain, (data) => {
-                        let method = settings.method;
-                        createPopover(data.scores[method], domain, method, <HTMLElement>e.target);
+                    extension.storage.getDomainData(utils.getDomainFromURL(window.location.href), (srcDomainData) => {
+                        utils.getBiasData(domain, (data, destIndex) => {
+                            createPopover(data.scores[settings.method], domain, settings.method,
+                                <HTMLElement>e.target, srcDomainData.scoreIndex, destIndex);
+                        });
                     });
-
                 });
+
             }
         }
 

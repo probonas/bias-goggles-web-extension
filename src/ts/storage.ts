@@ -71,11 +71,13 @@ export namespace extension {
             });
         }
 
-        export function getScoreData(scoreIndex: number, callback: (item: Score) => void) {
-            get(String(scoreIndex), callback);
+        export function getScoreData(scoreIndex: number, callback: (item: Score, index: number) => void) {
+            get(String(scoreIndex), (item) => {
+                callback(<Score>item, scoreIndex);
+            });
         }
 
-        export function getScoresForDomain(domain: string, callback: (item: Score) => void) {
+        export function getScoresForDomain(domain: string, callback: (item: Score, index: number) => void) {
             extension.storage.getDomainData(domain, (item) => {
                 if (item != null)
                     extension.storage.getScoreData(item.scoreIndex, callback);
@@ -91,7 +93,7 @@ export namespace extension {
         }
 
         export function getAnalytics(callback: (item: AnalyticsData) => void) {
-            get('analytics',callback);
+            get('analytics', callback);
         }
 
         export function remove(key: string, callback?: () => void): void {
