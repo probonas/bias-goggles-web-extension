@@ -28,12 +28,14 @@ export namespace popoverAnalytics {
 
         analytics.userFollowedLink = false;
         analytics.userHoveredPopover = false;
-        
+
         analytics.sourceScoreIndex = -1;
         analytics.destScoreIndedx = -1;
-        
-        analytics.totalTimeShown = -1;
-        analytics.totalTimeUserHovered = -1;
+
+        analytics.totalTimeShown = 0;
+        analytics.totalTimeUserHovered = 0;
+
+        let entered = 0;
 
         let advanceIndex = (callback: (index: number) => void) => {
             extension.storage.getAnalytics(item => {
@@ -56,11 +58,11 @@ export namespace popoverAnalytics {
 
             hoverStarted = () => {
                 analytics.userHoveredPopover = true;
-                analytics.totalTimeUserHovered = (+ Date.now());
+                entered = (+ Date.now());
             };
 
             hoverEnded = () => {
-                analytics.totalTimeUserHovered = (+ Date.now()) - analytics.totalTimeUserHovered;
+                analytics.totalTimeUserHovered += (+ Date.now()) - entered;
             };
 
             popoverShown = () => {
