@@ -11,115 +11,140 @@ const popperid = 'bg-popper';
 const fadein = 800; //ms
 const fadeout = 300; //ms
 
-function createPopover(data: ScoreValue, domain: string, method: string,
-    anchorElement: HTMLElement, srcIndex: number, destIndex: number) {
-    let popperDiv = document.createElement('div');
-    let title = document.createElement('h2');
-    let content = document.createElement('div');
-    let arrow = document.createElement('div');
+export namespace popover {
 
-    popperDiv.classList.add('bgpopper');
-    title.classList.add('bgtitle');
-    content.classList.add('bgcontent-wrapper');
-    arrow.classList.add('bgarrow');
+    export function show(anchorElement: HTMLElement, method: string) {
+        let domain = (<HTMLAnchorElement>anchorElement).href;
+        let popperDiv: HTMLElement;
+        let arrow: HTMLElement;
+        let scoreData: ScoreValue;
+        let popper: Popper;
 
-    popperDiv.id = popperid;
-    title.innerText = 'Bias Goggles';
+        let createDiv = () => {
+            popperDiv = document.createElement('div');
+            document.body.appendChild(popperDiv);
 
-    popperDiv.appendChild(content);
-    content.appendChild(title);
-    popperDiv.appendChild(arrow);
+            let title = document.createElement('h2');
+            let content = document.createElement('div');
+            arrow = document.createElement('div');
 
-    document.body.appendChild(popperDiv);
+            popperDiv.classList.add('bgpopper');
+            title.classList.add('bgtitle');
+            content.classList.add('bgcontent-wrapper');
+            arrow.classList.add('bgarrow');
 
-    popoverAnalytics.createNew(() => {
+            popperDiv.id = popperid;
+            title.innerText = 'Bias Goggles';
 
-        popoverAnalytics.setSourceScoreIndex(srcIndex); //main frame
-        popoverAnalytics.setDestScoreIndex(destIndex); //link
+            popperDiv.appendChild(content);
+            content.appendChild(title);
 
-        anchorElement.addEventListener('click', () => {
-            popoverAnalytics.userClickedLink();
-            popoverAnalytics.save();
-        });
-
-        let options: PopperOptions = {
-            placement: 'right',
-            removeOnDestroy: true,
-            modifiers: {
-                arrow: {
-                    element: arrow
-                },
-                hovering: {
-                    value: false
-                }
-            },
-            onCreate: (data: Data) => {
-                console.log('created popover');
-                popoverAnalytics.popoverShown()
-
-                popperDiv.addEventListener('mouseenter', () => {
-
-                    data.instance.options.modifiers.hovering.value = true;
-
-                    popoverAnalytics.hoverStarted();
-
-                    popperDiv.addEventListener('mouseleave', () => {
-                        popoverAnalytics.hoverEnded();
-
-                        setTimeout(() => {
-                            popoverAnalytics.popoverClosed();
-                            popoverAnalytics.save();
-                            data.instance.destroy();
-                        }, fadeout);
-                    });
-
-                });
-            }
+            popperDiv.appendChild(arrow);
+            addGraph(content);
         };
 
-        if (data === null) {
-            let err = uncrawled.create404Msg(domain, ['bginfo']);
-            content.appendChild(err);
+        let createScoreInfoDiv = () => {
+            let scoreWrapper = document.createElement('div');
+            scoreWrapper.classList.add('bginfo');
+            let scoreText = document.createElement('p');
 
-        } else {
-            let score = createScoreInfoDiv(data, method);
-            content.appendChild(score);
+            let score: string = Math.fround(scoreData.bias_score * 100).toFixed(2);
 
-            chart.draw(data.vector, 150, 200, content);
+            scoreText.innerText = 'Score : ' + score;
+
+            let methodInfo = document.createElement('p');
+            methodInfo.innerText = 'using ' + MethodsAndNames[method];
+
+            scoreWrapper.appendChild(scoreText);
+            scoreWrapper.appendChild(methodInfo);
+
+            return scoreWrapper;
         }
 
-        let popper = new Popper(anchorElement, popperDiv, options);
+        let getSettings = (): PopperOptions => {
+            return {
+                placement: 'right',
+                removeOnDestroy: true,
+                modifiers: {
+                    arrow: {
+                        element: arrow
+                    },
+                    hovering: {
+                        value: false
+                    }
+                },
+                onCreate: (data: Data) => {
+                    console.log('created popover');
+                    popoverAnalytics.popoverShown();
 
-        anchorElement.addEventListener('mouseleave', () => {
+                    popperDiv.addEventListener('mouseenter', () => {
 
-            setTimeout(() => {
-                if (!popper.options.modifiers.hovering.value) {
-                    popoverAnalytics.popoverClosed();
-                    popoverAnalytics.save();
-                    popper.destroy();
+                        data.instance.options.modifiers.hovering.value = true;
+                        popoverAnalytics.hoverStarted();
+
+                        popperDiv.addEventListener('mouseleave', () => {
+                            data.instance.options.modifiers.hovering.value = false;
+                            popoverAnalytics.hoverEnded();
+                            data.instance.destroy();
+                        });
+
+                    });
                 }
-            }, fadeout);
+            };
+        }
+
+        let addGraph = (div: HTMLElement) => {
+            if (scoreData === null) {
+                let err = uncrawled.create404Msg(domain, ['bginfo']);
+                div.appendChild(err);
+            } else {
+                let score = createScoreInfoDiv();
+                div.appendChild(score);
+
+                chart.draw(scoreData.vector, 150, 200, div);
+            }
+
+            popper = new Popper(anchorElement, popperDiv, getSettings());
+            popper.destroy = () => {
+                setTimeout(() => {
+                    if (!popper.options.modifiers.hovering.value) {
+                        document.getElementById(popperid).remove();
+                        popoverAnalytics.popoverClosed();
+                        popoverAnalytics.save();
+                        anchorElement.removeEventListener('click', clickedLinkCallback);
+                        anchorElement.removeEventListener('mouseleave', outOfLinkCallback);
+                    }
+                }, fadeout);
+            };
+        };
+
+        let clickedLinkCallback = () => {
+            popoverAnalytics.userClickedLink();
+        };
+
+        //user didn't hover and didn't click on the link also
+        let outOfLinkCallback = () => {
+            popper.destroy();
+
+        };
+
+        anchorElement.addEventListener('click', clickedLinkCallback);
+        anchorElement.addEventListener('mouseleave', outOfLinkCallback);
+
+        let pageDomain = utils.getDomainFromURL(window.location.href);
+
+        extension.storage.getDomainData(pageDomain, (srcDomainData) => {
+            utils.getBiasData(domain, (data, destIndex) => {
+                scoreData = data.scores[method];
+                popoverAnalytics.createNew(() => {
+                    createDiv();
+                    popoverAnalytics.setSourceScoreIndex(srcDomainData.scoreIndex);  //main frame
+                    popoverAnalytics.setDestScoreIndex(destIndex);                   //link
+                });
+            });
         });
-    });
-}
+    }
 
-function createScoreInfoDiv(data: ScoreValue, method: string): HTMLElement {
-
-    let scoreWrapper = document.createElement('div');
-    scoreWrapper.classList.add('bginfo');
-    let scoreText = document.createElement('p');
-
-    let score: string = Math.fround(data.bias_score * 100).toFixed(2);
-
-    scoreText.innerText = 'Score : ' + score;
-
-    let methodInfo = document.createElement('p');
-    methodInfo.innerText = 'using ' + MethodsAndNames[method];
-
-    scoreWrapper.appendChild(scoreText);
-    scoreWrapper.appendChild(methodInfo);
-
-    return scoreWrapper;
 }
 
 function elementMouseOver(event: FocusEvent): void {
@@ -149,15 +174,13 @@ function elementMouseOver(event: FocusEvent): void {
                 }
 
                 //@ts-ignore
-                let domain = event.target.href;
+                //let domain = event.target.href;
 
                 userSettings.get((settings) => {
-                    extension.storage.getDomainData(utils.getDomainFromURL(window.location.href), (srcDomainData) => {
-                        utils.getBiasData(domain, (data, destIndex) => {
-                            createPopover(data.scores[settings.method], domain, settings.method,
-                                <HTMLElement>e.target, srcDomainData.scoreIndex, destIndex);
-                        });
-                    });
+                    if (settings.enabled) {
+                        popover.show(<HTMLElement>e.target, settings.method);
+                    }
+
                 });
 
             }
