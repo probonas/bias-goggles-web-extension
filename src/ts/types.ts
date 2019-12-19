@@ -58,6 +58,7 @@ export type PopoverAnalytics = {
     destScoreIndedx: number;
     totalTimeShown: number; //ms
     totalTimeUserHovered: number; //ms
+    goggles: string;
 }
 
 export type Analytics = {

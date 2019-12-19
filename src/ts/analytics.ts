@@ -1,5 +1,6 @@
 import { PopoverAnalytics } from "./types";
 import { extension } from "./storage";
+import { userSettings } from "./usersettings";
 
 export namespace popoverAnalytics {
 
@@ -80,10 +81,12 @@ export namespace popoverAnalytics {
             save = () => {
                 console.log('analytics store');
                 extension.storage.getAnalytics(item => {
-                    item.data[index] = analytics;
-                    extension.storage.set({ 'analytics': item });
+                    userSettings.get((settings) => {
+                        item.data[index] = analytics;
+                        item.data[index].goggles = settings.goggles;
+                        extension.storage.set({ 'analytics': item });
+                    });
                 });
-
             };
 
             callback();

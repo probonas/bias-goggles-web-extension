@@ -116,6 +116,9 @@ export namespace popover {
                     }
                 }, fadeout);
             };
+
+            anchorElement.addEventListener('click', clickedLinkCallback);
+            anchorElement.addEventListener('mouseleave', outOfLinkCallback);
         };
 
         let clickedLinkCallback = () => {
@@ -127,9 +130,6 @@ export namespace popover {
             popper.destroy();
 
         };
-
-        anchorElement.addEventListener('click', clickedLinkCallback);
-        anchorElement.addEventListener('mouseleave', outOfLinkCallback);
 
         let pageDomain = utils.getDomainFromURL(window.location.href);
 
