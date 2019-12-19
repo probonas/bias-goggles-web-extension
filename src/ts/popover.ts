@@ -32,20 +32,14 @@ function createPopover(data: ScoreValue, domain: string, method: string,
 
     document.body.appendChild(popperDiv);
 
-    popoverAnalytics.createNew((analytics, current) => {
+    popoverAnalytics.createNew(() => {
 
-        console.log('index is ' + current);
-
-        analytics.sourceScoreIndex = srcIndex; //main frame
-        analytics.destScoreIndedx = destIndex; //link
+        popoverAnalytics.setSourceScoreIndex(srcIndex); //main frame
+        popoverAnalytics.setDestScoreIndex(destIndex); //link
 
         anchorElement.addEventListener('click', () => {
-            let now = + Date.now();
-
-            analytics.userFollowedLink = true;
-            analytics.totalTimeShown = now - analytics.totalTimeShown;
-
-            popoverAnalytics.update(analytics, current);
+            popoverAnalytics.userClickedLink();
+            popoverAnalytics.save();
         });
 
         let options: PopperOptions = {
@@ -55,38 +49,26 @@ function createPopover(data: ScoreValue, domain: string, method: string,
                 arrow: {
                     element: arrow
                 },
-                creation: {
-                    timestamp: Date.now()
-                },
                 hovering: {
                     value: false
                 }
             },
             onCreate: (data: Data) => {
                 console.log('created popover');
-
-                analytics.totalTimeShown = + Date.now();
-                popoverAnalytics.update(analytics, current);
+                popoverAnalytics.popoverShown()
 
                 popperDiv.addEventListener('mouseenter', () => {
+
                     data.instance.options.modifiers.hovering.value = true;
 
-                    //hover started!
-                    analytics.userHoveredPopover = true;
-                    analytics.totalTimeUserHovered = + Date.now();
-
-                    popoverAnalytics.update(analytics, current);
+                    popoverAnalytics.hoverStarted();
 
                     popperDiv.addEventListener('mouseleave', () => {
-                        //hover ended!
-                        let now = + Date.now();
-                        analytics.totalTimeUserHovered = now - analytics.totalTimeUserHovered;
-                        analytics.totalTimeShown = now - analytics.totalTimeShown;
-                        analytics.totalTimeShown = now - analytics.totalTimeShown;
-
-                        popoverAnalytics.update(analytics, current);
+                        popoverAnalytics.hoverEnded();
 
                         setTimeout(() => {
+                            popoverAnalytics.popoverClosed();
+                            popoverAnalytics.save();
                             data.instance.destroy();
                         }, fadeout);
                     });
@@ -112,11 +94,8 @@ function createPopover(data: ScoreValue, domain: string, method: string,
 
             setTimeout(() => {
                 if (!popper.options.modifiers.hovering.value) {
-                    let now = + Date.now();
-
-                    analytics.totalTimeShown = now - analytics.totalTimeShown;
-                    popoverAnalytics.update(analytics, current);
-
+                    popoverAnalytics.popoverClosed();
+                    popoverAnalytics.save();
                     popper.destroy();
                 }
             }, fadeout);

@@ -14,7 +14,7 @@ chrome.runtime.onStartup.addListener(() => {
     utils.updateBadge();
 });
 chrome.webRequest.onCompleted.addListener((details) => {
-    utils.getBiasData(details.url, undefined);
+    utils.getBiasData(details.url);
 },
     { urls: ["<all_urls>"], types: ["main_frame"] }
 );

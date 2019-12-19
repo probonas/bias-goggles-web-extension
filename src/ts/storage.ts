@@ -73,7 +73,8 @@ export namespace extension {
 
         export function getScoreData(scoreIndex: number, callback: (item: Score, index: number) => void) {
             get(String(scoreIndex), (item) => {
-                callback(<Score>item, scoreIndex);
+                if( callback !== undefined)
+                    callback(<Score>item, scoreIndex);
             });
         }
 
