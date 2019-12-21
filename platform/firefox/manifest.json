@@ -45,5 +45,13 @@
 	],
 	"web_accessible_resources": [
 		"fonts/FiraSans-Regular.ttf"
-	]
+	],
+	"sidebar_action": {
+		"default_icon": {
+		  "16": "icons/icon-16.png",
+		  "32": "icons/icon-32.png",
+		},
+		"default_title": "Bias Goggles",
+		"default_panel": "options.html"
+	  }
 }
