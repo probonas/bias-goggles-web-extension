@@ -4,7 +4,7 @@ const FileManagerPlugin = require('filemanager-webpack-plugin');
 
 const sourceRoot = path.resolve(__dirname, './src/ts');
 
-const sourceRootHTML = path.resolve( __dirname, './src');
+const sourceRootHTML = path.resolve(__dirname, './src');
 const sourceRootJS = path.resolve(__dirname, './src/js');
 const sourceRootIcons = path.resolve(__dirname, './src/img');
 const sourceRootFonts = path.resolve(__dirname, './src/fonts');
@@ -17,20 +17,24 @@ module.exports = {
   entry: {
     background: sourceRoot + "/background.ts",
     popup: sourceRoot + "/popup.ts",
-    popover : sourceRoot + '/popover.ts'
+    popover: sourceRoot + '/popover.ts'
   },
   devtool: "inline-source-map",
   module: {
     rules: [
-        {
-            test: /\.tsx?$/,
-            use: 'ts-loader',
-            exclude: /node_modules/
-        },
+      {
+        test: /\.tsx?$/,
+        use: 'ts-loader',
+        exclude: /node_modules/
+      },
+      {
+        test: /\.(css)$/,
+        use: ['style-loader', 'css-loader']
+      }
     ],
   },
   resolve: {
-    extensions: ['.tsx','.ts', '.js']
+    extensions: ['.tsx', '.ts', '.js']
   },
   output: {
     filename: '[name].js',
@@ -44,34 +48,34 @@ module.exports = {
     ),
     new FileManagerPlugin(
       {
-        onEnd:{
-            delete:[
-              destinationRoot + '/*'
-            ],
-            copy: [
-              { source: sourceRootHTML + '/*.{html,css}', destination: destinationRoot + '/chromium/' },
-              { source: sourceRootHTML + '/*.{html,css}', destination: destinationRoot + '/firefox/' },
-              { source: sourceRootHTML + '/*.{html,css}', destination: destinationRoot + '/opera/' },
-              { source: sourceRootHTML + '/*.{html,css}', destination: destinationRoot + '/safari/' },
-                
-              { source: sourceRootJS + '/*', destination: destinationRoot + '/chromium/' },
-              { source: sourceRootJS + '/*', destination: destinationRoot + '/firefox/' },
-              { source: sourceRootJS + '/*', destination: destinationRoot + '/opera/' },
-              { source: sourceRootJS + '/*', destination: destinationRoot + '/safari/' },
-                
-              { source: sourceRootIcons + '/*', destination: destinationRoot + '/chromium/icons/' },
-              { source: sourceRootIcons + '/*', destination: destinationRoot + '/firefox/icons/' },
-              { source: sourceRootIcons + '/*', destination: destinationRoot + '/opera/icons/' },
-              { source: sourceRootIcons + '/*', destination: destinationRoot + '/safari/icons' },
-              
-              { source: sourceRootFonts + '/*', destination: destinationRoot + '/chromium/fonts/' },
-              { source: sourceRootFonts + '/*', destination: destinationRoot + '/firefox/fonts/' },
-              { source: sourceRootFonts + '/*', destination: destinationRoot + '/opera/fonts/' },
-              { source: sourceRootFonts + '/*', destination: destinationRoot + '/safari/fonts' },
-              
-              { source: platformSpecificsRoots + '/*/*', destination: destinationRoot }
-            ]
+        onEnd: {
+          delete: [
+            destinationRoot + '/*'
+          ],
+          copy: [
+            { source: sourceRootHTML + '/*.{html,css,js}', destination: destinationRoot + '/chromium/' },
+            { source: sourceRootHTML + '/*.{html,css,js}', destination: destinationRoot + '/firefox/' },
+            { source: sourceRootHTML + '/*.{html,css,js}', destination: destinationRoot + '/opera/' },
+            { source: sourceRootHTML + '/*.{html,css,js}', destination: destinationRoot + '/safari/' },
+
+            { source: sourceRootJS + '/*', destination: destinationRoot + '/chromium/' },
+            { source: sourceRootJS + '/*', destination: destinationRoot + '/firefox/' },
+            { source: sourceRootJS + '/*', destination: destinationRoot + '/opera/' },
+            { source: sourceRootJS + '/*', destination: destinationRoot + '/safari/' },
+
+            { source: sourceRootIcons + '/*', destination: destinationRoot + '/chromium/icons/' },
+            { source: sourceRootIcons + '/*', destination: destinationRoot + '/firefox/icons/' },
+            { source: sourceRootIcons + '/*', destination: destinationRoot + '/opera/icons/' },
+            { source: sourceRootIcons + '/*', destination: destinationRoot + '/safari/icons' },
+
+            { source: sourceRootFonts + '/*', destination: destinationRoot + '/chromium/fonts/' },
+            { source: sourceRootFonts + '/*', destination: destinationRoot + '/firefox/fonts/' },
+            { source: sourceRootFonts + '/*', destination: destinationRoot + '/opera/fonts/' },
+            { source: sourceRootFonts + '/*', destination: destinationRoot + '/safari/fonts' },
+
+            { source: platformSpecificsRoots + '/*/*', destination: destinationRoot }
+          ]
         }
-    })
+      })
   ]
 };

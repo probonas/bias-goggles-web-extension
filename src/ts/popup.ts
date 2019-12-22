@@ -5,6 +5,9 @@ import { Score, DomainData } from "./types";
 import { userSettings } from "./usersettings";
 import { extension } from "./storage";
 
+import "bootstrap";
+import 'bootstrap/dist/css/bootstrap.min.css';
+
 let toggleBtn = document.createElement('button');
 
 toggleBtn.addEventListener('click', () => {
