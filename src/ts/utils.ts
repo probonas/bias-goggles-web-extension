@@ -1,4 +1,4 @@
-import { AppData, DomainData, UserSettings, Score } from './types';
+import { AppData, DomainData, UserSettings, Score, OffOptions } from './types';
 import { extension } from "./storage";
 import { service } from './service';
 import { userSettings } from './usersettings';
@@ -74,24 +74,53 @@ export namespace utils {
             });
     }
 
-    function disableExtension(settings: UserSettings) {
+    function disableExtension(settings: UserSettings, option: OffOptions, callback?: () => void) {
         settings.enabled = false;
         chrome.browserAction.setIcon({
             path: {
                 "32": "icons/icon-disabled-32.png"
             }
         });
-        userSettings.update(settings, updateBadge);
+
+        if (option === OffOptions.ONE_HOUR) {
+            chrome.alarms.create('turn-on-bg', {
+                delayInMinutes: 60
+            });
+            settings.forceOn = true;
+            chrome.alarms.onAlarm.addListener((alarm) => {
+                if (alarm.name == 'turn-on-bg')
+                    toggle();
+            });
+        } else if (option === OffOptions.TWO_HOURS) {
+            chrome.alarms.create('turn-on-bg', {
+                delayInMinutes: 120
+            });
+            settings.forceOn = true;
+            chrome.alarms.onAlarm.addListener((alarm) => {
+                if (alarm.name == 'turn-on-bg')
+                    toggle();
+            });
+        } else if (option === OffOptions.SESSION_ONLY) {
+            settings.forceOn = true;
+        }
+
+        userSettings.update(settings, () => {
+            updateBadge();
+            callback();
+        });
     }
 
-    function enableExtension(settings: UserSettings) {
+    function enableExtension(settings: UserSettings, callback?: () => void) {
         settings.enabled = true;
         chrome.browserAction.setIcon({
             path: {
                 "32": "icons/icon-32.png"
             }
         });
-        userSettings.update(settings, updateBadge);
+        userSettings.update(settings, () => {
+            updateBadge();
+            callback();
+        });
     }
 
     export function updateBadge() {
@@ -106,12 +135,13 @@ export namespace utils {
         });
     }
 
-    export function toggle() {
+    export function toggle(option?: OffOptions, callback?: () => void) {
         userSettings.get((settings) => {
             if (settings.enabled) {
-                disableExtension(settings);
+                disableExtension(settings, option, callback);
             } else {
-                enableExtension(settings);
+                settings.forceOn = false;
+                enableExtension(settings, callback);
             }
         });
     }

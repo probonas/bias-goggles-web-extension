@@ -21,6 +21,7 @@
     "popper.js": "^1.16.0"
   },
   "devDependencies": {
+    "@types/bootstrap": "^4.3.1",
     "@types/chart.js": "^2.9.0",
     "@types/chrome": "0.0.91",
     "chart.js": "^2.9.3",

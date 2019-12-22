@@ -3,6 +3,13 @@ export enum BiasGogglesAvailable {
     footballTeams = "sport-teams"
 }
 
+export enum OffOptions {
+    ONE_HOUR,
+    TWO_HOURS,
+    SESSION_ONLY,
+    PERMA
+};
+
 export const MethodsAndNames: { [index: string]: string } = {
     'ic': 'Independent Cascade',
     'lt': 'Linear Threshold',
@@ -24,6 +31,7 @@ export interface UserSettings {
     syncEnabled: boolean;
     enabled: boolean;
     scoreIndex: number;
+    forceOn: boolean;
 }
 
 export type AppData = {

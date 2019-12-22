@@ -43,7 +43,8 @@
 		"<all_urls>",
 		"webRequest",
 		"storage",
-		"tabs"
+		"tabs",
+		"alarms"
 	],
 	"web_accessible_resources": [
 		"fonts/FiraSans-Regular.ttf"

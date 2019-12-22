@@ -1,26 +1,12 @@
 import { chart } from "./drawchart";
 import { uncrawled } from "./uncrawled";
 import { utils } from "./utils";
-import { Score, DomainData } from "./types";
+import { DomainData, OffOptions } from "./types";
 import { userSettings } from "./usersettings";
 import { extension } from "./storage";
 
 import "bootstrap";
 import 'bootstrap/dist/css/bootstrap.min.css';
-
-let toggleBtn = document.createElement('button');
-
-toggleBtn.addEventListener('click', () => {
-    userSettings.get((settings) => {
-        showBtnMessage(!settings.enabled);
-        if (!settings.enabled)
-            showDetails();
-        else
-            removeDetails();
-
-        utils.toggle();
-    });
-});
 
 function removeDetails() {
     document.getElementById(chart.id).remove();
@@ -41,23 +27,95 @@ function showDetails() {
     });
 };
 
-function showBtnMessage(extensionEnabled: boolean) {
-    if (extensionEnabled) {
-        toggleBtn.innerText = 'Disable Extension';
-        if (toggleBtn.classList.contains('on'))
-            toggleBtn.classList.remove('on');
-        toggleBtn.classList.add('off');
-    } else {
-        toggleBtn.innerText = 'Enable Extension';
-        if (toggleBtn.classList.contains('off'))
-            toggleBtn.classList.remove('off');
-        toggleBtn.classList.add('on');
-    }
+const navId = 'nav-bar';
+const onBtnId = 'bg-onbtn';
+const offBtnId = 'bg-offbtn';
+const oneHourID = 'bg-onehour';
+const twoHoursID = 'bg-twohours';
+const sessionOnlyID = 'bg-session-only';
+const permaID = 'bg-perma';
+const onID = 'bg-on';
+
+function removeOnBtn() {
+    if (document.getElementById(onBtnId))
+        document.getElementById(onBtnId).remove();
 }
 
+function removeOffBtn() {
+    if (document.getElementById(offBtnId))
+        document.getElementById(offBtnId).remove()
+};
+
+function addOnBtn() {
+    let btn = document.createElement('div');
+    btn.id = onBtnId;
+    btn.innerHTML = onBtnInnerHtml;
+    document.getElementById(navId).appendChild(btn);
+
+}
+
+function addOffBtn() {
+    let btn = document.createElement('div');
+    btn.id = offBtnId;
+    btn.innerHTML = offButtonInnerHtml;
+    document.getElementById(navId).appendChild(btn);
+}
+
+function showToggleBtn() {
+    console.log('here');
+
+    userSettings.get((settings) => {
+        if (!settings.enabled) {
+            removeOffBtn();
+            addOnBtn();
+            document.getElementById(onID).addEventListener('click', () => {
+                utils.toggle(null, showToggleBtn);
+            });
+        } else {
+            removeOnBtn();
+            addOffBtn();
+
+            document.getElementById(oneHourID).addEventListener('click', () => {
+                utils.toggle(OffOptions.ONE_HOUR, showToggleBtn);
+            });
+
+            document.getElementById(twoHoursID).addEventListener('click', () => {
+                utils.toggle(OffOptions.TWO_HOURS, showToggleBtn);
+            });
+
+            document.getElementById(sessionOnlyID).addEventListener('click', () => {
+                utils.toggle(OffOptions.SESSION_ONLY, showToggleBtn);
+            });
+
+            document.getElementById(permaID).addEventListener('click', () => {
+                utils.toggle(OffOptions.PERMA, showToggleBtn);
+            });
+        }
+    });
+
+}
+
+const offButtonInnerHtml =
+    `<li class="nav-item dropdown">
+        <button class="btn btn-outline-danger dropdown-toggle" data-toggle="dropdown" data-boundary="window"
+    aria-haspopup="true" aria-expanded="false">Disable</button>
+        <div class="dropdown-menu">
+            <btn class="dropdown-item" id="${oneHourID}">for 1 hour</btn>
+            <btn class="dropdown-item" id="${twoHoursID}">for 2 hours</btn>
+            <btn class="dropdown-item" id="${sessionOnlyID}")">for this session only</btn>
+            <div class="dropdown-divider"></div>
+            <btn class="dropdown-item" id="${permaID}">until I re-enable it</btn>
+        </div>
+    </li>`;
+
+const onBtnInnerHtml =
+    `<li class="nav-item">
+        <button class="nav-link btn btn-outline-success text-success" id="${onID}" role="button">Enable</button>
+    </li>`;
+
 userSettings.get((settings) => {
-    showBtnMessage(settings.enabled);
     if (settings.enabled)
         showDetails();
-    document.getElementById('on-off').appendChild(toggleBtn);
 });
+
+showToggleBtn();

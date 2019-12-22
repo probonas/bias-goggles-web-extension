@@ -21,7 +21,8 @@ export namespace userSettings {
             forceRefreshLimit: limit,
             syncEnabled: syncEnabled,
             enabled: enabled,
-            scoreIndex: scoreIndex
+            scoreIndex: scoreIndex,
+            forceOn: false
         };
 
         if (syncEnabled) {
