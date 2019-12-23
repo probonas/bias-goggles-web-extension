@@ -36,85 +36,116 @@ const sessionOnlyID = 'bg-session-only';
 const permaID = 'bg-perma';
 const onID = 'bg-on';
 
-function removeOnBtn() {
-    if (document.getElementById(onBtnId))
-        document.getElementById(onBtnId).remove();
+function showBtn(on: boolean) {
+
+    function removeOffBtn() {
+        if (document.getElementById(offBtnId))
+            document.getElementById(offBtnId).remove()
+    };
+
+
+    function removeOnBtn() {
+        if (document.getElementById(onBtnId))
+            document.getElementById(onBtnId).remove()
+    }
+
+    function addOnBtn() {
+        if (document.getElementById(onBtnId))
+            return;
+
+        let btn = document.createElement('div');
+        btn.id = onBtnId;
+        btn.innerHTML = onBtnInnerHtml;
+        document.getElementById(navId).appendChild(btn);
+
+    }
+
+    function addOffBtn() {
+        if (document.getElementById(offBtnId))
+            return;
+
+        let btn = document.createElement('div');
+        btn.id = offBtnId;
+        btn.innerHTML = offButtonInnerHtml;
+        document.getElementById(navId).appendChild(btn);
+    }
+
+    if (on) {
+        removeOffBtn();
+        addOnBtn();
+    } else {
+        removeOnBtn();
+        addOffBtn();
+    }
 }
 
-function removeOffBtn() {
-    if (document.getElementById(offBtnId))
-        document.getElementById(offBtnId).remove()
-};
-
-function addOnBtn() {
-    let btn = document.createElement('div');
-    btn.id = onBtnId;
-    btn.innerHTML = onBtnInnerHtml;
-    document.getElementById(navId).appendChild(btn);
-
+function reEnableCallback() {
+    utils.enableExtension(() => {
+        createToggleBtn();
+        showSuccessAlert('Re-enabled!');
+    });
 }
 
-function addOffBtn() {
-    let btn = document.createElement('div');
-    btn.id = offBtnId;
-    btn.innerHTML = offButtonInnerHtml;
-    document.getElementById(navId).appendChild(btn);
+function updateAndShowSuccessCallback() {
+    createToggleBtn();
+    showSuccessAlert('Success!');
 }
 
-function showToggleBtn() {
-    console.log('here');
+function createToggleBtn() {
+    let on = true;
+    let off = false;
 
     userSettings.get((settings) => {
-        if (!settings.enabled) {
-            removeOffBtn();
-            addOnBtn();
 
-            document.getElementById(onID).addEventListener('click', () => {
-                utils.toggle(null, showToggleBtn);
-                showSuccessAlert();
-            });
-        } else {
-            removeOnBtn();
-            addOffBtn();
+        if (settings.enabled) {
+            showBtn(off);
 
             document.getElementById(oneHourID).addEventListener('click', () => {
-                utils.toggle(OffOptions.ONE_HOUR, showToggleBtn);
-                showSuccessAlert();
+                utils.disableExtension(OffOptions.ONE_HOUR, updateAndShowSuccessCallback, reEnableCallback);
             });
 
             document.getElementById(twoHoursID).addEventListener('click', () => {
-                utils.toggle(OffOptions.TWO_HOURS, showToggleBtn);
-                showSuccessAlert();
+                utils.disableExtension(OffOptions.TWO_HOURS, updateAndShowSuccessCallback, reEnableCallback);
             });
 
             document.getElementById(sessionOnlyID).addEventListener('click', () => {
-                utils.toggle(OffOptions.SESSION_ONLY, showToggleBtn);
-                showSuccessAlert();
+                utils.disableExtension(OffOptions.SESSION_ONLY, updateAndShowSuccessCallback);
             });
 
             document.getElementById(permaID).addEventListener('click', () => {
-                utils.toggle(OffOptions.PERMA, showToggleBtn);
-                showSuccessAlert();
+                utils.disableExtension(OffOptions.PERMA, updateAndShowSuccessCallback);
+            });
+        } else {
+            showBtn(on);
+
+            document.getElementById(onID).addEventListener('click', () => {
+                utils.enableExtension(updateAndShowSuccessCallback);
             });
         }
+
     });
 
 }
 
-function showSuccessAlert() {
+function showSuccessAlert(msg: string) {
+    const successAlertInnerHTMl =
+        `<div class="alert alert-success alert-dismissible fade show" role="alert">
+            <strong>${msg}</strong>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>`;
+
     let alert = document.createElement('div');
     alert.innerHTML = successAlertInnerHTMl;
     document.getElementById('container').appendChild(alert);
-    setTimeout((<HTMLButtonElement>alert.children[0].children[1]).click, 2000);
-}
+    console.log(alert.children[0]);
+    console.log(alert.children[0].children[1]);
 
-const successAlertInnerHTMl =
-    `<div class="alert alert-success alert-dismissible fade show" role="alert">
-        <strong>Success!</strong>
-        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-        </button>
-    </div>`;
+    setTimeout(() => {
+        (<HTMLButtonElement>alert.children[0].children[1]).click()
+    }, 2000);
+}
 
 const offButtonInnerHtml =
     `<li class="nav-item dropdown">
@@ -139,4 +170,4 @@ userSettings.get((settings) => {
         showDetails();
 });
 
-showToggleBtn();
+createToggleBtn();

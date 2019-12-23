@@ -74,76 +74,84 @@ export namespace utils {
             });
     }
 
-    function disableExtension(settings: UserSettings, option: OffOptions, callback?: () => void) {
-        settings.enabled = false;
-        chrome.browserAction.setIcon({
-            path: {
-                "32": "icons/icon-disabled-32.png"
-            }
-        });
+    export function disableExtension(option: OffOptions, callback?: () => void,
+        reEnableCallback?: () => void) {
+        userSettings.get((settings) => {
+            settings.enabled = false;
+            chrome.browserAction.setIcon({
+                path: {
+                    "32": "icons/icon-disabled-32.png"
+                }
+            });
 
-        if (option === OffOptions.ONE_HOUR) {
-            chrome.alarms.create('turn-on-bg', {
-                delayInMinutes: 60
+            if (option === OffOptions.ONE_HOUR) {
+                chrome.alarms.clear('turn-on-bg');
+
+                chrome.alarms.create('turn-on-bg', {
+                    delayInMinutes: 60
+                });
+                settings.forceOn = true;
+
+                chrome.alarms.onAlarm.addListener((alarm) => {
+                    if (alarm.name == 'turn-on-bg'){
+                        reEnableCallback();
+                    }
+                });
+            } else if (option === OffOptions.TWO_HOURS) {
+                chrome.alarms.clear('turn-on-bg');
+
+                chrome.alarms.create('turn-on-bg', {
+                    delayInMinutes: 120
+                });
+                settings.forceOn = true;
+                chrome.alarms.onAlarm.addListener((alarm) => {
+                    if (alarm.name == 'turn-on-bg')
+                        reEnableCallback();
+                });
+            } else if (option === OffOptions.SESSION_ONLY) {
+                chrome.alarms.clear('turn-on-bg');
+
+                settings.forceOn = true;
+            }
+
+            userSettings.update(settings, () => {
+                updateBadge(settings);
+                callback();
             });
-            settings.forceOn = true;
-            chrome.alarms.onAlarm.addListener((alarm) => {
-                if (alarm.name == 'turn-on-bg')
-                    callback();
+        });
+    }
+
+    export function enableExtension(callback?: () => void) {
+        userSettings.get((settings) => {
+            settings.enabled = true;
+            chrome.browserAction.setIcon({
+                path: {
+                    "32": "icons/icon-32.png"
+                }
             });
-        } else if (option === OffOptions.TWO_HOURS) {
-            chrome.alarms.create('turn-on-bg', {
-                delayInMinutes: 120
+            chrome.alarms.clear('tun-on-bg');
+            userSettings.update(settings, () => {
+                updateBadge(settings);
+                callback();
             });
-            settings.forceOn = true;
-            chrome.alarms.onAlarm.addListener((alarm) => {
-                if (alarm.name == 'turn-on-bg')
-                    callback();
-            });
-        } else if (option === OffOptions.SESSION_ONLY) {
-            settings.forceOn = true;
+        });
+    }
+
+    function updateBadge(settings: UserSettings) {
+        if (settings.enabled) {
+            chrome.browserAction.setBadgeBackgroundColor({ color: '#3CB371' });
+            chrome.browserAction.setBadgeText({ text: 'on' });
+        } else {
+            chrome.browserAction.setBadgeBackgroundColor({ color: '#f08080' });
+            chrome.browserAction.setBadgeText({ text: 'off' });
         }
-
-        userSettings.update(settings, () => {
-            updateBadge();
-            callback();
-        });
     }
 
-    function enableExtension(settings: UserSettings, callback?: () => void) {
-        settings.enabled = true;
-        chrome.browserAction.setIcon({
-            path: {
-                "32": "icons/icon-32.png"
-            }
-        });
-        userSettings.update(settings, () => {
-            updateBadge();
-            callback();
-        });
-    }
-
-    export function updateBadge() {
+    export function showCorrectBadge() {
         userSettings.get((settings) => {
-            if (settings.enabled) {
-                chrome.browserAction.setBadgeBackgroundColor({ color: '#3CB371' });
-                chrome.browserAction.setBadgeText({ text: 'on' });
-            } else {
-                chrome.browserAction.setBadgeBackgroundColor({ color: '#f08080' });
-                chrome.browserAction.setBadgeText({ text: 'off' });
-            }
+            updateBadge(settings);
         });
     }
 
-    export function toggle(option?: OffOptions, callback?: () => void) {
-        userSettings.get((settings) => {
-            if (settings.enabled) {
-                disableExtension(settings, option, callback);
-            } else {
-                settings.forceOn = false;
-                enableExtension(settings, callback);
-            }
-        });
-    }
 }
 
