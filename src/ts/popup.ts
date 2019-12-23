@@ -68,8 +68,10 @@ function showToggleBtn() {
         if (!settings.enabled) {
             removeOffBtn();
             addOnBtn();
+
             document.getElementById(onID).addEventListener('click', () => {
                 utils.toggle(null, showToggleBtn);
+                showSuccessAlert();
             });
         } else {
             removeOnBtn();
@@ -77,28 +79,47 @@ function showToggleBtn() {
 
             document.getElementById(oneHourID).addEventListener('click', () => {
                 utils.toggle(OffOptions.ONE_HOUR, showToggleBtn);
+                showSuccessAlert();
             });
 
             document.getElementById(twoHoursID).addEventListener('click', () => {
                 utils.toggle(OffOptions.TWO_HOURS, showToggleBtn);
+                showSuccessAlert();
             });
 
             document.getElementById(sessionOnlyID).addEventListener('click', () => {
                 utils.toggle(OffOptions.SESSION_ONLY, showToggleBtn);
+                showSuccessAlert();
             });
 
             document.getElementById(permaID).addEventListener('click', () => {
                 utils.toggle(OffOptions.PERMA, showToggleBtn);
+                showSuccessAlert();
             });
         }
     });
 
 }
 
+function showSuccessAlert() {
+    let alert = document.createElement('div');
+    alert.innerHTML = successAlertInnerHTMl;
+    document.getElementById('container').appendChild(alert);
+    setTimeout((<HTMLButtonElement>alert.children[0].children[1]).click, 2000);
+}
+
+const successAlertInnerHTMl =
+    `<div class="alert alert-success alert-dismissible fade show" role="alert">
+        <strong>Success!</strong>
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>`;
+
 const offButtonInnerHtml =
     `<li class="nav-item dropdown">
-        <button class="btn btn-outline-danger dropdown-toggle" data-toggle="dropdown" data-boundary="window"
-    aria-haspopup="true" aria-expanded="false">Disable</button>
+        <button data-boundary="viewport" type="button" class="btn btn-outline-danger dropdown-toggle" data-toggle="dropdown"
+            aria-haspopup="true" aria-expanded="false">Disable</button>
         <div class="dropdown-menu">
             <btn class="dropdown-item" id="${oneHourID}">for 1 hour</btn>
             <btn class="dropdown-item" id="${twoHoursID}">for 2 hours</btn>

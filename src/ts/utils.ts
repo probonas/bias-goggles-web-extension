@@ -89,7 +89,7 @@ export namespace utils {
             settings.forceOn = true;
             chrome.alarms.onAlarm.addListener((alarm) => {
                 if (alarm.name == 'turn-on-bg')
-                    toggle();
+                    callback();
             });
         } else if (option === OffOptions.TWO_HOURS) {
             chrome.alarms.create('turn-on-bg', {
@@ -98,7 +98,7 @@ export namespace utils {
             settings.forceOn = true;
             chrome.alarms.onAlarm.addListener((alarm) => {
                 if (alarm.name == 'turn-on-bg')
-                    toggle();
+                    callback();
             });
         } else if (option === OffOptions.SESSION_ONLY) {
             settings.forceOn = true;
