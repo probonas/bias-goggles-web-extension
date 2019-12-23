@@ -1,5 +1,5 @@
 import { get as httpGet } from "http";
-import { extension } from "./storage"
+import { Message } from "./types"
 import { userSettings } from "./usersettings";
 
 export namespace service {
@@ -23,16 +23,19 @@ export namespace service {
             let targetURL = getRequestURL(activeTab, settings.goggles);
 
             httpGet(targetURL, res => {
-
+                let sent = false;
                 res.on('data', chunk => {
                     data += chunk;
+                    if(!sent){
+                        chrome.runtime.sendMessage(Message.WAITING_SERVICE);
+                        sent = true;
+                    }
                 });
 
                 res.on('close', () => {
                     if (res.statusCode !== 200) {
                         console.log('HTTP Status code ' + res.statusCode);
-                        callback(null);
-                        return;
+                        data = null;
                     }
 
                     callback(data);

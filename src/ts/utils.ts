@@ -1,4 +1,4 @@
-import { AppData, DomainData, UserSettings, Score, OffOptions } from './types';
+import { AppData, DomainData, UserSettings, Score, OffOptions, Message } from './types';
 import { extension } from "./storage";
 import { service } from './service';
 import { userSettings } from './usersettings';
@@ -19,6 +19,7 @@ export namespace utils {
             console.log(domain + " not found.");
 
             service.query(domain, (data: any) => {
+                chrome.runtime.sendMessage(Message.SHOW_DATA);
                 extension.storage.set(data, () => {
                     callback(domainData);
                 });
@@ -27,6 +28,7 @@ export namespace utils {
             console.log(domain + " found. But data is considered obsolete. Updating scoreIndex!");
 
             service.query(domain, (data: any) => {
+                chrome.runtime.sendMessage(Message.SHOW_DATA);
                 extension.storage.set(data, () => {
                     callback(domainData);
                 });
@@ -39,6 +41,7 @@ export namespace utils {
             appdata[domain] = domainData;
 
             extension.storage.set(appdata, () => {
+                chrome.runtime.sendMessage(Message.SHOW_DATA);
                 callback(domainData);
             });
         }
@@ -60,15 +63,20 @@ export namespace utils {
     export function getDataForActiveTab(callback: (domain: string, data: DomainData) => void): void {
         chrome.tabs.query({ 'active': true, 'currentWindow': true, 'lastFocusedWindow': true },
             (tabs) => {
-                extension.storage.getDomainData(utils.getDomainFromURL(tabs[0].url), (items) => {
-                    if (callback === undefined)
-                        return;
+                userSettings.get((settings) => {
+                    if (settings.enabled) {
+                        extension.storage.getDomainData(utils.getDomainFromURL(tabs[0].url), (items) => {
+                            if (callback === undefined)
+                                return;
 
-                    if (items === null) {
-                        callback(tabs[0].url, null);
-                    } else {
-                        let domain = utils.getDomainFromURL(tabs[0].url);
-                        callback(domain, items);
+                            if (items === null) {
+                                callback(tabs[0].url, null);
+                            } else {
+                                let domain = utils.getDomainFromURL(tabs[0].url);
+                                callback(domain, items);
+                            }
+                            
+                        });
                     }
                 });
             });
@@ -93,7 +101,7 @@ export namespace utils {
                 settings.forceOn = true;
 
                 chrome.alarms.onAlarm.addListener((alarm) => {
-                    if (alarm.name == 'turn-on-bg'){
+                    if (alarm.name == 'turn-on-bg') {
                         reEnableCallback();
                     }
                 });

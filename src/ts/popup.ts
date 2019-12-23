@@ -1,31 +1,12 @@
 import { chart } from "./drawchart";
 import { uncrawled } from "./uncrawled";
 import { utils } from "./utils";
-import { DomainData, OffOptions } from "./types";
+import { DomainData, OffOptions, Message } from "./types";
 import { userSettings } from "./usersettings";
 import { extension } from "./storage";
 
 import "bootstrap";
 import 'bootstrap/dist/css/bootstrap.min.css';
-
-function removeDetails() {
-    document.getElementById(chart.id).remove();
-}
-
-function showDetails() {
-    utils.getDataForActiveTab((domain: string, data: DomainData) => {
-        if (data === null) {
-            let err = uncrawled.create404Msg(domain, ['error']);
-            document.getElementById('chartbox').appendChild(err);
-        } else {
-            extension.storage.getScoresForDomain(domain, (data) => {
-                let vector = data.scores['pr'].vector;
-                chart.draw(vector, 220, 300, document.getElementById('chartbox'), true);
-            });
-        }
-
-    });
-};
 
 const navId = 'nav-bar';
 const onBtnId = 'bg-onbtn';
@@ -35,6 +16,31 @@ const twoHoursID = 'bg-twohours';
 const sessionOnlyID = 'bg-session-only';
 const permaID = 'bg-perma';
 const onID = 'bg-on';
+
+function clearInfoTab() {
+    while(document.getElementById('live-info').hasChildNodes())
+        document.getElementById('live-info').firstChild.remove();
+}
+
+function detailsCard() {
+    utils.getDataForActiveTab((domain: string, data: DomainData) => {
+        if (data === null) {
+            let card = cardInnerHtml('Too bad... :(', uncrawled.create404Msg(domain,['text-info']));
+            
+            document.getElementById('live-info').appendChild(card[0]);
+            document.getElementById('live-info').appendChild(card[1]);
+        } else {
+            extension.storage.getScoresForDomain(domain, (data) => {
+                let vector = data.scores['pr'].vector;
+                let card = cardInnerHtml('Data for ' + domain, '');
+                document.getElementById('live-info').appendChild(card[0]);
+                document.getElementById('live-info').appendChild(card[1]);
+                chart.draw(vector, 220, 300, card[1], true);
+            });
+        }
+
+    });
+};
 
 function showBtn(on: boolean) {
 
@@ -165,9 +171,74 @@ const onBtnInnerHtml =
         <button class="nav-link btn btn-outline-success text-success" id="${onID}" role="button">Enable</button>
     </li>`;
 
-userSettings.get((settings) => {
-    if (settings.enabled)
-        showDetails();
-});
+
+function cardInnerHtml(title: string, body: HTMLElement | string): HTMLElement[] {
+    /*
+            `<h3 class="card-title">${title}</h3>
+            <h5><p class="card-text">${body}</p></h5>`;
+    */
+
+    let ti = document.createElement('h3');
+    ti.classList.add('card-title');
+    ti.innerHTML = title;
+
+    let text = document.createElement('h5');
+    let p = document.createElement('p');
+    p.classList.add('card-text');
+
+    if (typeof body === 'string')
+        p.innerHTML = body;
+    else
+        p.appendChild(body);
+
+    text.appendChild(p);
+
+    return [ti, text];
+}
+
+function showSpinner(): HTMLElement {
+    /*
+    `<div class="d-flex justify-content-center">
+            <div class="spinner-border" role="status">
+                <span class="sr-only">Loading...</span>
+            </div>
+        </div>`;
+    */
+
+    let ret = document.createElement('div');
+    ret.classList.add('d-flex', 'justify-content-center');
+
+    let ch = document.createElement('div');
+    ch.classList.add('spinner-border');
+    ch.setAttribute("role", "status");
+
+    ret.appendChild(ch);
+
+    let sp = document.createElement('span');
+    sp.classList.add('sr-only');
+    sp.innerHTML = 'Loading...';
+
+    ch.appendChild(sp);
+
+    return ret;
+}
 
 createToggleBtn();
+
+document.getElementById('live-info-tab').addEventListener('click', detailsCard);
+
+chrome.runtime.onMessage.addListener((message: Message) => {
+    clearInfoTab();
+    if (message == Message.EXT_DISABLED) {
+        let card = cardInnerHtml('Extension is disabled!', 'Enable it, and try again');
+        document.getElementById('live-info').appendChild(card[0]);
+        document.getElementById('live-info').appendChild(card[1]);
+    }
+    else if (message === Message.WAITING_SERVICE) {
+        let card = cardInnerHtml('Requesting data from service...', showSpinner());
+        document.getElementById('live-info').appendChild(card[0]);
+        document.getElementById('live-info').appendChild(card[1]);
+    } else if (message === Message.SHOW_DATA) {
+        detailsCard();
+    }
+});

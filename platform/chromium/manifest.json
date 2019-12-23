@@ -1,7 +1,7 @@
 {
 	"manifest_version": 2,
 	"name": "bias-goggles",
-	"description": "Firefox webextension for bias-goggles",
+	"description": "Chromium webextension for bias-goggles",
 	"version": "0.0.1",
 	"icons": {
 		"16": "icons/icon-16.png",
@@ -45,8 +45,5 @@
 		"storage",
 		"tabs",
 		"alarms"
-	],
-	"web_accessible_resources": [
-		"fonts/FiraSans-Regular.ttf"
 	]
 }

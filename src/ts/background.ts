@@ -1,4 +1,4 @@
-import { BiasGogglesAvailable } from "./types"
+import { BiasGogglesAvailable, Message } from "./types"
 import { userSettings } from "./usersettings";
 import { utils } from "./utils";
 import { popoverAnalytics } from "./analytics"
@@ -18,3 +18,7 @@ chrome.webRequest.onCompleted.addListener((details) => {
 },
     { urls: ["<all_urls>"], types: ["main_frame"] }
 );
+
+chrome.tabs.onActivated.addListener(() => {
+    chrome.runtime.sendMessage(Message.SHOW_DATA);
+});

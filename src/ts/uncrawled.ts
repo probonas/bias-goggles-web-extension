@@ -5,7 +5,7 @@ export namespace uncrawled {
         if (errorMessageExists())
             return;
 
-        let err = document.createElement('div');
+        let err = document.createElement('p');
         err.id = errorMsgId;
         err.innerText = 'We haven\'t crawled ' + url + ' yet!';
 

@@ -9,6 +9,11 @@ export namespace extension {
 
         export function set(data: string | AppData | Analytics, callback?: () => void): void {
 
+            if(data === null){
+                callback();
+                return;
+            }
+
             userSettings.get((settings) => {
                 let syncEnabled = settings.syncEnabled;
                 let limit = settings.forceRefreshLimit;
