@@ -1,6 +1,7 @@
 const path = require('path');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const FileManagerPlugin = require('filemanager-webpack-plugin');
+const webpack = require('webpack');
 
 const sourceRoot = path.resolve(__dirname, './src/ts');
 
@@ -33,13 +34,14 @@ module.exports = {
     ],
   },
   resolve: {
-    extensions: ['.tsx', '.ts', '.js']
+    extensions: ['.tsx', '.ts', '.js'],
   },
   output: {
     filename: '[name].js',
     path: sourceRootJS,
   },
   plugins: [
+    new webpack.IgnorePlugin(/^\.\/locale$/, /moment$/),
     new CleanWebpackPlugin(
       {
         verbose: true
