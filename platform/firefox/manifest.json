@@ -21,7 +21,6 @@
 			"32": "icons/icon-32.png"
 		},
 		"default_title": "bias goggles"
-	//	"default_popup": "popup.html"
 	},
 	"content_scripts": [
 		{

@@ -27,6 +27,7 @@
     "@types/bootstrap": "^4.3.1",
     "@types/chart.js": "^2.9.0",
     "@types/chrome": "0.0.91",
+    "@types/firefox-webext-browser": "^70.0.1",
     "chart.js": "^2.9.3",
     "create-web-ext": "^1.0.0",
     "css-loader": "^3.4.0",
