@@ -10,10 +10,16 @@ export enum OffOptions {
     PERMA
 };
 
-export enum Message {
+export enum MessageType {
     WAITING_SERVICE,
     SHOW_DATA,
+    SHOW_DATA_FOR_LINK,
     EXT_DISABLED
+}
+
+export type Message = {
+    type: MessageType;
+    data: string;
 }
 
 export const MethodsAndNames: { [index: string]: string } = {
@@ -38,6 +44,7 @@ export interface UserSettings {
     enabled: boolean;
     scoreIndex: number;
     forceOn: boolean;
+    pagePopoverEnabled: boolean;
 }
 
 export type AppData = {

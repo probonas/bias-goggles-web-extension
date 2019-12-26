@@ -1,7 +1,8 @@
-import { BiasGogglesAvailable, Message } from "./types"
+import { BiasGogglesAvailable, MessageType } from "./types"
 import { userSettings } from "./usersettings";
 import { utils } from "./utils";
 import { popoverAnalytics } from "./analytics"
+import "./contextMenu";
 
 chrome.runtime.onInstalled.addListener((details) => {
     userSettings.save('pr', BiasGogglesAvailable.politicalParties, 100, false, true, -1);
@@ -20,5 +21,5 @@ chrome.webRequest.onCompleted.addListener((details) => {
 );
 
 chrome.tabs.onActivated.addListener(() => {
-    chrome.runtime.sendMessage(Message.SHOW_DATA);
+    chrome.runtime.sendMessage({ type: MessageType.SHOW_DATA });
 });

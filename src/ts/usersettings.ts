@@ -22,7 +22,8 @@ export namespace userSettings {
             syncEnabled: syncEnabled,
             enabled: enabled,
             scoreIndex: scoreIndex,
-            forceOn: false
+            forceOn: false,
+            pagePopoverEnabled: true
         };
 
         if (syncEnabled) {

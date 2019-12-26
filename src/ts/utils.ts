@@ -1,4 +1,4 @@
-import { AppData, DomainData, UserSettings, Score, OffOptions, Message } from './types';
+import { AppData, DomainData, UserSettings, Score, OffOptions, MessageType } from './types';
 import { extension } from "./storage";
 import { service } from './service';
 import { userSettings } from './usersettings';
@@ -19,8 +19,8 @@ export namespace utils {
             console.log(domain + " not found.");
 
             service.query(domain, (data: any) => {
-                chrome.runtime.sendMessage(Message.SHOW_DATA);
                 extension.storage.set(data, () => {
+                    chrome.runtime.sendMessage({ type: MessageType.SHOW_DATA });
                     callback(domainData);
                 });
             });
@@ -28,7 +28,7 @@ export namespace utils {
             console.log(domain + " found. But data is considered obsolete. Updating scoreIndex!");
 
             service.query(domain, (data: any) => {
-                chrome.runtime.sendMessage(Message.SHOW_DATA);
+                chrome.runtime.sendMessage({ type: MessageType.SHOW_DATA });
                 extension.storage.set(data, () => {
                     callback(domainData);
                 });
@@ -41,7 +41,7 @@ export namespace utils {
             appdata[domain] = domainData;
 
             extension.storage.set(appdata, () => {
-                chrome.runtime.sendMessage(Message.SHOW_DATA);
+                chrome.runtime.sendMessage({ type: MessageType.SHOW_DATA });
                 callback(domainData);
             });
         }
@@ -61,26 +61,32 @@ export namespace utils {
     }
 
     export function getDataForActiveTab(callback: (domain: string, data: DomainData) => void): void {
+        getActiveTab((domain: string) => {
+            userSettings.get((settings) => {
+                if (settings.enabled) {
+                    extension.storage.getDomainData(utils.getDomainFromURL(domain), (items) => {
+                        if (callback === undefined)
+                            return;
+
+                        if (items === null) {
+                            callback(domain, null);
+                        } else {
+                            domain = utils.getDomainFromURL(domain);
+                            callback(domain, items);
+                        }
+
+                    });
+                }
+            });
+        });
+    }
+
+    export function getActiveTab(callback: (domain: string) => void) {
         chrome.tabs.query({ 'active': true, 'currentWindow': true, 'lastFocusedWindow': true },
             (tabs) => {
-                userSettings.get((settings) => {
-                    if (settings.enabled) {
-                        extension.storage.getDomainData(utils.getDomainFromURL(tabs[0].url), (items) => {
-                            if (callback === undefined)
-                                return;
-
-                            if (items === null) {
-                                callback(tabs[0].url, null);
-                            } else {
-                                let domain = utils.getDomainFromURL(tabs[0].url);
-                                callback(domain, items);
-                            }
-                            
-                        });
-                    }
-                });
+                callback(tabs[0].url);
             });
-    }
+    };
 
     export function disableExtension(option: OffOptions, callback?: () => void,
         reEnableCallback?: () => void) {

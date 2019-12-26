@@ -1,9 +1,8 @@
 import { chart } from "./drawchart";
 import { uncrawled } from "./uncrawled";
 import { utils } from "./utils";
-import { DomainData, OffOptions, Message } from "./types";
+import { OffOptions, Message, MessageType, Score } from "./types";
 import { userSettings } from "./usersettings";
-import { extension } from "./storage";
 
 import "bootstrap";
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -16,31 +15,25 @@ const twoHoursID = 'bg-twohours';
 const sessionOnlyID = 'bg-session-only';
 const permaID = 'bg-perma';
 const onID = 'bg-on';
+const activeTabCardID = 'bg-active-tab-card';
+const selectedLinkCardID = 'bg-selected-link-card-id';
 
 function clearInfoTab() {
-    while(document.getElementById('live-info').hasChildNodes())
+    while (document.getElementById('live-info').hasChildNodes())
         document.getElementById('live-info').firstChild.remove();
 }
 
-function detailsCard() {
-    utils.getDataForActiveTab((domain: string, data: DomainData) => {
-        if (data === null) {
-            let card = cardInnerHtml('Too bad... :(', uncrawled.create404Msg(domain,['text-info']));
-            
-            document.getElementById('live-info').appendChild(card[0]);
-            document.getElementById('live-info').appendChild(card[1]);
-        } else {
-            extension.storage.getScoresForDomain(domain, (data) => {
-                let vector = data.scores['pr'].vector;
-                let card = cardInnerHtml('Data for ' + domain, '');
-                document.getElementById('live-info').appendChild(card[0]);
-                document.getElementById('live-info').appendChild(card[1]);
-                chart.draw(vector, 220, 300, card[1], true);
-            });
-        }
-
-    });
-};
+function detailsCard(domain: string, data: Score, cardID: string) {
+    if (data === null) {
+        let card = cardInnerHtml('Too bad... :(', uncrawled.create404Msg(domain, ['text-info']), cardID);
+        document.getElementById('live-info').appendChild(card);
+    } else {
+        let vector = data.scores['pr'].vector;
+        let card = cardInnerHtml('Data for ' + domain, '', cardID);
+        document.getElementById('live-info').appendChild(card);
+        chart.draw(vector, 220, 300, card.lastElementChild as HTMLElement, true);
+    }
+}
 
 function showBtn(on: boolean) {
 
@@ -172,11 +165,14 @@ const onBtnInnerHtml =
     </li>`;
 
 
-function cardInnerHtml(title: string, body: HTMLElement | string): HTMLElement[] {
-    /*
+function cardInnerHtml(title: string, body: HTMLElement | string, id: string): HTMLElement {
+    /*<div id=${id}>
             `<h3 class="card-title">${title}</h3>
             <h5><p class="card-text">${body}</p></h5>`;
+     </div>
     */
+    let div = document.createElement('div');
+    div.id = id;
 
     let ti = document.createElement('h3');
     ti.classList.add('card-title');
@@ -193,7 +189,10 @@ function cardInnerHtml(title: string, body: HTMLElement | string): HTMLElement[]
 
     text.appendChild(p);
 
-    return [ti, text];
+    div.appendChild(ti);
+    div.appendChild(text);
+
+    return div;
 }
 
 function showSpinner(): HTMLElement {
@@ -225,20 +224,28 @@ function showSpinner(): HTMLElement {
 
 createToggleBtn();
 
-document.getElementById('live-info-tab').addEventListener('click', detailsCard);
+document.getElementById('live-info-tab').addEventListener('click', () => {
+    chrome.runtime.sendMessage({ type: MessageType.SHOW_DATA });
+});
 
 chrome.runtime.onMessage.addListener((message: Message) => {
     clearInfoTab();
-    if (message == Message.EXT_DISABLED) {
-        let card = cardInnerHtml('Extension is disabled!', 'Enable it, and try again');
-        document.getElementById('live-info').appendChild(card[0]);
-        document.getElementById('live-info').appendChild(card[1]);
+    if (message.type == MessageType.EXT_DISABLED) {
+        let card = cardInnerHtml('Extension is disabled!', 'Enable it, and try again', activeTabCardID);
+        document.getElementById('live-info').appendChild(card);
     }
-    else if (message === Message.WAITING_SERVICE) {
-        let card = cardInnerHtml('Requesting data from service...', showSpinner());
-        document.getElementById('live-info').appendChild(card[0]);
-        document.getElementById('live-info').appendChild(card[1]);
-    } else if (message === Message.SHOW_DATA) {
-        detailsCard();
+    else if (message.type === MessageType.WAITING_SERVICE) {
+        let card = cardInnerHtml('Requesting data from service...', showSpinner(), activeTabCardID);
+        document.getElementById('live-info').appendChild(card);
+    } else if (message.type === MessageType.SHOW_DATA) {
+        utils.getActiveTab((domain) => {
+            utils.getBiasData(domain, (scoreData, scoreIndex) => {
+                detailsCard(domain, scoreData, activeTabCardID);
+            });
+        });
+    } else if (message.type === MessageType.SHOW_DATA_FOR_LINK) {
+        utils.getBiasData(message.data, (scoreData, scoreIndex) => {
+            detailsCard(message.data, scoreData, selectedLinkCardID);
+        });
     }
 });

@@ -1,5 +1,5 @@
 import { get as httpGet } from "http";
-import { Message } from "./types"
+import { Message, MessageType } from "./types"
 import { userSettings } from "./usersettings";
 
 export namespace service {
@@ -26,8 +26,8 @@ export namespace service {
                 let sent = false;
                 res.on('data', chunk => {
                     data += chunk;
-                    if(!sent){
-                        chrome.runtime.sendMessage(Message.WAITING_SERVICE);
+                    if (!sent) {
+                        chrome.runtime.sendMessage({ type: MessageType.WAITING_SERVICE });
                         sent = true;
                     }
                 });
