@@ -10,12 +10,9 @@
 	},
 	"background": {
 		"scripts": [
-			"background.js"
+			"app.js"
 		],
 		"persistent": true
-	},
-	"options_ui": {
-		"page": "options.html"
 	},
 	"browser_action": {
 		"default_icon": {
@@ -44,6 +41,7 @@
 		"webRequest",
 		"storage",
 		"tabs",
-		"alarms"
+		"alarms",
+		"contextMenus"
 	]
 }

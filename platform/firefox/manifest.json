@@ -10,12 +10,9 @@
 	},
 	"background": {
 		"scripts": [
-			"background.js"
+			"app.js"
 		],
 		"persistent": true
-	},
-	"options_ui": {
-		"page": "options.html"
 	},
 	"browser_action": {
 		"default_icon": {
@@ -23,8 +20,8 @@
 			"24": "icons/icon-24.png",
 			"32": "icons/icon-32.png"
 		},
-		"default_title": "bias goggles",
-		"default_popup": "popup.html"
+		"default_title": "bias goggles"
+	//	"default_popup": "popup.html"
 	},
 	"content_scripts": [
 		{
@@ -44,7 +41,8 @@
 		"webRequest",
 		"storage",
 		"tabs",
-		"alarms"
+		"alarms",
+		"contextMenus"
 	],
 	"sidebar_action": {
 		"default_icon": {

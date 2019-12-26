@@ -1,25 +1,16 @@
 const path = require('path');
-const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const FileManagerPlugin = require('filemanager-webpack-plugin');
 const webpack = require('webpack');
 
 const sourceRoot = path.resolve(__dirname, './src/ts');
 
 const sourceRootHTML = path.resolve(__dirname, './src');
-const sourceRootJS = path.resolve(__dirname, './src/js');
 const sourceRootIcons = path.resolve(__dirname, './src/img');
 
 const destinationRoot = path.resolve(__dirname, './dist');
 const platformSpecificsRoots = path.resolve(__dirname, './platform');
 
-module.exports = {
-  mode: 'development',
-  entry: {
-    background: sourceRoot + "/background.ts",
-    popup: sourceRoot + "/popup.ts",
-    popover: sourceRoot + '/popover.ts'
-  },
-  devtool: "inline-source-map",
+var config = {
   module: {
     rules: [
       {
@@ -33,45 +24,67 @@ module.exports = {
       }
     ],
   },
+  mode: 'development',
+  devtool: "inline-source-map",
   resolve: {
     extensions: ['.tsx', '.ts', '.js'],
   },
-  output: {
-    filename: '[name].js',
-    path: sourceRootJS,
-  },
   plugins: [
     new webpack.IgnorePlugin(/^\.\/locale$/, /moment$/),
-    new CleanWebpackPlugin(
-      {
-        verbose: true
-      }
-    ),
     new FileManagerPlugin(
       {
-        onEnd: {
+        onStart: {
           delete: [
-            destinationRoot + '/*'
+            destinationRoot
           ],
+          mkdir: [
+            destinationRoot,
+            destinationRoot + '/chromium',
+            destinationRoot + '/firefox'
+          ]
+        },
+        onEnd: {
           copy: [
-            { source: sourceRootHTML + '/*.{html,css,js}', destination: destinationRoot + '/chromium/' },
-            { source: sourceRootHTML + '/*.{html,css,js}', destination: destinationRoot + '/firefox/' },
-            { source: sourceRootHTML + '/*.{html,css,js}', destination: destinationRoot + '/opera/' },
-            { source: sourceRootHTML + '/*.{html,css,js}', destination: destinationRoot + '/safari/' },
-
-            { source: sourceRootJS + '/*', destination: destinationRoot + '/chromium/' },
-            { source: sourceRootJS + '/*', destination: destinationRoot + '/firefox/' },
-            { source: sourceRootJS + '/*', destination: destinationRoot + '/opera/' },
-            { source: sourceRootJS + '/*', destination: destinationRoot + '/safari/' },
+            { source: sourceRootHTML + '/*.{html,css}', destination: destinationRoot + '/chromium/' },
+            { source: sourceRootHTML + '/*.{html,css}', destination: destinationRoot + '/firefox/' },
 
             { source: sourceRootIcons + '/*', destination: destinationRoot + '/chromium/icons/' },
             { source: sourceRootIcons + '/*', destination: destinationRoot + '/firefox/icons/' },
-            { source: sourceRootIcons + '/*', destination: destinationRoot + '/opera/icons/' },
-            { source: sourceRootIcons + '/*', destination: destinationRoot + '/safari/icons' },
 
-            { source: platformSpecificsRoots + '/*/*', destination: destinationRoot }
+            { source: platformSpecificsRoots + '/chromium/manifest.json', destination: destinationRoot + '/chromium/' },
+            { source: platformSpecificsRoots + '/firefox/manifest.json', destination: destinationRoot + '/firefox/' },
           ]
         }
       })
   ]
 };
+
+var firefoxConfig = Object.assign({}, config, {
+  name: 'firefox',
+  entry: {
+    app: platformSpecificsRoots + "/firefox/index.ts",
+    popup: sourceRoot + "/popup.ts",
+    popover: sourceRoot + "/popover.ts"
+  },
+  output: {
+    path: destinationRoot + "/firefox",
+    filename: '[name].js'
+  }
+});
+
+var chromiumConfig = Object.assign({}, config, {
+  name: 'chromium',
+  entry: {
+    app: platformSpecificsRoots + "/chromium/index.ts",
+    popup: sourceRoot + "/popup.ts",
+    popover: sourceRoot + "/popover.ts"
+  },
+  output: {
+    path: destinationRoot + "/chromium",
+    filename: '[name].js'
+  }
+});
+
+module.exports = [
+  firefoxConfig, chromiumConfig
+];
