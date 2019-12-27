@@ -40,7 +40,7 @@ export namespace extension {
                     st.set(data, callback);
                 }
             });
-        };
+        }
 
         function nullIfKeyDoesNotExist(item: AppData, key: string): DomainData | Score | null {
             if (Object.keys(item).length === 0) {
@@ -87,6 +87,8 @@ export namespace extension {
             extension.storage.getDomainData(domain, (item) => {
                 if (item != null)
                     extension.storage.getScoreData(item.scoreIndex, callback);
+                else
+                    callback(null, -2);
             });
         }
 

@@ -1,4 +1,4 @@
-import { BiasGogglesAvailable, MessageType } from "./types"
+import { BiasGogglesAvailable } from "./types"
 import { userSettings } from "./usersettings";
 import { utils } from "./utils";
 import { popoverAnalytics } from "./analytics"
@@ -14,12 +14,9 @@ chrome.runtime.onInstalled.addListener((details) => {
 chrome.runtime.onStartup.addListener(() => {
     utils.showCorrectBadge();
 });
+
 chrome.webRequest.onCompleted.addListener((details) => {
     utils.getBiasData(details.url);
 },
     { urls: ["<all_urls>"], types: ["main_frame"] }
 );
-
-chrome.tabs.onActivated.addListener(() => {
-    chrome.runtime.sendMessage({ type: MessageType.SHOW_DATA });
-});

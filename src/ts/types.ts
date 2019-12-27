@@ -10,18 +10,6 @@ export enum OffOptions {
     PERMA
 };
 
-export enum MessageType {
-    WAITING_SERVICE,
-    SHOW_DATA,
-    SHOW_DATA_FOR_LINK,
-    EXT_DISABLED
-}
-
-export type Message = {
-    type: MessageType;
-    data: string;
-}
-
 export const MethodsAndNames: { [index: string]: string } = {
     'ic': 'Independent Cascade',
     'lt': 'Linear Threshold',

@@ -1,4 +1,4 @@
-import { AppData, DomainData, UserSettings, Score, OffOptions, MessageType } from './types';
+import { AppData, DomainData, UserSettings, Score, OffOptions } from './types';
 import { extension } from "./storage";
 import { service } from './service';
 import { userSettings } from './usersettings';
@@ -20,7 +20,6 @@ export namespace utils {
 
             service.query(domain, (data: any) => {
                 extension.storage.set(data, () => {
-                    chrome.runtime.sendMessage({ type: MessageType.SHOW_DATA });
                     callback(domainData);
                 });
             });
@@ -28,7 +27,6 @@ export namespace utils {
             console.log(domain + " found. But data is considered obsolete. Updating scoreIndex!");
 
             service.query(domain, (data: any) => {
-                chrome.runtime.sendMessage({ type: MessageType.SHOW_DATA });
                 extension.storage.set(data, () => {
                     callback(domainData);
                 });
@@ -41,13 +39,11 @@ export namespace utils {
             appdata[domain] = domainData;
 
             extension.storage.set(appdata, () => {
-                chrome.runtime.sendMessage({ type: MessageType.SHOW_DATA });
                 callback(domainData);
             });
         }
 
     }
-
     export function getBiasData(url: string, callback?: (data: Score, scoreIndex: number) => void) {
         userSettings.get(settings => {
             if (settings.enabled) {
@@ -56,6 +52,9 @@ export namespace utils {
 
                     extension.storage.getScoresForDomain(domain, callback);
                 }
+            } else {
+                //-1 if disabled
+                callback(null, -1);
             }
         });
     }

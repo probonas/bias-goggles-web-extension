@@ -1,28 +1,34 @@
 import { contexBtn } from "../../src/ts/contextMenu";
-import { MessageType } from "../../src/ts/types";
 
-/* https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/User_actions */
-function open(){
+function open() {
     browser.sidebarAction.open();
-    browser.browserAction.onClicked.addListener(close);    
+    browser.browserAction.onClicked.removeListener(open);
+    browser.browserAction.onClicked.addListener(close);
 }
 
-function close(){
+function close() {
     browser.sidebarAction.close();
+    browser.browserAction.onClicked.removeListener(close);
     browser.browserAction.onClicked.addListener(open);
 }
 
-browser.browserAction.onClicked.addListener(close);
-/* */
+let isOpen = browser.sidebarAction.isOpen({});
 
+isOpen.then((sideBarOpen) => {
+    if (sideBarOpen)
+        browser.browserAction.onClicked.addListener(close);
+    else
+        browser.browserAction.onClicked.addListener(open);
+});
+
+/* add context btn */
 chrome.contextMenus.create(contexBtn);
 
-chrome.contextMenus.onClicked.addListener((info, tab) => {
+/* add on click handler for previous btn */
+browser.contextMenus.onClicked.addListener((info, tab) => {
     switch (info.menuItemId) {
         case contexBtn.id:
-            chrome.runtime.sendMessage({ type: MessageType.SHOW_DATA_FOR_LINK, data: info.linkUrl });
-            browser.sidebarAction.open();
-            console.log('sent event for ' + info.linkUrl);
+            open();
             break;
     }
 });

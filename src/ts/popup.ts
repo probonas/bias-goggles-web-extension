@@ -1,7 +1,7 @@
 import { chart } from "./drawchart";
 import { uncrawled } from "./uncrawled";
 import { utils } from "./utils";
-import { OffOptions, Message, MessageType, Score } from "./types";
+import { OffOptions, Score } from "./types";
 import { userSettings } from "./usersettings";
 
 import "bootstrap";
@@ -17,21 +17,46 @@ const permaID = 'bg-perma';
 const onID = 'bg-on';
 const activeTabCardID = 'bg-active-tab-card';
 const selectedLinkCardID = 'bg-selected-link-card-id';
+const spinnerID = 'bg-spinner-id';
 
 function clearInfoTab() {
     while (document.getElementById('live-info').hasChildNodes())
         document.getElementById('live-info').firstChild.remove();
 }
 
-function detailsCard(domain: string, data: Score, cardID: string) {
+function truncateHTTPSWWW(domain: string): string {
+
+    let prefixes = ['http://www.', 'https://www.', 'http://', 'https://', 'www.'];
+
+    for (let i = 0; i < prefixes.length; i++) {
+        if (domain.startsWith(prefixes[i]))
+            return domain.substring(prefixes[i].length);
+    }
+
+    return domain;
+}
+
+function detailsCard(domain: string, data: Score, cardID: string, chartID: string, top: boolean) {
+    let liveInfoTab: HTMLElement = document.getElementById('live-info');
+    let firstChild: HTMLElement = liveInfoTab.firstElementChild as HTMLElement;
+
     if (data === null) {
         let card = cardInnerHtml('Too bad... :(', uncrawled.create404Msg(domain, ['text-info']), cardID);
-        document.getElementById('live-info').appendChild(card);
+        if (top && firstChild) {
+            liveInfoTab.firstChild.insertBefore(card, liveInfoTab);
+        } else {
+            liveInfoTab.appendChild(card);
+        }
     } else {
         let vector = data.scores['pr'].vector;
-        let card = cardInnerHtml('Data for ' + domain, '', cardID);
-        document.getElementById('live-info').appendChild(card);
-        chart.draw(vector, 220, 300, card.lastElementChild as HTMLElement, true);
+        let card = cardInnerHtml('Data for: ' + truncateHTTPSWWW(domain), '', cardID);
+
+        if (top && firstChild) {
+            liveInfoTab.firstChild.insertBefore(card, liveInfoTab);
+        } else {
+            liveInfoTab.appendChild(card);
+        }
+        chart.draw(vector, 220, 300, card.lastElementChild as HTMLElement, chartID, true);
     }
 }
 
@@ -195,7 +220,7 @@ function cardInnerHtml(title: string, body: HTMLElement | string, id: string): H
     return div;
 }
 
-function showSpinner(): HTMLElement {
+function showSpinner(): void {
     /*
     `<div class="d-flex justify-content-center">
             <div class="spinner-border" role="status">
@@ -205,6 +230,7 @@ function showSpinner(): HTMLElement {
     */
 
     let ret = document.createElement('div');
+
     ret.classList.add('d-flex', 'justify-content-center');
 
     let ch = document.createElement('div');
@@ -219,33 +245,53 @@ function showSpinner(): HTMLElement {
 
     ch.appendChild(sp);
 
-    return ret;
+    let spinner = cardInnerHtml('Requesting data from service...', ret, activeTabCardID);
+    spinner.id = spinnerID;
+    document.getElementById('live-info').appendChild(spinner);
 }
+
+function removeSpinner() {
+    if (document.getElementById(spinnerID))
+        document.getElementById(spinnerID).remove();
+}
+
+function updateContent(tabURL: string, cleanTab: boolean) {
+
+    if (cleanTab)
+        clearInfoTab();
+
+    let card: HTMLElement;
+
+    showSpinner();
+    
+    utils.getBiasData(tabURL, (scoreData, scoreIndex) => {
+
+        removeSpinner();
+
+        if (scoreIndex === -1) {
+            card = cardInnerHtml('Extension is disabled!', 'Enable it, and try again', activeTabCardID);
+            document.getElementById('live-info').appendChild(card);
+        } else {
+            detailsCard(tabURL, scoreData, activeTabCardID, 'chart0', true);
+        }
+    });
+
+};
 
 createToggleBtn();
 
-document.getElementById('live-info-tab').addEventListener('click', () => {
-    chrome.runtime.sendMessage({ type: MessageType.SHOW_DATA });
+/* new tab is activated */
+chrome.tabs.onActivated.addListener((activeTabInfo) => {
+    chrome.tabs.get(activeTabInfo.tabId, (tab) => {
+        updateContent(tab.url, true);
+    });
 });
 
-chrome.runtime.onMessage.addListener((message: Message) => {
-    clearInfoTab();
-    if (message.type == MessageType.EXT_DISABLED) {
-        let card = cardInnerHtml('Extension is disabled!', 'Enable it, and try again', activeTabCardID);
-        document.getElementById('live-info').appendChild(card);
-    }
-    else if (message.type === MessageType.WAITING_SERVICE) {
-        let card = cardInnerHtml('Requesting data from service...', showSpinner(), activeTabCardID);
-        document.getElementById('live-info').appendChild(card);
-    } else if (message.type === MessageType.SHOW_DATA) {
-        utils.getActiveTab((domain) => {
-            utils.getBiasData(domain, (scoreData, scoreIndex) => {
-                detailsCard(domain, scoreData, activeTabCardID);
-            });
-        });
-    } else if (message.type === MessageType.SHOW_DATA_FOR_LINK) {
-        utils.getBiasData(message.data, (scoreData, scoreIndex) => {
-            detailsCard(message.data, scoreData, selectedLinkCardID);
-        });
-    }
+/* new page is loaded in the tab */
+chrome.tabs.onUpdated.addListener((tabId, changeinfo, tab) => {
+    updateContent(tab.url, true);
+});
+
+chrome.tabs.getCurrent((tab) => {
+    updateContent(tab.url, true);
 });

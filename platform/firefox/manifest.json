@@ -49,6 +49,7 @@
 			"32": "icons/icon-32.png"
 		},
 		"default_title": "Bias Goggles",
-		"default_panel": "popup.html"
+		"default_panel": "popup.html",
+		"open_at_install": false
 	}
 }

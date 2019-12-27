@@ -1,6 +1,5 @@
 import { get as httpGet } from "http";
 import { userSettings } from "./usersettings";
-import { Message } from "./types";
 
 export namespace service {
 
@@ -23,21 +22,14 @@ export namespace service {
             let targetURL = getRequestURL(activeTab, settings.goggles);
 
             httpGet(targetURL, res => {
-                let sent = false;
-                chrome.runtime.sendMessage(Message.WAITING_SERVICE);
+
                 res.on('data', chunk => {
                     data += chunk;
-                    if (!sent) {
-                        sent = true;
-                    }
                 });
 
                 res.on('close', () => {
-                    if (res.statusCode === 404) {
-                        chrome.runtime.sendMessage(Message .SHOW_404);
-                        return;
-                    } else if (res.statusCode !== 200) {
-                        data = null;;
+                    if (res.statusCode !== 200) {
+                        data = null;
                     }
 
                     callback(data);
