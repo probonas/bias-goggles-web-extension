@@ -1,6 +1,6 @@
 import { get as httpGet } from "http";
-import { Message, MessageType } from "./types"
 import { userSettings } from "./usersettings";
+import { Message } from "./types";
 
 export namespace service {
 
@@ -24,18 +24,20 @@ export namespace service {
 
             httpGet(targetURL, res => {
                 let sent = false;
+                chrome.runtime.sendMessage(Message.WAITING_SERVICE);
                 res.on('data', chunk => {
                     data += chunk;
                     if (!sent) {
-                        chrome.runtime.sendMessage({ type: MessageType.WAITING_SERVICE });
                         sent = true;
                     }
                 });
 
                 res.on('close', () => {
-                    if (res.statusCode !== 200) {
-                        console.log('HTTP Status code ' + res.statusCode);
-                        data = null;
+                    if (res.statusCode === 404) {
+                        chrome.runtime.sendMessage(Message .SHOW_404);
+                        return;
+                    } else if (res.statusCode !== 200) {
+                        data = null;;
                     }
 
                     callback(data);
