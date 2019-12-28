@@ -1,9 +1,13 @@
-import { contexBtn } from "../../src/ts/contextMenu";
+import { contextBtn } from "../../src/ts/contextMenu";
+import { ContextBtnMsg } from "../../src/ts/types";
 
-function open() {
-    browser.sidebarAction.open();
+function open(): Promise<void> {
+    let sidebar = browser.sidebarAction.open();
+
     browser.browserAction.onClicked.removeListener(open);
     browser.browserAction.onClicked.addListener(close);
+
+    return sidebar;
 }
 
 function close() {
@@ -22,13 +26,23 @@ isOpen.then((sideBarOpen) => {
 });
 
 /* add context btn */
-chrome.contextMenus.create(contexBtn);
+//@ts-ignore
+browser.contextMenus.create(contextBtn);
 
 /* add on click handler for previous btn */
 browser.contextMenus.onClicked.addListener((info, tab) => {
     switch (info.menuItemId) {
-        case contexBtn.id:
-            open();
+        case contextBtn.id:
+            isOpen = browser.sidebarAction.isOpen({ windowId: tab.windowId });
+            isOpen.then((sideBarOpen => {
+                if (sideBarOpen) {
+                    browser.runtime.sendMessage({ url: info.linkUrl, windowID: tab.windowId } as ContextBtnMsg);
+                } else {
+                    open().then(() => {
+                        browser.runtime.sendMessage({ url: info.linkUrl, windowID: tab.windowId } as ContextBtnMsg);
+                    });
+                }
+            }));
             break;
     }
 });

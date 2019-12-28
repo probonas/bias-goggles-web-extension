@@ -10,6 +10,11 @@ export enum OffOptions {
     PERMA
 };
 
+export type ContextBtnMsg = {
+    url: string;
+    windowID: number;
+}
+
 export const MethodsAndNames: { [index: string]: string } = {
     'ic': 'Independent Cascade',
     'lt': 'Linear Threshold',

@@ -1,7 +1,7 @@
 import { chart } from "./drawchart";
 import { uncrawled } from "./uncrawled";
 import { utils } from "./utils";
-import { OffOptions, Score } from "./types";
+import { OffOptions, Score, ContextBtnMsg } from "./types";
 import { userSettings } from "./usersettings";
 
 import "bootstrap";
@@ -257,28 +257,26 @@ function removeSpinner() {
         document.getElementById(spinnerID).remove();
 }
 
-export function updateContent(cleanTab: boolean, top: boolean) {
+export function updateContent(url: string, cleanTab: boolean, top: boolean) {
 
-    chrome.tabs.query({ windowId: thisWindowID, active: true }, (tabs) => {
 
-        if (cleanTab)
-            clearInfoTab();
+    if (cleanTab)
+        clearInfoTab();
 
-        let card: HTMLElement;
+    let card: HTMLElement;
 
-        showSpinner();
+    showSpinner();
 
-        utils.getBiasData(tabs[0].url, (scoreData, scoreIndex) => {
+    utils.getBiasData(url, (scoreData, scoreIndex) => {
 
-            removeSpinner();
+        removeSpinner();
 
-            if (scoreIndex === -1) {
-                card = cardInnerHtml('Extension is disabled!', 'Enable it, and try again', activeTabCardID);
-                document.getElementById('live-info').appendChild(card);
-            } else {
-                detailsCard(tabs[0].url, scoreData, activeTabCardID, 'chart0', top);
-            }
-        });
+        if (scoreIndex === -1) {
+            card = cardInnerHtml('Extension is disabled!', 'Enable it, and try again', activeTabCardID);
+            document.getElementById('live-info').appendChild(card);
+        } else {
+            detailsCard(url, scoreData, activeTabCardID, 'chart' + ((top) ? 0 : 1), top);
+        }
     });
 
 }
@@ -287,16 +285,28 @@ createToggleBtn();
 
 /* new tab is activated */
 chrome.tabs.onActivated.addListener((activeTabInfo) => {
-    if(activeTabInfo.windowId === thisWindowID)
-        updateContent(true, true);
+    if (activeTabInfo.windowId === thisWindowID)
+        chrome.tabs.query({ windowId: thisWindowID, active: true }, (tabs) => {
+            updateContent(tabs[0].url, true, true);
+        });
 });
 
 /* new page is loaded in the tab */
-chrome.tabs.onUpdated.addListener((tabID,chageInfo, tab) => {
-    if(tab.windowId === thisWindowID)
-        updateContent(true, true);
+chrome.tabs.onUpdated.addListener((tabID, chageInfo, tab) => {
+    if (tab.windowId === thisWindowID)
+        chrome.tabs.query({ windowId: thisWindowID, active: true }, (tabs) => {
+            updateContent(tabs[0].url, true, true);
+        });
 });
 
 chrome.windows.getCurrent((windowInfo) => {
     thisWindowID = windowInfo.id;
+    chrome.tabs.query({ windowId: thisWindowID, active: true }, (tabs) => {
+        updateContent(tabs[0].url, true, true);
+    });
+});
+
+chrome.runtime.onMessage.addListener((msg: ContextBtnMsg) => {
+    if (msg.windowID === thisWindowID)
+        updateContent(msg.url, false, false);
 });
