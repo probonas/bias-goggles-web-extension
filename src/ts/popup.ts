@@ -43,7 +43,7 @@ function detailsCard(domain: string, data: Score, cardID: string, chartID: strin
     let firstChild: HTMLElement = liveInfoTab.firstElementChild as HTMLElement;
 
     if (data === null) {
-        let card = cardInnerHtml('Too bad... :(', uncrawled.create404Msg(domain, ['text-info']), cardID);
+        let card = cardInnerHtml('Too bad... :(', uncrawled.create404Msg(domain, ['text-info']), cardID, null);
         if (top && firstChild) {
             liveInfoTab.firstChild.insertBefore(card, liveInfoTab);
         } else {
@@ -51,7 +51,7 @@ function detailsCard(domain: string, data: Score, cardID: string, chartID: strin
         }
     } else {
         let vector = data.scores['pr'].vector;
-        let card = cardInnerHtml(truncateHTTPSWWW(domain), '', cardID);
+        let card = cardInnerHtml('Data for: ' + truncateHTTPSWWW(domain), '', cardID, truncateHTTPSWWW(domain));
 
         if (top && firstChild) {
             liveInfoTab.firstChild.insertBefore(card, liveInfoTab);
@@ -192,7 +192,7 @@ const onBtnInnerHtml =
     </li>`;
 
 
-function cardInnerHtml(title: string, body: HTMLElement | string, id: string): HTMLElement {
+function cardInnerHtml(title: string, body: HTMLElement | string, id: string, tooltipText: string): HTMLElement {
     /*<div id=${id}>
             <span data-toggle="tooltip" title="${title}">
                 <h3 class="card-title">${title}</h3>
@@ -203,20 +203,26 @@ function cardInnerHtml(title: string, body: HTMLElement | string, id: string): H
     let div = document.createElement('div');
     div.id = id;
 
-    let tooltipSpan = document.createElement('span');
-    tooltipSpan.setAttribute('data-toggle',"tooltip");
-    tooltipSpan.setAttribute('title', title);
-
     let ti = document.createElement('h3');
     ti.classList.add('card-title');
-    
-    if(title.length > 22){
-        title = title.substr(0,22) + '...';
-    }
-    
-    ti.innerHTML = 'Data for: ' + title;
 
-    tooltipSpan.appendChild(ti);
+    if (tooltipText) {
+
+        let tooltipSpan = document.createElement('span');
+        tooltipSpan.setAttribute('data-toggle', "tooltip");
+        tooltipSpan.setAttribute('title', tooltipText);
+
+        if (title.length > 32) {
+            title = title.substr(0, 32) + '...';
+        }
+
+        tooltipSpan.appendChild(ti);
+        div.appendChild(tooltipSpan);
+    } else {
+        div.appendChild(ti);
+    }
+
+    ti.innerHTML = title;
 
     let text = document.createElement('h5');
     let p = document.createElement('p');
@@ -229,7 +235,6 @@ function cardInnerHtml(title: string, body: HTMLElement | string, id: string): H
 
     text.appendChild(p);
 
-    div.appendChild(tooltipSpan);
     div.appendChild(text);
 
     return div;
@@ -260,7 +265,7 @@ function showSpinner(): void {
 
     ch.appendChild(sp);
 
-    let spinner = cardInnerHtml('Requesting data from service...', ret, activeTabCardID);
+    let spinner = cardInnerHtml('Requesting data from service...', ret, activeTabCardID, null);
     spinner.id = spinnerID;
     document.getElementById('live-info').appendChild(spinner);
 }
@@ -285,7 +290,7 @@ export function updateContent(url: string, cleanTab: boolean, top: boolean) {
         removeSpinner();
 
         if (scoreIndex === -1) {
-            card = cardInnerHtml('Extension is disabled!', 'Enable it, and try again', activeTabCardID);
+            card = cardInnerHtml('Extension is disabled!', 'Enable it, and try again', activeTabCardID, null);
             document.getElementById('live-info').appendChild(card);
         } else {
             detailsCard(url, scoreData, activeTabCardID, 'chart' + ((top) ? 0 : 1), top);
