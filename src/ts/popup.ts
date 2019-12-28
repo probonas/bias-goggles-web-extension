@@ -19,6 +19,8 @@ const activeTabCardID = 'bg-active-tab-card';
 const selectedLinkCardID = 'bg-selected-link-card-id';
 const spinnerID = 'bg-spinner-id';
 
+let thisWindowID: number;
+
 function clearInfoTab() {
     while (document.getElementById('live-info').hasChildNodes())
         document.getElementById('live-info').firstChild.remove();
@@ -255,43 +257,46 @@ function removeSpinner() {
         document.getElementById(spinnerID).remove();
 }
 
-function updateContent(tabURL: string, cleanTab: boolean) {
+export function updateContent(cleanTab: boolean, top: boolean) {
 
-    if (cleanTab)
-        clearInfoTab();
+    chrome.tabs.query({ windowId: thisWindowID, active: true }, (tabs) => {
 
-    let card: HTMLElement;
+        if (cleanTab)
+            clearInfoTab();
 
-    showSpinner();
-    
-    utils.getBiasData(tabURL, (scoreData, scoreIndex) => {
+        let card: HTMLElement;
 
-        removeSpinner();
+        showSpinner();
 
-        if (scoreIndex === -1) {
-            card = cardInnerHtml('Extension is disabled!', 'Enable it, and try again', activeTabCardID);
-            document.getElementById('live-info').appendChild(card);
-        } else {
-            detailsCard(tabURL, scoreData, activeTabCardID, 'chart0', true);
-        }
+        utils.getBiasData(tabs[0].url, (scoreData, scoreIndex) => {
+
+            removeSpinner();
+
+            if (scoreIndex === -1) {
+                card = cardInnerHtml('Extension is disabled!', 'Enable it, and try again', activeTabCardID);
+                document.getElementById('live-info').appendChild(card);
+            } else {
+                detailsCard(tabs[0].url, scoreData, activeTabCardID, 'chart0', top);
+            }
+        });
     });
 
-};
+}
 
 createToggleBtn();
 
 /* new tab is activated */
 chrome.tabs.onActivated.addListener((activeTabInfo) => {
-    chrome.tabs.get(activeTabInfo.tabId, (tab) => {
-        updateContent(tab.url, true);
-    });
+    if(activeTabInfo.windowId === thisWindowID)
+        updateContent(true, true);
 });
 
 /* new page is loaded in the tab */
-chrome.tabs.onUpdated.addListener((tabId, changeinfo, tab) => {
-    updateContent(tab.url, true);
+chrome.tabs.onUpdated.addListener((tabID,chageInfo, tab) => {
+    if(tab.windowId === thisWindowID)
+        updateContent(true, true);
 });
 
-chrome.tabs.getCurrent((tab) => {
-    updateContent(tab.url, true);
+chrome.windows.getCurrent((windowInfo) => {
+    thisWindowID = windowInfo.id;
 });
