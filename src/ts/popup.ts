@@ -51,7 +51,7 @@ function detailsCard(domain: string, data: Score, cardID: string, chartID: strin
         }
     } else {
         let vector = data.scores['pr'].vector;
-        let card = cardInnerHtml('Data for: ' + truncateHTTPSWWW(domain), '', cardID);
+        let card = cardInnerHtml(truncateHTTPSWWW(domain), '', cardID);
 
         if (top && firstChild) {
             liveInfoTab.firstChild.insertBefore(card, liveInfoTab);
@@ -194,16 +194,29 @@ const onBtnInnerHtml =
 
 function cardInnerHtml(title: string, body: HTMLElement | string, id: string): HTMLElement {
     /*<div id=${id}>
-            `<h3 class="card-title">${title}</h3>
-            <h5><p class="card-text">${body}</p></h5>`;
+            <span data-toggle="tooltip" title="${title}">
+                <h3 class="card-title">${title}</h3>
+            </span>
+            <h5><p class="card-text">${body}</p></h5>;
      </div>
     */
     let div = document.createElement('div');
     div.id = id;
 
+    let tooltipSpan = document.createElement('span');
+    tooltipSpan.setAttribute('data-toggle',"tooltip");
+    tooltipSpan.setAttribute('title', title);
+
     let ti = document.createElement('h3');
     ti.classList.add('card-title');
-    ti.innerHTML = title;
+    
+    if(title.length > 22){
+        title = title.substr(0,22) + '...';
+    }
+    
+    ti.innerHTML = 'Data for: ' + title;
+
+    tooltipSpan.appendChild(ti);
 
     let text = document.createElement('h5');
     let p = document.createElement('p');
@@ -216,7 +229,7 @@ function cardInnerHtml(title: string, body: HTMLElement | string, id: string): H
 
     text.appendChild(p);
 
-    div.appendChild(ti);
+    div.appendChild(tooltipSpan);
     div.appendChild(text);
 
     return div;
