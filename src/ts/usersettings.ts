@@ -5,12 +5,14 @@ export namespace userSettings {
     export let settingsKey: string = 'settings';
 
     export function update(settings: UserSettings, callback?: () => void) {
-        return save(settings.method, settings.goggles, settings.forceRefreshLimit, settings.syncEnabled,
-            settings.enabled, settings.scoreIndex, callback);
+        return save(settings.method, settings.goggles, settings.forceRefreshLimit,
+            settings.syncEnabled, settings.enabled, settings.pagePopoverEnabled,
+            settings.scoreIndex, callback);
     }
 
     export function save(method: string, goggles: string,
-        limit: number, syncEnabled: boolean, enabled: boolean, scoreIndex: number,
+        limit: number, syncEnabled: boolean, enabled: boolean,
+        pagePopoverEnabled: boolean, scoreIndex: number,
         callback?: () => void) {
 
         let settings = {} as UserSettingsMap;
@@ -23,13 +25,13 @@ export namespace userSettings {
             enabled: enabled,
             scoreIndex: scoreIndex,
             forceOn: false,
-            pagePopoverEnabled: true
+            pagePopoverEnabled: pagePopoverEnabled
         };
 
         if (syncEnabled) {
-            return chrome.storage.sync.set(settings, callback);
+            chrome.storage.sync.set(settings, callback);
         } else {
-            return chrome.storage.local.set(settings, callback);
+            chrome.storage.local.set(settings, callback);
         }
 
     }

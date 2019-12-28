@@ -328,3 +328,52 @@ chrome.runtime.onMessage.addListener((msg: ContextBtnMsg) => {
     if (msg.windowID === thisWindowID)
         updateContent(msg.url, false, false);
 });
+
+let sync = <HTMLSelectElement>document.getElementById('syncSelect');
+let goggle = <HTMLSelectElement>document.getElementById('goggleSelect');
+let popover = <HTMLSelectElement>document.getElementById('popoverSelect');
+
+let syncModal = <HTMLButtonElement>document.getElementById('syncModalBtn');
+
+sync.addEventListener('change', () => {
+
+    if (sync.value === 'Yes') {
+        syncModal.click();
+    }
+
+});
+
+let saveSettingsBtn = <HTMLButtonElement>document.getElementById('saveSettingsBtn');
+
+saveSettingsBtn.addEventListener('click', () => {
+
+    userSettings.get((settings) => {
+
+        if (goggle.value !== 'Choose...') {
+            settings.goggles = goggle.value;
+        }
+
+        if (sync.value !== 'Choose...' && sync.value === 'Yes') {
+            settings.syncEnabled = true;
+        } else if (sync.value !== 'Choose...' && sync.value === 'No') {
+            settings.syncEnabled = false;
+        }
+
+        if (popover.value !== 'Choose...' && popover.value === 'Yes') {
+            settings.pagePopoverEnabled = true;
+        } else if (popover.value !== 'Choose...' && popover.value === 'No') {
+            settings.pagePopoverEnabled = false;
+        }
+
+        console.log(settings);
+        
+        userSettings.update(settings,() => {
+            showSuccessAlert('Settings Saved!');
+        })
+
+    });
+
+
+
+
+});

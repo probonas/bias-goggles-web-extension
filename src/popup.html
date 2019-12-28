@@ -41,10 +41,95 @@
             </div>
             <div class="tab-pane fade show active" id="live-info" role="tabpanel" aria-labelledby="live-info-tab">
             </div>
-            <div class="tab-pane fade" id="settings" role="tabpanel" aria-labelledby="settings-tab">Settings Placeholder
+            <div class="tab-pane fade" id="settings" role="tabpanel" aria-labelledby="settings-tab">
+
+              <div>
+
+                <ul class="list-group">
+                  <li class="list-group-item">
+                    <label for="goggleSelect">Default bias goggle:</label>
+                    <select class="custom-select" id="goggleSelect">
+                      <option selected>Choose...</option>
+                      <option value="political-parties">Political Parties [gr]</option>
+                      <option value="sport-teams">Sport teams [gr]</option>
+                    </select>
+                  </li>
+                  <li class="list-group-item">
+                    <label for="goggleSelect">Allow extension to sync data accross devices:</label>
+                    <select class="custom-select" id="syncSelect">
+                      <option selected>Choose...</option>
+                      <option>Yes</option>
+                      <option>No</option>
+                    </select>
+                  </li>
+                  <li class="list-group-item">
+                    <label for="goggleSelect">Show popover in page:</label>
+                    <select class="custom-select" id="popoverSelect">
+                      <option selected>Choose...</option>
+                      <option>Yes</option>
+                      <option>No</option>
+                    </select>
+                  </li>
+                  <li class="list-group-item">
+                    <div class="col-auto">
+                      <button class="btn btn-primary mb-2" id='saveSettingsBtn'>Save</button>
+                    </div>
+                  </li>
+                </ul>
+
+              </div>
+
+              <button style="display: none;" type="button" id='syncModalBtn' data-toggle="modal"
+                data-target="#syncModal"></button>
+
+              <!-- Sync Modal -->
+              <div class="modal fade" id="syncModal" tabindex="-1" role="dialog" aria-labelledby="modelTitleId"
+                aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <h5 class="modal-title" id="modal-title">
+                        Note
+                      </h5>
+                      <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                      </button>
+                    </div>
+                    <div class="modal-body" id="modal-body">
+                      For this feature to work browser data sync must be enabled too!
+                    </div>
+                    <div class="modal-footer">
+                      <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Delete Confirmation Modal -->
+              <div class="modal fade" id="modelId" tabindex="-1" role="dialog" aria-labelledby="modelTitleId"
+                aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <h5 class="modal-title">Warning!</h5>
+                      <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                      </button>
+                    </div>
+                    <div class="modal-body">
+                      This action is not reversible. Are you sure you want to proceed?
+                    </div>
+                    <div class="modal-footer">
+                      <button type="button" class="btn btn-success" data-dismiss="modal">No, leave data as is!</button>
+                      <button type="button" class="btn btn-danger" data-dismiss="modal" id='delete-data-btn'>Yes, delete
+                        all!</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
-          
+
         </div>
 
         <script src="popup.js"></script>

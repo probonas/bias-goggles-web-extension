@@ -5,7 +5,7 @@ import { popoverAnalytics } from "./analytics"
 import "./contextMenu";
 
 chrome.runtime.onInstalled.addListener((details) => {
-    userSettings.save('pr', BiasGogglesAvailable.politicalParties, 100, false, true, -1);
+    userSettings.save('pr', BiasGogglesAvailable.politicalParties, 100, false, true, true, -1);
     console.log('initialized default user profile!');
     utils.showCorrectBadge();
     popoverAnalytics.initialize();
