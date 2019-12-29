@@ -43,7 +43,7 @@ function detailsCard(domain: string, data: Score, cardID: string, chartID: strin
     let firstChild: HTMLElement = liveInfoTab.firstElementChild as HTMLElement;
 
     if (data === null) {
-        let card = cardInnerHtml('Too bad... :(', uncrawled.create404Msg(domain, ['text-info']), cardID, null);
+        let card = cardInnerHtml('Too bad... :(', uncrawled.create404Msg(domain, ['text-info']).innerHTML, cardID, null);
         if (top && firstChild) {
             liveInfoTab.firstChild.insertBefore(card, liveInfoTab);
         } else {
@@ -63,12 +63,31 @@ function detailsCard(domain: string, data: Score, cardID: string, chartID: strin
 }
 
 function showBtn(on: boolean) {
+//
+    const offButtonHTML =
+        `<li class="nav-item dropdown" id="${offBtnId}">
+                <button id="on-off-dropdown" class="btn btn-outline-danger dropdown-toggle" data-toggle="dropdown" 
+                    data-boundary="window" type="button" aria-haspopup="true" aria-expanded="false">
+                    Disable
+                </button>
+                <div class="dropdown-menu" aria-labelledby="on-off-dropdown">
+                    <button class="dropdown-item" id="${oneHourID}">for 1 hour</button>
+                    <button class="dropdown-item" id="${twoHoursID}">for 2 hours</button>
+                    <button class="dropdown-item" id="${sessionOnlyID}")">for this session only</button>
+                    <div class="dropdown-divider"></div>
+                    <button class="dropdown-item" id="${permaID}">until I re-enable it</button>
+                </div>
+        </li>`;
+
+    const onBtnHTML =
+        `<li class="nav-item" id="${onBtnId}">
+            <button class="btn btn-outline-success" id="${onID}">Enable</button>
+        </li>`;
 
     function removeOffBtn() {
         if (document.getElementById(offBtnId))
             document.getElementById(offBtnId).remove()
     };
-
 
     function removeOnBtn() {
         if (document.getElementById(onBtnId))
@@ -79,9 +98,7 @@ function showBtn(on: boolean) {
         if (document.getElementById(onBtnId))
             return;
 
-        let btn = document.createElement('div');
-        btn.id = onBtnId;
-        btn.innerHTML = onBtnInnerHtml;
+        let btn = createHTMLElement(onBtnHTML)
         document.getElementById(navId).appendChild(btn);
 
     }
@@ -90,9 +107,7 @@ function showBtn(on: boolean) {
         if (document.getElementById(offBtnId))
             return;
 
-        let btn = document.createElement('div');
-        btn.id = offBtnId;
-        btn.innerHTML = offButtonInnerHtml;
+        let btn = createHTMLElement(offButtonHTML)
         document.getElementById(navId).appendChild(btn);
     }
 
@@ -154,118 +169,64 @@ function createToggleBtn() {
 }
 
 function showSuccessAlert(msg: string) {
-    const successAlertInnerHTMl =
+    const successAlert = createHTMLElement(
         `<div class="alert alert-success alert-dismissible fade show" role="alert">
             <strong>${msg}</strong>
             <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                 <span aria-hidden="true">&times;</span>
             </button>
-        </div>`;
+        </div>`);
 
-    let alert = document.createElement('div');
-    alert.innerHTML = successAlertInnerHTMl;
-    document.getElementById('container').appendChild(alert);
-    console.log(alert.children[0]);
-    console.log(alert.children[0].children[1]);
+    document.getElementById('container').appendChild(successAlert);
 
     setTimeout(() => {
-        (<HTMLButtonElement>alert.children[0].children[1]).click()
+        (<HTMLButtonElement>successAlert.children[1]).click()
     }, 2000);
 }
 
-const offButtonInnerHtml =
-    `<li class="nav-item dropdown">
-        <button data-boundary="viewport" type="button" class="btn btn-outline-danger dropdown-toggle" data-toggle="dropdown"
-            aria-haspopup="true" aria-expanded="false">Disable</button>
-        <div class="dropdown-menu">
-            <btn class="dropdown-item" id="${oneHourID}">for 1 hour</btn>
-            <btn class="dropdown-item" id="${twoHoursID}">for 2 hours</btn>
-            <btn class="dropdown-item" id="${sessionOnlyID}")">for this session only</btn>
-            <div class="dropdown-divider"></div>
-            <btn class="dropdown-item" id="${permaID}">until I re-enable it</btn>
-        </div>
-    </li>`;
+function createHTMLElement(html: string): HTMLElement {
+    let ret = document.createElement('div');
+    ret.innerHTML = html;
 
-const onBtnInnerHtml =
-    `<li class="nav-item">
-        <button class="nav-link btn btn-outline-success text-success" id="${onID}" role="button">Enable</button>
-    </li>`;
-
-
-function cardInnerHtml(title: string, body: HTMLElement | string, id: string, tooltipText: string): HTMLElement {
-    /*<div id=${id}>
-            <span data-toggle="tooltip" title="${title}">
-                <h3 class="card-title">${title}</h3>
-            </span>
-            <h5><p class="card-text">${body}</p></h5>;
-     </div>
-    */
-    let div = document.createElement('div');
-    div.id = id;
-
-    let ti = document.createElement('h3');
-    ti.classList.add('card-title');
+    return ret.firstChild as HTMLElement;
+}
+function cardInnerHtml(title: string, body: string, id: string, tooltipText: string): HTMLElement {
 
     if (tooltipText) {
-
-        let tooltipSpan = document.createElement('span');
-        tooltipSpan.setAttribute('data-toggle', "tooltip");
-        tooltipSpan.setAttribute('title', tooltipText);
 
         if (title.length > 32) {
             title = title.substr(0, 32) + '...';
         }
 
-        tooltipSpan.appendChild(ti);
-        div.appendChild(tooltipSpan);
+        return createHTMLElement(
+            `<div id=${id}>
+                <span data-toggle="tooltip" title="${tooltipText}">
+                    <h3 class="card-title">${title}</h3>
+                </span>
+                <h5><p class="card-text">${body}</p></h5>
+            </div>`);
+
     } else {
-        div.appendChild(ti);
+        return createHTMLElement(
+            `<div id=${id}>
+                <h3 class="card-title">${title}</h3>
+                <h5><p class="card-text">${body}</p></h5>
+            </div>`
+        );
     }
-
-    ti.innerHTML = title;
-
-    let text = document.createElement('h5');
-    let p = document.createElement('p');
-    p.classList.add('card-text');
-
-    if (typeof body === 'string')
-        p.innerHTML = body;
-    else
-        p.appendChild(body);
-
-    text.appendChild(p);
-
-    div.appendChild(text);
-
-    return div;
 }
 
 function showSpinner(): void {
-    /*
-    `<div class="d-flex justify-content-center">
+
+    const spinnerSign =
+        `<div class="d-flex justify-content-center">
             <div class="spinner-border" role="status">
                 <span class="sr-only">Loading...</span>
             </div>
         </div>`;
-    */
 
-    let ret = document.createElement('div');
+    let spinner = cardInnerHtml('Requesting data from service...', spinnerSign, activeTabCardID, null);
 
-    ret.classList.add('d-flex', 'justify-content-center');
-
-    let ch = document.createElement('div');
-    ch.classList.add('spinner-border');
-    ch.setAttribute("role", "status");
-
-    ret.appendChild(ch);
-
-    let sp = document.createElement('span');
-    sp.classList.add('sr-only');
-    sp.innerHTML = 'Loading...';
-
-    ch.appendChild(sp);
-
-    let spinner = cardInnerHtml('Requesting data from service...', ret, activeTabCardID, null);
     spinner.id = spinnerID;
     document.getElementById('live-info').appendChild(spinner);
 }
@@ -366,14 +327,11 @@ saveSettingsBtn.addEventListener('click', () => {
         }
 
         console.log(settings);
-        
-        userSettings.update(settings,() => {
+
+        userSettings.update(settings, () => {
             showSuccessAlert('Settings Saved!');
         })
 
     });
-
-
-
 
 });
