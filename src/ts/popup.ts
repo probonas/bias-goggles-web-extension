@@ -1,8 +1,9 @@
 import { chart } from "./drawchart";
 import { uncrawled } from "./uncrawled";
 import { utils } from "./utils";
-import { OffOptions, Score, ContextBtnMsg } from "./types";
+import { OffOptions, Score, ContextBtnMsg, DomainData } from "./types";
 import { userSettings } from "./usersettings";
+import { extension } from "./storage";
 
 import "bootstrap";
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -63,7 +64,7 @@ function detailsCard(domain: string, data: Score, cardID: string, chartID: strin
 }
 
 function showBtn(on: boolean) {
-//
+    //
     const offButtonHTML =
         `<li class="nav-item dropdown" id="${offBtnId}">
                 <button id="on-off-dropdown" class="btn btn-outline-danger dropdown-toggle" data-toggle="dropdown" 
@@ -188,7 +189,7 @@ function createHTMLElement(html: string): HTMLElement {
     let ret = document.createElement('div');
     ret.innerHTML = html;
 
-    return ret.firstChild as HTMLElement;
+    return ret.firstElementChild as HTMLElement;
 }
 function cardInnerHtml(title: string, body: string, id: string, tooltipText: string): HTMLElement {
 
@@ -334,4 +335,145 @@ saveSettingsBtn.addEventListener('click', () => {
 
     });
 
+});
+
+function createRowForTable(firstColValue: string, secondColValue: string, strong: boolean): string {
+    const body_strong = `
+        <tr>
+            <th scope="row">${firstColValue}</th>
+            <td>${secondColValue}</td>
+        </tr>`;
+
+    const body = `
+        <tr>
+            <td>${firstColValue}</td>
+            <td>${secondColValue}</td>
+        </tr>`;
+
+    if (strong)
+        return body_strong;
+    else
+        return body;
+}
+
+function createTable(firstColLabel: string, secondColLabel: string, rowsData: string): string {
+    const table = `
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                <th scope="col">${firstColLabel}</th>
+                <th scope="col">${secondColLabel}</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${rowsData}
+            </tbody>
+        </table>`;
+
+    return table;
+}
+
+function createAccordionCard(title: string, body: string, ascendingCardNum: number): string {
+
+    const card = `
+        <div class="card">
+            <div class="card-header" id="header${ascendingCardNum}">
+            <h2 class="mb-0">
+                <button class="btn btn-link" type="button" data-toggle="collapse" data-target="#collapse${ascendingCardNum}" aria-expanded="true" aria-controls="collapse${ascendingCardNum}">
+                ${title}
+                </button>
+            </h2>
+            </div>
+
+            <div id="collapse${ascendingCardNum}" class="collapse" aria-labelledby="header${ascendingCardNum}" data-parent="#domainDataOverview">
+            <div class="card-body">
+                ${body}
+            </div>
+            </div>
+        </div>`;
+
+    return card;
+}
+
+extension.storage.getAllDomainData((data) => {
+    let domainDataOverviewDiv = document.getElementById('domainDataOverview');
+    let cards: string = '';
+    let i = 0;
+
+    let innertTables = '';
+
+    console.log(data);
+
+    let formattedData: { [key: string]: { [key: string]: any } } = {};
+
+    for (let key in data) {
+
+        if (!isNaN(parseInt(key)))
+            continue;
+
+        let goggle = key.split(' ')[0];
+        let domain = key.split(' ')[1];
+
+        let domainData = <DomainData>data[key];
+
+        console.log(domainData.scoreIndex);
+
+        let scores = (<Score>data[domainData.scoreIndex]).scores;
+
+        if (typeof formattedData[domain] === 'undefined')
+            formattedData[domain] = {};
+
+        formattedData[domain][goggle] = {
+            scores
+        };
+    }
+
+    for (let key in Object.keys(formattedData)) {
+        let domain = Object.keys(formattedData)[key];
+
+        for (let goggleKey in Object.keys(formattedData[domain])) {
+            let goggleName = Object.keys(formattedData[domain])[goggleKey];
+
+            let biasData = formattedData[domain][goggleName];
+
+            //@ts-ignore
+            let pr = biasData.scores['pr'];
+            //@ts-ignore
+            let lt = biasData.scores['lt'];
+            //@ts-ignore
+            let ic = biasData.scores['ic'];
+
+            let unrollscore = (scoreValue: any) => {
+                let ret = '';
+
+                for (let property in Object.keys(scoreValue)) {
+                    let propertyName = Object.keys(scoreValue)[property];
+
+                    if (propertyName === 'vector') {
+                        ret += createRowForTable('Vectors', 'Support', true);
+
+                        for (let vectorKey in Object.keys(scoreValue[propertyName])) {
+                            let vectorName = Object.keys(scoreValue[propertyName])[vectorKey];
+
+                            ret += createRowForTable(vectorName, scoreValue[propertyName][vectorName], false);
+                        }
+
+                    } else {
+                        ret += createRowForTable(propertyName, scoreValue[propertyName], false);
+                    }
+                }
+
+                return ret;
+            }
+
+            let rows = unrollscore(pr);
+            //rows += unrollscore(lt);
+            //rows += unrollscore(ic);
+
+            innertTables += createTable('Goggles:', goggleName, rows) + '<br>';
+        }
+        cards += createAccordionCard(domain, innertTables, i++);
+    }
+
+    domainDataOverviewDiv.insertAdjacentHTML('afterbegin', cards);
 });
