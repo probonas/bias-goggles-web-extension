@@ -1,7 +1,20 @@
-export enum BiasGogglesAvailable {
-    politicalParties = "political-parties",
-    footballTeams = "sport-teams"
+export let PoliticalParties : Goggle = {
+    description: 'A goggle about political parties in Greece',
+    name: 'Political Parties [GR]',
+    id: 'political-parties'
 }
+
+export let SportsTeams : Goggle = {
+    description: 'A goggle about sports teams in Greece',
+    name: 'Sports Teams [GR]',
+    id: 'sport-teams'
+}
+
+export type Goggle = {
+    description: string,
+    name: string,
+    id: string //tag as used by service
+};
 
 export enum OffOptions {
     ONE_HOUR,
@@ -32,6 +45,7 @@ export interface UserSettingsMap {
 export interface UserSettings {
     method: string;
     goggles: string;
+    gogglesList: Goggle[];
     forceRefreshLimit: number;
     syncEnabled: boolean;
     enabled: boolean;
@@ -62,7 +76,7 @@ export type ScoreValue = {
     bias_score: number;
     rank: number;
     support_score: number;
-    vector: string[]
+    vector: string[];
 };
 
 export type PopoverAnalytics = {

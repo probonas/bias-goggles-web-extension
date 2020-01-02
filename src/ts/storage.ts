@@ -1,5 +1,5 @@
 
-import { AppData, DomainData, Score, Analytics, AnalyticsData } from "./types";
+import { AppData, DomainData, Score, Analytics, AnalyticsData, UserSettings } from "./types";
 import { userSettings } from "./usersettings";
 import { utils } from "./utils";
 
@@ -30,7 +30,7 @@ export namespace extension {
                     let domainData = {} as AppData;
                     let scoreData = {} as AppData;
                     settings.scoreIndex++;
-                    parseDataFromService(data, limit, settings.scoreIndex, domainData, scoreData);
+                    parseDataFromService(data, limit, settings.scoreIndex, domainData, scoreData, settings.goggles);
                     userSettings.update(settings, () => {
                         st.set(domainData, () => {
                             st.set(scoreData, callback)
@@ -42,9 +42,11 @@ export namespace extension {
             });
         }
 
-        function nullIfKeyDoesNotExist(item: AppData, key: string): DomainData | Score | null {
+        function nullIfKeyDoesNotExist(item: AppData, key: string): AppData | DomainData | Score | null {
             if (Object.keys(item).length === 0) {
                 return null;
+            } else if (key === null) {
+                return item; //return all in storage
             } else {
                 return item[key];
             }
@@ -70,9 +72,12 @@ export namespace extension {
             });
         }
 
+        /* default goggle */
         export function getDomainData(domain: string, callback: (item: DomainData) => void) {
-            get(domain, (data) => {
-                utils.refreshDataForDomain(domain, data, callback);
+            userSettings.get((settings) => {
+                get(settings.goggles + ' ' + domain, (data) => {
+                    utils.refreshDataForDomain(domain, data, callback);
+                });
             });
         }
 
@@ -83,6 +88,7 @@ export namespace extension {
             });
         }
 
+        /* for current goggle */
         export function getScoresForDomain(domain: string, callback: (item: Score, index: number) => void) {
             extension.storage.getDomainData(domain, (item) => {
                 if (item != null)
@@ -92,11 +98,16 @@ export namespace extension {
             });
         }
 
-        export function getAll(callback: (item: AppData) => void): void {
-            getStorageObj((storage) => {
-                storage.get(null, (items: AppData) => {
-                    callback(items);
-                });
+        export function getAllDomainData(callback: (items: AppData) => void): void {
+            get(null, (items: AppData) => {
+                //exclude user settings data
+                delete items['settings'];
+
+                //exclude analytics data
+                delete items['analytics'];
+
+                //all that is left are domain data and their indices
+                callback(items);
             });
         }
 
@@ -112,7 +123,7 @@ export namespace extension {
 
     }
 
-    function parseDataFromService(data: string, limit: number, scoreIndex: number, domainData: AppData, scoreData: AppData) {
+    function parseDataFromService(data: string, limit: number, scoreIndex: number, domainData: AppData, scoreData: AppData, goggles: string) {
         let ret = JSON.parse(data);
 
         //the following are as returned from service
@@ -120,7 +131,7 @@ export namespace extension {
         //the following should be updated as well
 
         //@ts-ignore
-        domainData[ret.doc.domain] = {
+        domainData[goggles + ' ' + ret.doc.domain] = {
             limit: limit,
             scoreIndex: scoreIndex
         };
@@ -131,19 +142,19 @@ export namespace extension {
                     //@ts-ignore
                     bias_score: ret.doc.ic.bias_score,
                     rank: ret.doc.ic.rank,
-                    support_score: ret.doc.ic.rank,
+                    support_score: ret.doc.ic.support_score,
                     vector: ret.doc.ic.vector
                 },
                 'lt': {
                     bias_score: ret.doc.lt.bias_score,
                     rank: ret.doc.lt.rank,
-                    support_score: ret.doc.lt.rank,
+                    support_score: ret.doc.lt.support_score,
                     vector: ret.doc.lt.vector
                 },
                 'pr': {
                     bias_score: ret.doc.pr.bias_score,
                     rank: ret.doc.pr.rank,
-                    support_score: ret.doc.pr.rank,
+                    support_score: ret.doc.pr.support_score,
                     vector: ret.doc.pr.vector
                 }
             },

@@ -1,4 +1,4 @@
-import { UserSettings, UserSettingsMap } from "./types";
+import { UserSettings, UserSettingsMap, Goggle } from "./types";
 
 export namespace userSettings {
 
@@ -7,25 +7,26 @@ export namespace userSettings {
     export function update(settings: UserSettings, callback?: () => void) {
         return save(settings.method, settings.goggles, settings.forceRefreshLimit,
             settings.syncEnabled, settings.enabled, settings.pagePopoverEnabled,
-            settings.scoreIndex, callback);
+            settings.scoreIndex, settings.gogglesList, callback);
     }
 
-    export function save(method: string, goggles: string,
+    export function save(method: string, googlesToUse: string,
         limit: number, syncEnabled: boolean, enabled: boolean,
         pagePopoverEnabled: boolean, scoreIndex: number,
-        callback?: () => void) {
+        gogglesList: Goggle[], callback?: () => void) {
 
         let settings = {} as UserSettingsMap;
 
         settings[settingsKey] = {
             method: method,
-            goggles: goggles,
+            goggles: googlesToUse,
             forceRefreshLimit: limit,
             syncEnabled: syncEnabled,
             enabled: enabled,
             scoreIndex: scoreIndex,
             forceOn: false,
-            pagePopoverEnabled: pagePopoverEnabled
+            pagePopoverEnabled: pagePopoverEnabled,
+            gogglesList: gogglesList
         };
 
         if (syncEnabled) {

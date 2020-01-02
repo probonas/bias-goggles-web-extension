@@ -33,13 +33,14 @@ export namespace utils {
             });
         } else {
             console.log(domain + " found.");
+            userSettings.get((settings) => {
+                domainData.limit--;
+                let appdata = {} as AppData;
+                appdata[settings.goggles + ' ' + domain] = domainData;
 
-            domainData.limit--;
-            let appdata = {} as AppData;
-            appdata[domain] = domainData;
-
-            extension.storage.set(appdata, () => {
-                callback(domainData);
+                extension.storage.set(appdata, () => {
+                    callback(domainData);
+                });
             });
         }
 

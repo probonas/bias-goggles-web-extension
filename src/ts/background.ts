@@ -1,11 +1,12 @@
-import { BiasGogglesAvailable } from "./types"
+import { PoliticalParties, SportsTeams } from "./types"
 import { userSettings } from "./usersettings";
 import { utils } from "./utils";
 import { popoverAnalytics } from "./analytics"
 import "./contextMenu";
 
 chrome.runtime.onInstalled.addListener((details) => {
-    userSettings.save('pr', BiasGogglesAvailable.politicalParties, 100, false, true, true, -1);
+    userSettings.save('pr', PoliticalParties.id, 100, false, true, true, -1,
+        [PoliticalParties, SportsTeams]);
     console.log('initialized default user profile!');
     utils.showCorrectBadge();
     popoverAnalytics.initialize();
