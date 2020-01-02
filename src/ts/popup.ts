@@ -20,6 +20,7 @@ const activeTabCardID = 'bg-active-tab-card';
 const selectedLinkCardID = 'bg-selected-link-card-id';
 const spinnerID = 'bg-spinner-id';
 
+let idCounter = 0;
 let thisWindowID: number;
 
 function clearInfoTab() {
@@ -39,32 +40,30 @@ function truncateHTTPSWWW(domain: string): string {
     return domain;
 }
 
-function detailsCard(domain: string, data: Score, cardID: string, chartID: string, top: boolean) {
+function detailsCard(domain: string, data: Score, cardID: string, chartID: string, dismissable: boolean) {
     let liveInfoTab: HTMLElement = document.getElementById('live-info');
-    let firstChild: HTMLElement = liveInfoTab.firstElementChild as HTMLElement;
 
     if (data === null) {
-        let card = cardInnerHtml('Too bad... :(', uncrawled.create404Msg(domain, ['text-info']).innerHTML, cardID, null);
-        if (top && firstChild) {
-            liveInfoTab.firstChild.insertBefore(card, liveInfoTab);
-        } else {
-            liveInfoTab.appendChild(card);
-        }
+        let card = cardInnerHtml('Too bad... :( ', '', cardID, null, dismissable);
+
+        liveInfoTab.insertAdjacentHTML('beforeend', card);
+        document.getElementById(cardID).lastElementChild.firstElementChild.appendChild(uncrawled.create404Msg(domain, ['text-info']));
     } else {
         let vector = data.scores['pr'].vector;
-        let card = cardInnerHtml('Data for: ' + truncateHTTPSWWW(domain), '', cardID, truncateHTTPSWWW(domain));
+        let card = cardInnerHtml('Data for: ' + truncateHTTPSWWW(domain), '', cardID, truncateHTTPSWWW(domain), dismissable);
+        liveInfoTab.insertAdjacentHTML('beforeend', card);
+        chart.draw(vector, 220, 300, document.getElementById(cardID).lastElementChild.firstElementChild as HTMLElement, chartID, true);
+    }
 
-        if (top && firstChild) {
-            liveInfoTab.firstChild.insertBefore(card, liveInfoTab);
-        } else {
-            liveInfoTab.appendChild(card);
-        }
-        chart.draw(vector, 220, 300, card.lastElementChild as HTMLElement, chartID, true);
+    if (dismissable) {
+        (<HTMLButtonElement>document.getElementById(cardID).firstElementChild.firstElementChild).addEventListener('click', () => {
+            document.getElementById(cardID).parentElement.parentElement.remove();
+        });
     }
 }
 
 function showBtn(on: boolean) {
-    //
+
     const offButtonHTML =
         `<li class="nav-item dropdown" id="${offBtnId}">
                 <button id="on-off-dropdown" class="btn btn-outline-danger dropdown-toggle" data-toggle="dropdown" 
@@ -99,17 +98,14 @@ function showBtn(on: boolean) {
         if (document.getElementById(onBtnId))
             return;
 
-        let btn = createHTMLElement(onBtnHTML)
-        document.getElementById(navId).appendChild(btn);
-
+        document.getElementById(navId).insertAdjacentHTML('beforeend', onBtnHTML);
     }
 
     function addOffBtn() {
         if (document.getElementById(offBtnId))
             return;
 
-        let btn = createHTMLElement(offButtonHTML)
-        document.getElementById(navId).appendChild(btn);
+        document.getElementById(navId).insertAdjacentHTML('beforeend', offButtonHTML);
     }
 
     if (on) {
@@ -170,50 +166,68 @@ function createToggleBtn() {
 }
 
 function showSuccessAlert(msg: string) {
-    const successAlert = createHTMLElement(
+    const successAlert =
         `<div class="alert alert-success alert-dismissible fade show" role="alert">
             <strong>${msg}</strong>
             <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                 <span aria-hidden="true">&times;</span>
             </button>
-        </div>`);
+        </div>`;
 
-    document.getElementById('container').appendChild(successAlert);
+    document.getElementById('container').insertAdjacentHTML('beforeend', successAlert);
 
     setTimeout(() => {
-        (<HTMLButtonElement>successAlert.children[1]).click()
+        (<HTMLButtonElement>(document.getElementById('container').lastElementChild.lastElementChild)).click();
     }, 2000);
 }
 
-function createHTMLElement(html: string): HTMLElement {
-    let ret = document.createElement('div');
-    ret.innerHTML = html;
+function cardInnerHtml(title: string, body: string, id: string, tooltipText: string, dismissable: boolean): string {
+    let style = '';
 
-    return ret.firstElementChild as HTMLElement;
-}
-function cardInnerHtml(title: string, body: string, id: string, tooltipText: string): HTMLElement {
+    if (!dismissable) {
+        style = "display: none;";
+    };
 
     if (tooltipText) {
 
-        if (title.length > 32) {
-            title = title.substr(0, 32) + '...';
+        if (title.length > 28) {
+            title = title.substr(0, 28) + '...';
         }
 
-        return createHTMLElement(
-            `<div id=${id}>
-                <span data-toggle="tooltip" title="${tooltipText}">
-                    <h3 class="card-title">${title}</h3>
-                </span>
-                <h5><p class="card-text">${body}</p></h5>
-            </div>`);
+        return `
+        <div>
+            <div class="card">
+                <div class="card-body" id=${id}>
+                    <span data-toggle="tooltip" title="${tooltipText}">
+                        <button type="button" style="${style}" class="close" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button> 
+                        <h3 class="card-title">${title}</h3>
+                    </span>
+                    <h5>
+                        <p class="card-text">${body}</p>
+                    </h5>
+                </div>
+            </div>
+            <div class="pt-2"></div>
+        </div>`;
 
     } else {
-        return createHTMLElement(
-            `<div id=${id}>
-                <h3 class="card-title">${title}</h3>
-                <h5><p class="card-text">${body}</p></h5>
-            </div>`
-        );
+        return `
+        <div>
+            <div class="card">
+                <div class="card-body" id=${id}>
+                    <button type="button" style="${style}" class="close" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                    <h3 class="card-title">${title}</h3>
+                    <h5>
+                        <p class="card-text">${body}</p>
+                    </h5>
+                </div>
+            </div>
+            <div class="pt-2"></div>
+        </div>`;
     }
 }
 
@@ -226,24 +240,24 @@ function showSpinner(): void {
             </div>
         </div>`;
 
-    let spinner = cardInnerHtml('Requesting data from service...', spinnerSign, activeTabCardID, null);
-
-    spinner.id = spinnerID;
-    document.getElementById('live-info').appendChild(spinner);
+    let spinner = cardInnerHtml('Requesting data from service...', spinnerSign, spinnerID, null, false);
+    document.getElementById('live-info').insertAdjacentHTML('beforeend', spinner);
 }
 
 function removeSpinner() {
     if (document.getElementById(spinnerID))
-        document.getElementById(spinnerID).remove();
+        document.getElementById(spinnerID).parentElement.parentElement.remove();
 }
 
-export function updateContent(url: string, cleanTab: boolean, top: boolean) {
+export function updateContent(url: string, cleanTab: boolean, dismissable: boolean) {
 
-
-    if (cleanTab)
+    if (cleanTab) {
         clearInfoTab();
+    } else {
+        idCounter++;
+    }
 
-    let card: HTMLElement;
+    let card: string;
 
     showSpinner();
 
@@ -252,10 +266,10 @@ export function updateContent(url: string, cleanTab: boolean, top: boolean) {
         removeSpinner();
 
         if (scoreIndex === -1) {
-            card = cardInnerHtml('Extension is disabled!', 'Enable it, and try again', activeTabCardID, null);
-            document.getElementById('live-info').appendChild(card);
+            card = cardInnerHtml('Extension is disabled!', 'Enable it, and try again', activeTabCardID + idCounter, null, false);
+            document.getElementById('live-info').insertAdjacentHTML('beforeend', card);
         } else {
-            detailsCard(url, scoreData, activeTabCardID, 'chart' + ((top) ? 0 : 1), top);
+            detailsCard(url, scoreData, activeTabCardID + idCounter, 'chart' + idCounter, dismissable);
         }
     });
 
@@ -267,28 +281,31 @@ createToggleBtn();
 chrome.tabs.onActivated.addListener((activeTabInfo) => {
     if (activeTabInfo.windowId === thisWindowID)
         chrome.tabs.query({ windowId: thisWindowID, active: true }, (tabs) => {
-            updateContent(tabs[0].url, true, true);
+            updateContent(tabs[0].url, true, false);
         });
 });
 
 /* new page is loaded in the tab */
 chrome.tabs.onUpdated.addListener((tabID, chageInfo, tab) => {
-    if (tab.windowId === thisWindowID)
+    if (tab.windowId === thisWindowID) {
+        if (chageInfo.status !== 'loading')
+            return;
         chrome.tabs.query({ windowId: thisWindowID, active: true }, (tabs) => {
-            updateContent(tabs[0].url, true, true);
+            updateContent(tabs[0].url, true, false);
         });
+    }
 });
 
 chrome.windows.getCurrent((windowInfo) => {
     thisWindowID = windowInfo.id;
     chrome.tabs.query({ windowId: thisWindowID, active: true }, (tabs) => {
-        updateContent(tabs[0].url, true, true);
+        updateContent(tabs[0].url, true, false);
     });
 });
 
 chrome.runtime.onMessage.addListener((msg: ContextBtnMsg) => {
     if (msg.windowID === thisWindowID)
-        updateContent(msg.url, false, false);
+        updateContent(msg.url, false, true);
 });
 
 let sync = <HTMLSelectElement>document.getElementById('syncSelect');
