@@ -417,7 +417,7 @@ extension.storage.getAllDomainData((data) => {
     let cards: string = '';
     let i = 0;
 
-    let innertTables = '';
+    let innerTables = '';
 
     console.log(data);
 
@@ -447,6 +447,7 @@ extension.storage.getAllDomainData((data) => {
 
     for (let key in Object.keys(formattedData)) {
         let domain = Object.keys(formattedData)[key];
+        innerTables = '';
 
         for (let goggleKey in Object.keys(formattedData[domain])) {
             let goggleName = Object.keys(formattedData[domain])[goggleKey];
@@ -487,9 +488,9 @@ extension.storage.getAllDomainData((data) => {
             //rows += unrollscore(lt);
             //rows += unrollscore(ic);
 
-            innertTables += createTable('Goggles:', goggleName, rows) + '<br>';
+            innerTables += createTable('Goggles:', goggleName, rows) + '<br>';
         }
-        cards += createAccordionCard(domain, innertTables, i++);
+        cards += createAccordionCard(domain, innerTables, i++);
     }
 
     domainDataOverviewDiv.insertAdjacentHTML('afterbegin', cards);
