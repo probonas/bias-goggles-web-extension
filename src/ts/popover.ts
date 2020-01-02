@@ -177,7 +177,7 @@ function elementMouseOver(event: FocusEvent): void {
                 //let domain = event.target.href;
 
                 userSettings.get((settings) => {
-                    if (settings.enabled) {
+                    if (settings.enabled && settings.pagePopoverEnabled) {
                         popover.show(<HTMLElement>e.target, settings.method);
                     }
 
