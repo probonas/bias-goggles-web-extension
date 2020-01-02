@@ -174,10 +174,10 @@ function showSuccessAlert(msg: string) {
             </button>
         </div>`;
 
-    document.getElementById('container').insertAdjacentHTML('beforeend', successAlert);
+    document.getElementById('main-card').insertAdjacentHTML('afterbegin', successAlert);
 
     setTimeout(() => {
-        (<HTMLButtonElement>(document.getElementById('container').lastElementChild.lastElementChild)).click();
+        (<HTMLButtonElement>(document.getElementById('main-card').firstElementChild.lastElementChild)).click();
     }, 2000);
 }
 
