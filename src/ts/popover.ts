@@ -158,6 +158,10 @@ function elementMouseOver(event: FocusEvent): void {
         }
         */
 
+        if (event.target.href[0] === '#'){
+            return;
+        }
+
         let stop = 0;
 
         event.target.addEventListener('mouseout', () => {
