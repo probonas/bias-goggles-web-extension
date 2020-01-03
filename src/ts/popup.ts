@@ -412,110 +412,135 @@ function createAccordionCard(title: string, body: string, ascendingCardNum: numb
     return card;
 }
 
-extension.storage.getAllDomainData((data) => {
-    let domainDataOverviewDiv = document.getElementById('domainDataOverview');
-    let cards: string = '';
+function showDomainDataUnderSettings() {
+    extension.storage.getAllDomainData((data) => {
+        let domainDataOverviewDiv = document.getElementById('domainDataOverview');
+        let cards: string = '';
 
-    let innerTables = '';
+        let innerTables = '';
 
-    console.log(data);
+        //console.log(data);
 
-    let formattedData: { [key: string]: { [key: string]: any } } = {};
+        let formattedData: { [key: string]: { [key: string]: any } } = {};
 
-    for (let key in data) {
+        for (let key in data) {
 
-        if (!isNaN(parseInt(key)))
-            continue;
+            if (!isNaN(parseInt(key)))
+                continue;
 
-        let goggle = key.split(' ')[0];
-        let domain = key.split(' ')[1];
+            let goggle = key.split(' ')[0];
+            let domain = key.split(' ')[1];
 
-        let domainData = <DomainData>data[key];
+            let domainData = <DomainData>data[key];
 
-        console.log(domainData.scoreIndex);
+            //console.log(domainData.scoreIndex);
 
-        let scores = (<Score>data[domainData.scoreIndex]).scores;
+            let scores = (<Score>data[domainData.scoreIndex]).scores;
 
-        if (typeof formattedData[domain] === 'undefined')
-            formattedData[domain] = {};
+            if (typeof formattedData[domain] === 'undefined')
+                formattedData[domain] = {};
 
-        formattedData[domain][goggle] = {
-            scores
-        };
-    }
+            formattedData[domain][goggle] = {
+                scores
+            };
+        }
 
-    for (let key in Object.keys(formattedData)) {
-        let domain = Object.keys(formattedData)[key];
-        innerTables = '';
+        for (let key in Object.keys(formattedData)) {
+            let domain = Object.keys(formattedData)[key];
+            innerTables = '';
 
-        for (let goggleKey in Object.keys(formattedData[domain])) {
-            let goggleName = Object.keys(formattedData[domain])[goggleKey];
+            for (let goggleKey in Object.keys(formattedData[domain])) {
+                let goggleName = Object.keys(formattedData[domain])[goggleKey];
 
-            let biasData = formattedData[domain][goggleName];
+                let biasData = formattedData[domain][goggleName];
 
-            //@ts-ignore
-            let pr = biasData.scores['pr'];
-            //@ts-ignore
-            let lt = biasData.scores['lt'];
-            //@ts-ignore
-            let ic = biasData.scores['ic'];
+                //@ts-ignore
+                let pr = biasData.scores['pr'];
+                //@ts-ignore
+                let lt = biasData.scores['lt'];
+                //@ts-ignore
+                let ic = biasData.scores['ic'];
 
-            let unrollscore = (scoreValue: any) => {
-                let ret = '';
+                let unrollscore = (scoreValue: any) => {
+                    let ret = '';
 
-                for (let property in Object.keys(scoreValue)) {
-                    let propertyName = Object.keys(scoreValue)[property];
+                    for (let property in Object.keys(scoreValue)) {
+                        let propertyName = Object.keys(scoreValue)[property];
 
-                    if (propertyName === 'vector') {
-                        ret += createRowForTable('Vectors', 'Support', true);
+                        if (propertyName === 'vector') {
+                            ret += createRowForTable('Vectors', 'Support', true);
 
-                        for (let vectorKey in Object.keys(scoreValue[propertyName])) {
-                            let vectorName = Object.keys(scoreValue[propertyName])[vectorKey];
+                            for (let vectorKey in Object.keys(scoreValue[propertyName])) {
+                                let vectorName = Object.keys(scoreValue[propertyName])[vectorKey];
 
-                            ret += createRowForTable(vectorName, scoreValue[propertyName][vectorName], false);
+                                ret += createRowForTable(vectorName, scoreValue[propertyName][vectorName], false);
+                            }
+
+                        } else {
+                            ret += createRowForTable(propertyName, scoreValue[propertyName], false);
                         }
-
-                    } else {
-                        ret += createRowForTable(propertyName, scoreValue[propertyName], false);
                     }
+
+                    return ret;
                 }
 
-                return ret;
+                let rows = unrollscore(pr);
+                //rows += unrollscore(lt);
+                //rows += unrollscore(ic);
+
+                innerTables += createTable('Goggles:', goggleName, rows) + '<br>';
+            }
+            cards += createAccordionCard(domain, innerTables, ++idCounter, 'domainDataOverview');
+        }
+
+        domainDataOverviewDiv.insertAdjacentHTML('afterbegin', cards);
+    });
+}
+
+function showAnalyticsDataUnderSettings() {
+    extension.storage.getAnalytics((analytics) => {
+        if (analytics === null)
+            return;
+
+        let analyticsDataOverviewDiv = document.getElementById('analyticsDataOverview');
+        let cards = '';
+
+        for (let i = 0; i < analytics.total; i++) {
+            let rows = '';
+            let table = '';
+
+            for (let analyticsKey in Object.keys(analytics.data[i])) {
+                let name = Object.keys(analytics.data[i])[analyticsKey];
+                //@ts-ignore
+                rows += createRowForTable(name, (analytics.data[i])[name], false);
             }
 
-            let rows = unrollscore(pr);
-            //rows += unrollscore(lt);
-            //rows += unrollscore(ic);
-
-            innerTables += createTable('Goggles:', goggleName, rows) + '<br>';
-        }
-        cards += createAccordionCard(domain, innerTables, ++idCounter,'domainDataOverview');
-    }
-
-    domainDataOverviewDiv.insertAdjacentHTML('afterbegin', cards);
-});
-
-extension.storage.getAnalytics((analytics) => {
-    let analyticsDataOverviewDiv = document.getElementById('analyticsDataOverview');
-    let cards = '';
-
-    for (let i = 0; i < analytics.total; i++) {
-        let rows = '';
-        let table = '';
-
-        for (let analyticsKey in Object.keys(analytics.data[i])) {
-            let name = Object.keys(analytics.data[i])[analyticsKey];
-            //@ts-ignore
-            rows += createRowForTable(name, (analytics.data[i])[name], false);
+            table = createTable('Key', 'Value', rows);
+            cards += createAccordionCard('Analytics Data #' + i, table, ++idCounter, 'analyticsDataOverview');
         }
 
-        table = createTable('Key', 'Value', rows);
-        cards += createAccordionCard('Analytics Data #' + i, table, ++idCounter,'analyticsDataOverview');
-    }
+        analyticsDataOverviewDiv.insertAdjacentHTML('afterbegin', cards);
+    });
+}
 
-    analyticsDataOverviewDiv.insertAdjacentHTML('afterbegin', cards);
-});
-
-document.getElementById('delete-data-btn').addEventListener('click',() => {
+document.getElementById('delete-data-btn').addEventListener('click', () => {
     extension.storage.clear();
+});
+
+showDomainDataUnderSettings();
+showAnalyticsDataUnderSettings();
+
+//update data under settings without the need to reload popup/sidebar
+chrome.storage.onChanged.addListener((changes, areaName) => {
+    if (changes.oldValue !== undefined || changes.oldValue !== null) {
+
+        while (document.getElementById('domainDataOverview').hasChildNodes())
+            document.getElementById('domainDataOverview').firstChild.remove();
+
+        while (document.getElementById('analyticsDataOverview').hasChildNodes())
+            document.getElementById('analyticsDataOverview').firstChild.remove();
+
+        showDomainDataUnderSettings();
+        showAnalyticsDataUnderSettings();
+    }
 });
