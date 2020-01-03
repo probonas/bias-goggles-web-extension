@@ -40,6 +40,11 @@ export namespace popoverAnalytics {
 
         let advanceIndex = (callback: (index: number) => void) => {
             extension.storage.getAnalytics(item => {
+                
+                if(item === null){
+                    initialize();
+                }
+                
                 let storeIndex = item.total++;
 
                 extension.storage.set({ 'analytics': item }, () => {
