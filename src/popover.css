@@ -29,7 +29,7 @@
     width: 200px;
     /* compatibility */
     position: relative;
-    z-index: 3;
+    z-index: 999999;
     opacity: 100;
 }
 
