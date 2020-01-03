@@ -390,7 +390,7 @@ function createTable(firstColLabel: string, secondColLabel: string, rowsData: st
     return table;
 }
 
-function createAccordionCard(title: string, body: string, ascendingCardNum: number): string {
+function createAccordionCard(title: string, body: string, ascendingCardNum: number, dataparent: string): string {
 
     const card = `
         <div class="card">
@@ -402,7 +402,7 @@ function createAccordionCard(title: string, body: string, ascendingCardNum: numb
             </h2>
             </div>
 
-            <div id="collapse${ascendingCardNum}" class="collapse" aria-labelledby="header${ascendingCardNum}" data-parent="#domainDataOverview">
+            <div id="collapse${ascendingCardNum}" class="collapse" aria-labelledby="header${ascendingCardNum}" data-parent="#${dataparent}">
             <div class="card-body">
                 ${body}
             </div>
@@ -415,7 +415,6 @@ function createAccordionCard(title: string, body: string, ascendingCardNum: numb
 extension.storage.getAllDomainData((data) => {
     let domainDataOverviewDiv = document.getElementById('domainDataOverview');
     let cards: string = '';
-    let i = 0;
 
     let innerTables = '';
 
@@ -490,7 +489,7 @@ extension.storage.getAllDomainData((data) => {
 
             innerTables += createTable('Goggles:', goggleName, rows) + '<br>';
         }
-        cards += createAccordionCard(domain, innerTables, i++);
+        cards += createAccordionCard(domain, innerTables, ++idCounter,'domainDataOverview');
     }
 
     domainDataOverviewDiv.insertAdjacentHTML('afterbegin', cards);
@@ -511,8 +510,8 @@ extension.storage.getAnalytics((analytics) => {
         }
 
         table = createTable('Key', 'Value', rows);
-        cards += createAccordionCard('Analytics Data #' + i, table, ++idCounter);
+        cards += createAccordionCard('Analytics Data #' + i, table, ++idCounter,'analyticsDataOverview');
     }
 
-    analyticsDataOverviewDiv.insertAdjacentHTML('beforeend', cards);
+    analyticsDataOverviewDiv.insertAdjacentHTML('afterbegin', cards);
 });
