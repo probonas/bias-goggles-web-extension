@@ -495,3 +495,24 @@ extension.storage.getAllDomainData((data) => {
 
     domainDataOverviewDiv.insertAdjacentHTML('afterbegin', cards);
 });
+
+extension.storage.getAnalytics((analytics) => {
+    let analyticsDataOverviewDiv = document.getElementById('analyticsDataOverview');
+    let cards = '';
+
+    for (let i = 0; i < analytics.total; i++) {
+        let rows = '';
+        let table = '';
+
+        for (let analyticsKey in Object.keys(analytics.data[i])) {
+            let name = Object.keys(analytics.data[i])[analyticsKey];
+            //@ts-ignore
+            rows += createRowForTable(name, (analytics.data[i])[name], false);
+        }
+
+        table = createTable('Key', 'Value', rows);
+        cards += createAccordionCard('Analytics Data #' + i, table, ++idCounter);
+    }
+
+    analyticsDataOverviewDiv.insertAdjacentHTML('beforeend', cards);
+});
