@@ -121,6 +121,16 @@ export namespace extension {
             });
         }
 
+        export function clear(callback?: () => void) {
+            get(null, (items) => {
+                delete items['settings'];
+                getStorageObj((storage)=>{
+                    for(let key in Object.keys(items)){
+                        storage.remove(Object.keys(items)[key],callback);
+                    }
+                });
+            });
+        }
     }
 
     function parseDataFromService(data: string, limit: number, scoreIndex: number, domainData: AppData, scoreData: AppData, goggles: string) {

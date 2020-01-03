@@ -515,3 +515,7 @@ extension.storage.getAnalytics((analytics) => {
 
     analyticsDataOverviewDiv.insertAdjacentHTML('afterbegin', cards);
 });
+
+document.getElementById('delete-data-btn').addEventListener('click',() => {
+    extension.storage.clear();
+});

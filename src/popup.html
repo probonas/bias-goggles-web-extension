@@ -90,9 +90,14 @@
               </div>
 
               <br>
-              
+
               <div class="accordion" id="analyticsDataOverview">
               </div>
+
+              <br>
+
+              <button type="button" class="btn btn-outline-danger" id='deleteDataBtn' data-toggle="modal"
+              data-target="#deleteDataModal">Delete saved data</button>
 
               <button style="display: none;" type="button" id='syncModalBtn' data-toggle="modal"
                 data-target="#syncModal"></button>
@@ -121,7 +126,7 @@
               </div>
 
               <!-- Delete Confirmation Modal -->
-              <div class="modal fade" id="modelId" tabindex="-1" role="dialog" aria-labelledby="modelTitleId"
+              <div class="modal fade" id="deleteDataModal" tabindex="-1" role="dialog" aria-labelledby="modelTitleId"
                 aria-hidden="true">
                 <div class="modal-dialog" role="document">
                   <div class="modal-content">
