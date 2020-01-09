@@ -211,11 +211,11 @@ chrome.tabs.onActivated.addListener((activeTabInfo) => {
 /* new page is loaded in the tab */
 chrome.tabs.onUpdated.addListener((tabID, chageInfo, tab) => {
     if (tab.windowId === thisWindowID) {
-        if (chageInfo.status !== 'loading')
-            return;
-        chrome.tabs.query({ windowId: thisWindowID, active: true }, (tabs) => {
-            updateContent(tabs[0].url, true, false);
-        });
+        if (chageInfo.status == 'complete') {
+            chrome.tabs.query({ windowId: thisWindowID, active: true }, (tabs) => {
+                updateContent(tabs[0].url, true, false);
+            });
+        }
     }
 });
 
