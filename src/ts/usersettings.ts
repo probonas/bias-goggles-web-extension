@@ -43,4 +43,12 @@ export namespace userSettings {
         });
     };
 
+    export function getScoreIndex(callback: (settings: UserSettings) => void) {
+        userSettings.get((settings) => {
+            settings.scoreIndex++;
+            userSettings.update(settings, () => {
+                callback(settings);
+            });
+        });
+    }
 }

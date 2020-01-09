@@ -7,38 +7,15 @@ export namespace extension {
 
     export namespace storage {
 
-        export function set(data: string | AppData | Analytics, callback?: () => void): void {
+        export function set(data: AppData | Analytics, callback?: () => void): void {
 
             if (data === null) {
                 callback();
                 return;
             }
 
-            userSettings.get((settings) => {
-                let syncEnabled = settings.syncEnabled;
-                let limit = settings.forceRefreshLimit;
-
-                let st: chrome.storage.StorageArea;
-
-                if (syncEnabled) {
-                    st = chrome.storage.sync;
-                } else {
-                    st = chrome.storage.local;
-                }
-
-                if (typeof data === 'string') {
-                    let domainData = {} as AppData;
-                    let scoreData = {} as AppData;
-                    settings.scoreIndex++;
-                    parseDataFromService(data, limit, settings.scoreIndex, domainData, scoreData, settings.goggles);
-                    userSettings.update(settings, () => {
-                        st.set(domainData, () => {
-                            st.set(scoreData, callback)
-                        });
-                    });
-                } else {
-                    st.set(data, callback);
-                }
+            getStorageObj((storage) => {
+                storage.set(data, callback);
             });
         }
 
@@ -124,52 +101,13 @@ export namespace extension {
         export function clear(callback?: () => void) {
             get(null, (items) => {
                 delete items['settings'];
-                getStorageObj((storage)=>{
-                    for(let key in Object.keys(items)){
-                        storage.remove(Object.keys(items)[key],callback);
+                getStorageObj((storage) => {
+                    for (let key in Object.keys(items)) {
+                        storage.remove(Object.keys(items)[key], callback);
                     }
                 });
             });
         }
     }
-
-    function parseDataFromService(data: string, limit: number, scoreIndex: number, domainData: AppData, scoreData: AppData, goggles: string) {
-        let ret = JSON.parse(data);
-
-        //the following are as returned from service
-        //if anything changes in service
-        //the following should be updated as well
-
-        //@ts-ignore
-        domainData[goggles + ' ' + ret.doc.domain] = {
-            limit: limit,
-            scoreIndex: scoreIndex
-        };
-
-        scoreData[scoreIndex] = {
-            scores: {
-                'ic': {
-                    //@ts-ignore
-                    bias_score: ret.doc.ic.bias_score,
-                    rank: ret.doc.ic.rank,
-                    support_score: ret.doc.ic.support_score,
-                    vector: ret.doc.ic.vector
-                },
-                'lt': {
-                    bias_score: ret.doc.lt.bias_score,
-                    rank: ret.doc.lt.rank,
-                    support_score: ret.doc.lt.support_score,
-                    vector: ret.doc.lt.vector
-                },
-                'pr': {
-                    bias_score: ret.doc.pr.bias_score,
-                    rank: ret.doc.pr.rank,
-                    support_score: ret.doc.pr.support_score,
-                    vector: ret.doc.pr.vector
-                }
-            },
-            date: new Date()
-        };
-    };
 
 }
