@@ -1,5 +1,5 @@
 
-import { AppData, DomainData, Score, Analytics, AnalyticsData, UserSettings } from "./types";
+import { AppData, DomainData, Score, Analytics, AnalyticsData } from "./types";
 import { userSettings } from "./usersettings";
 import { utils } from "./utils";
 
@@ -109,5 +109,4 @@ export namespace extension {
             });
         }
     }
-
 }
