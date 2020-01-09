@@ -5,7 +5,7 @@ const webpack = require('webpack');
 const sourceRoot = path.resolve(__dirname, './src/ts');
 
 const sourceRootHTML = path.resolve(__dirname, './src');
-const sourceRootIcons = path.resolve(__dirname, './src/img');
+const sourceRootIcons = path.resolve(__dirname, './src/icons');
 
 const destinationRoot = path.resolve(__dirname, './dist');
 const platformSpecificsRoots = path.resolve(__dirname, './platform');
