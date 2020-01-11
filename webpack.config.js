@@ -46,6 +46,9 @@ var configScaffold = {
 
                         { source: platformSpecificsRoots + '/chromium/manifest.json', destination: destinationRoot + '/chromium' },
                         { source: platformSpecificsRoots + '/firefox/manifest.json', destination: destinationRoot + '/firefox' },
+                    ],
+                    delete: [
+                        sourceRoot + '/*.{js,map}'
                     ]
                 }
             })
