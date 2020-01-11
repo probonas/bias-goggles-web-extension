@@ -2,7 +2,6 @@ const path = require('path');
 const webpack = require('webpack');
 
 const FileManagerPlugin = require('filemanager-webpack-plugin');
-const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 
 const sourceRoot = path.resolve(__dirname, './src/ts');
 const sourceRootHTML = path.resolve(__dirname, './src/html');
@@ -33,9 +32,13 @@ var configScaffold = {
     },
     plugins: [
         new webpack.IgnorePlugin(/^\.\/locale$/, /moment$/),
-        new CleanWebpackPlugin(),
         new FileManagerPlugin(
             {
+                onStart: {
+                    delete: [
+                        destinationRoot
+                    ]
+                },
                 onEnd: {
                     copy: [
                         { source: sourceRootHTML + '/*.{html,css}', destination: destinationRoot + '/chromium' },
@@ -46,9 +49,6 @@ var configScaffold = {
 
                         { source: platformSpecificsRoots + '/chromium/manifest.json', destination: destinationRoot + '/chromium' },
                         { source: platformSpecificsRoots + '/firefox/manifest.json', destination: destinationRoot + '/firefox' },
-                    ],
-                    delete: [
-                        sourceRoot + '/*.{js,map}'
                     ]
                 }
             })

@@ -14,7 +14,7 @@ var distScaffold = merge(config.configScaffold, {
 var firefox = merge(distScaffold, {
     name: 'firefox',
     entry: {
-        main: config.platformSpecificsRoots + "/firefox/index.ts",
+        background: config.platformSpecificsRoots + "/firefox/index.ts",
     },
     output: {
         path: config.destinationRoot + "/firefox",
@@ -24,7 +24,7 @@ var firefox = merge(distScaffold, {
 var chromium = merge(distScaffold, {
     name: 'chromium',
     entry: {
-        main: config.platformSpecificsRoots + "/chromium/index.ts",
+        background: config.platformSpecificsRoots + "/chromium/index.ts",
     },
     output: {
         path: config.destinationRoot + "/chromium",

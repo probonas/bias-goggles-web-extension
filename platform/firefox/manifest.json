@@ -10,7 +10,7 @@
 	},
 	"background": {
 		"scripts": [
-			"app.js"
+			"background.js"
 		],
 		"persistent": true
 	},
