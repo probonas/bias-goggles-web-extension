@@ -1,5 +1,6 @@
 *.js.map
 *.js
 !*.*.js
+!tests/jasmine/*.js
 node_modules/*
 dist/*
