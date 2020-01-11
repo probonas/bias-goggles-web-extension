@@ -2,9 +2,9 @@
   "name": "bias-goggles-browser-ext",
   "version": "0.0.1",
   "description": "A browser extension for the bias-goggles search engine",
-  "main": "index.js",
   "scripts": {
-    "test": "test"
+    "test": "npx webpack --config ./webpack.dev.js --mode=\"development\"",
+    "build": "npx webpack --config ./webpack.prod.js --mode=\"production\""
   },
   "keywords": [
     "bias-googles",
@@ -16,8 +16,6 @@
   "author": "Promponas Giannis",
   "license": "ISC",
   "dependencies": {
-    "@types/node": "^13.1.1",
-    "@types/popper.js": "^1.11.0",
     "bootstrap": "^4.4.1",
     "jquery": "^3.4.1",
     "node": "^13.5.0",
@@ -27,16 +25,23 @@
     "@types/bootstrap": "^4.3.1",
     "@types/chart.js": "^2.9.0",
     "@types/chrome": "0.0.91",
+    "@types/expect.js": "^0.3.29",
     "@types/firefox-webext-browser": "^70.0.1",
+    "@types/jasmine": "^3.5.0",
+    "@types/node": "^13.1.6",
+    "@types/popper.js": "^1.11.0",
     "chart.js": "^2.9.3",
+    "clean-webpack-plugin": "^3.0.0",
     "create-web-ext": "^1.0.0",
     "css-loader": "^3.4.0",
+    "expect.js": "^0.3.1",
     "filemanager-webpack-plugin": "^2.0.5",
     "style-loader": "^1.1.2",
     "ts-loader": "^6.2.1",
     "typescript": "^3.7.4",
     "web-ext-types": "^3.2.1",
     "webpack": "^4.41.4",
-    "webpack-cli": "^3.3.10"
+    "webpack-cli": "^3.3.10",
+    "webpack-merge": "^4.2.2"
   }
 }
