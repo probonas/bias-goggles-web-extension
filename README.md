@@ -6,8 +6,16 @@ npm install
 ```
 
 ## How to create the web extension
+
+### Production
+
 ```bash
-npx webpack
+npm run-script build
+```
+### Development
+
+```bash
+npm run-script test
 ```
 
 ## Notes
