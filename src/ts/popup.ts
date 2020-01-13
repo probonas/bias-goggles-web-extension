@@ -39,8 +39,8 @@ function truncateHTTPSWWW(domain: string): string {
 
     return domain;
 }
-
-function detailsCard(domain: string, data: Score, cardID: string, chartID: string, dismissable: boolean) {
+//class="list-group-item">
+function detailsCard(domain: string, data: Score, cardID: string, chartID: string, dismissable: boolean, showScores: boolean) {
     let liveInfoTab: HTMLElement = document.getElementById('live-info');
 
     if (data === null) {
@@ -50,7 +50,21 @@ function detailsCard(domain: string, data: Score, cardID: string, chartID: strin
         document.getElementById(cardID).lastElementChild.firstElementChild.appendChild(uncrawled.create404Msg(domain, ['text-info']));
     } else {
         let vector = data.scores['pr'].vector;
-        let card = templates.get.InnerCard('Data for: ' + truncateHTTPSWWW(domain), '', cardID, truncateHTTPSWWW(domain), dismissable);
+        let card: string;
+
+        if (showScores) {
+            card = templates.get.InnerCard(
+                '<ul class="list-unstyled">' +
+                '<li>' + utils.getDomainFromURL(domain) + '</li>' +
+                '<hr />' +
+                '<li><h4 class="text-info">Bias Score: ' + Math.fround(data.scores['pr'].bias_score * 100).toFixed(2) + '</h4></li>' +
+                '<li><h4 class="text-info">Support Score: ' + Math.fround(data.scores['pr'].support_score * 100).toFixed(2) + '</h4></li>' +
+                '</ul>',
+                '', cardID, '', dismissable);
+        } else {
+            card = templates.get.InnerCard(utils.getDomainFromURL(domain), '', cardID, '', dismissable);
+        }
+
         liveInfoTab.insertAdjacentHTML('beforeend', card);
         chart.draw(vector, 220, 300, document.getElementById(cardID).lastElementChild.firstElementChild as HTMLElement, chartID, true);
     }
@@ -172,7 +186,7 @@ function removeSpinner() {
         document.getElementById(spinnerID).parentElement.parentElement.remove();
 }
 
-export function updateContent(url: string, cleanTab: boolean, dismissable: boolean) {
+export function updateContent(url: string, cleanTab: boolean, dismissable: boolean, showScore: boolean) {
 
     if (cleanTab) {
         clearInfoTab();
@@ -192,7 +206,7 @@ export function updateContent(url: string, cleanTab: boolean, dismissable: boole
             card = templates.get.InnerCard('Extension is disabled!', 'Enable it, and try again', activeTabCardID + idCounter, null, false);
             document.getElementById('live-info').insertAdjacentHTML('beforeend', card);
         } else {
-            detailsCard(url, scoreData, activeTabCardID + idCounter, 'chart' + idCounter, dismissable);
+            detailsCard(url, scoreData, activeTabCardID + idCounter, 'chart' + idCounter, dismissable, showScore);
         }
     });
 
@@ -204,7 +218,7 @@ createToggleBtn();
 chrome.tabs.onActivated.addListener((activeTabInfo) => {
     if (activeTabInfo.windowId === thisWindowID)
         chrome.tabs.query({ windowId: thisWindowID, active: true }, (tabs) => {
-            updateContent(tabs[0].url, true, false);
+            updateContent(tabs[0].url, true, false, true);
         });
 });
 
@@ -213,7 +227,7 @@ chrome.tabs.onUpdated.addListener((tabID, chageInfo, tab) => {
     if (tab.windowId === thisWindowID) {
         if (chageInfo.status == 'complete') {
             chrome.tabs.query({ windowId: thisWindowID, active: true }, (tabs) => {
-                updateContent(tabs[0].url, true, false);
+                updateContent(tabs[0].url, true, false, true);
             });
         }
     }
@@ -222,13 +236,13 @@ chrome.tabs.onUpdated.addListener((tabID, chageInfo, tab) => {
 chrome.windows.getCurrent((windowInfo) => {
     thisWindowID = windowInfo.id;
     chrome.tabs.query({ windowId: thisWindowID, active: true }, (tabs) => {
-        updateContent(tabs[0].url, true, false);
+        updateContent(tabs[0].url, true, false, true);
     });
 });
 
 chrome.runtime.onMessage.addListener((msg: ContextBtnMsg) => {
     if (msg.windowID === thisWindowID)
-        updateContent(msg.url, false, true);
+        updateContent(msg.url, false, true, true);
 });
 
 let sync = <HTMLSelectElement>document.getElementById('syncSelect');
