@@ -6,6 +6,8 @@ import { userSettings } from "./usersettings";
 import { extension } from "./storage";
 import { templates } from "./templates";
 
+import { GenericCard, ScoreCard } from "./infoCard";
+
 import "bootstrap";
 import 'bootstrap/dist/css/bootstrap.min.css';
 
@@ -17,62 +19,18 @@ const twoHoursID = 'bg-twohours';
 const sessionOnlyID = 'bg-session-only';
 const permaID = 'bg-perma';
 const onID = 'bg-on';
-const activeTabCardID = 'bg-active-tab-card';
-const spinnerID = 'bg-spinner-id';
 
 let idCounter = 0;
 let thisWindowID: number;
 
+let tabLabels = new Array();
+let tabIDs = new Array();
+
 function clearInfoTab() {
-    while (document.getElementById('live-info').hasChildNodes())
-        document.getElementById('live-info').firstChild.remove();
-}
-
-function truncateHTTPSWWW(domain: string): string {
-
-    let prefixes = ['http://www.', 'https://www.', 'http://', 'https://', 'www.'];
-
-    for (let i = 0; i < prefixes.length; i++) {
-        if (domain.startsWith(prefixes[i]))
-            return domain.substring(prefixes[i].length);
-    }
-
-    return domain;
-}
-//class="list-group-item">
-function detailsCard(domain: string, data: Score, cardID: string, chartID: string, dismissable: boolean, showScores: boolean) {
-    let liveInfoTab: HTMLElement = document.getElementById('live-info');
-
-    if (data === null) {
-        let card = templates.get.InnerCard('Too bad... :( ', '', cardID, null, dismissable);
-
-        liveInfoTab.insertAdjacentHTML('beforeend', card);
-        document.getElementById(cardID).lastElementChild.firstElementChild.appendChild(uncrawled.create404Msg(domain, ['text-info']));
-    } else {
-        let vector = data.scores['pr'].vector;
-        let card: string;
-
-        if (showScores) {
-            card = templates.get.InnerCard(
-                '<ul class="list-unstyled">' +
-                '<li>' + utils.getDomainFromURL(domain) + '</li>' +
-                '<hr />' +
-                '<li><h4 class="text-info">Bias Score: ' + Math.fround(data.scores['pr'].bias_score * 100).toFixed(2) + '</h4></li>' +
-                '<li><h4 class="text-info">Support Score: ' + Math.fround(data.scores['pr'].support_score * 100).toFixed(2) + '</h4></li>' +
-                '</ul>',
-                '', cardID, '', dismissable);
-        } else {
-            card = templates.get.InnerCard(utils.getDomainFromURL(domain), '', cardID, '', dismissable);
+    for (let i = 0; i < tabIDs.length; i++) {
+        while (document.getElementById(tabIDs[i]).hasChildNodes()) {
+            document.getElementById(tabIDs[i]).firstChild.remove();
         }
-
-        liveInfoTab.insertAdjacentHTML('beforeend', card);
-        chart.draw(vector, 220, 300, document.getElementById(cardID).lastElementChild.firstElementChild as HTMLElement, chartID, true);
-    }
-
-    if (dismissable) {
-        (<HTMLButtonElement>document.getElementById(cardID).firstElementChild.firstElementChild).addEventListener('click', () => {
-            document.getElementById(cardID).parentElement.parentElement.remove();
-        });
     }
 }
 
@@ -173,42 +131,70 @@ function showSuccessAlert(msg: string) {
     }, 2000);
 }
 
-function showSpinner(): void {
+export function updateContent(url: string, cleanTab: boolean, dismissable: boolean, showScores: boolean) {
 
-    const spinnerSign = templates.get.Spinner();
-
-    let spinner = templates.get.InnerCard('Requesting data from service...', spinnerSign, spinnerID, null, false);
-    document.getElementById('live-info').insertAdjacentHTML('beforeend', spinner);
-}
-
-function removeSpinner() {
-    if (document.getElementById(spinnerID))
-        document.getElementById(spinnerID).parentElement.parentElement.remove();
-}
-
-export function updateContent(url: string, cleanTab: boolean, dismissable: boolean, showScore: boolean) {
-
-    if (cleanTab) {
+    if (cleanTab)
         clearInfoTab();
-    } else {
-        idCounter++;
+
+
+    for (let i = 0; i < tabIDs.length; i++) {
+        let tabID = tabIDs[i];
+
+        //show spinner
+        let card = new GenericCard((++idCounter).toString(), tabID, true, false);
+        card.setTitle('Requesting data from service...');
+        card.setStringContent(templates.get.Spinner());
+        card.render();
+
+        utils.getBiasDataForGoggles(url, tabID, (scoreData, scoreIndex) => {
+
+            card.delete();
+
+            if (scoreIndex === -1) {
+                let card = new GenericCard(idCounter.toString(), tabID, dismissable, false);
+
+                card.setTitle('Extension is disabled!');
+                card.setStringContent('Enable it, and try again');
+                card.render();
+            } else {
+                let cardID = (++idCounter).toString();
+
+                if (scoreData === null) {
+                    let card = new GenericCard(cardID, tabID, dismissable, false);
+                    //
+                    card.setTitle('Too bad... :( ');
+                    card.setHTMLContent(uncrawled.create404Msg(url, ['text-info']));
+                    card.render();
+                } else {
+                    let vector = scoreData.scores['pr'].vector;
+
+                    if (showScores) {
+                        let card = new ScoreCard(cardID, tabID, dismissable, false);
+                        //
+                        card.setTitle(utils.getDomainFromURL(url),
+                            Math.fround(scoreData.scores['pr'].bias_score * 100).toFixed(2),
+                            Math.fround(scoreData.scores['pr'].bias_score * 100).toFixed(2));
+                        card.setStringContent('');
+                        card.render(); //canvas can only be rendered if element is already in the dom
+                        chart.draw(vector, 220, 300,
+                            document.getElementById(cardID).getElementsByClassName('card-text')[0] as HTMLElement,
+                            'chart' + cardID, true);
+                    } else {
+                        let card = new ScoreCard(cardID, tabID, dismissable, false);
+                        //
+                        card.setTitle(utils.getDomainFromURL(url));
+                        card.setStringContent('');
+                        card.render(); //canvas can only be rendered if element is already in the dom
+                        chart.draw(vector, 220, 300,
+                            document.getElementById(cardID).getElementsByClassName('card-text')[0] as HTMLElement,
+                            'chart' + cardID, true);
+                    }
+
+                }
+            }
+        });
+
     }
-
-    let card: string;
-
-    showSpinner();
-
-    utils.getBiasData(url, (scoreData, scoreIndex) => {
-
-        removeSpinner();
-
-        if (scoreIndex === -1) {
-            card = templates.get.InnerCard('Extension is disabled!', 'Enable it, and try again', activeTabCardID + idCounter, null, false);
-            document.getElementById('live-info').insertAdjacentHTML('beforeend', card);
-        } else {
-            detailsCard(url, scoreData, activeTabCardID + idCounter, 'chart' + idCounter, dismissable, showScore);
-        }
-    });
 
 }
 
@@ -404,6 +390,18 @@ function showAnalyticsDataUnderSettings() {
 
 document.getElementById('delete-data-btn').addEventListener('click', () => {
     extension.storage.clear();
+});
+
+userSettings.get((settings) => {
+
+    for (let i = 0; i < settings.gogglesList.length; i++) {
+        tabLabels.push(settings.gogglesList[i].name);
+        tabIDs.push(settings.gogglesList[i].id);
+    }
+
+    let tabs = templates.get.CreateTabs(tabLabels, tabIDs);
+
+    document.getElementById('live-info').insertAdjacentHTML('beforeend', tabs);
 });
 
 showDomainDataUnderSettings();

@@ -2,15 +2,15 @@ export namespace templates {
 
     export namespace get {
 
-        export function InnerCard(title: string, body: string, id: string, tooltipText: string, dismissable: boolean): string {
+        export function InnerCard(title: string, body: string, id: string, tooltipOn: boolean, dismissable: boolean): string {
             let style = '';
 
             if (!dismissable) {
                 style = "display: none;";
             };
 
-            if (tooltipText) {
-
+            if (tooltipOn) {
+                let tooltipText = title;
                 if (title.length > 28) {
                     title = title.substr(0, 28) + '...';
                 }
@@ -18,7 +18,7 @@ export namespace templates {
                 return `
                 <div>
                     <div class="card">
-                        <div class="card-body" id=${id}>
+                        <div class="card-body" id="${id}">
                             <span data-toggle="tooltip" title="${tooltipText}">
                                 <button type="button" style="${style}" class="close" aria-label="Close">
                                     <span aria-hidden="true">&times;</span>
@@ -37,7 +37,7 @@ export namespace templates {
                 return `
                 <div>
                     <div class="card">
-                        <div class="card-body" id=${id}>
+                        <div class="card-body" id="${id}">
                             <button type="button" style="${style}" class="close" aria-label="Close">
                                 <span aria-hidden="true">&times;</span>
                             </button>
@@ -154,5 +154,86 @@ export namespace templates {
 
             return card;
         }
+
+        function NavBar(body: string): string {
+            return `
+            <ul class="nav nav-tabs" role="tablist">
+                ${body}
+            </ul>`;
+        }
+
+        function TabContents(contents: string): string {
+            return `
+            <div class="tab-content">
+                ${contents}
+            </div>`;
+        }
+
+        function Tab(title: string, tabID: string, active: boolean): string {
+            if (active) {
+                return `
+                <li class="nav-item" id="${title}">
+                    <a href="#${tabID}" class="nav-link active" data-toggle="tab" 
+                    role="tab" aria-controls="${tabID}" aria-selected="true">${title}</a>
+                </li>`;
+            } else {
+                return `
+                <li class="nav-item" id="${title}">
+                    <a href="#${tabID}" class="nav-link" data-toggle="tab" role="tab" 
+                    aria-controls="${tabID}" aria-selected="false">${title}</a>
+                </li>`;
+            }
+        }
+
+        function TabPane(paneID: string, labelledby: string, active: boolean): string {
+
+            if (active) {
+                return `
+                <div class="tab-pane fade show active" id="${paneID}" 
+                    role="tabpanel" aria-labelledby="${labelledby}">
+                </div>`;
+            } else {
+                return `
+                <div class="tab-pane fade" id="${paneID}" role="tabpanel" 
+                    aria-labelledby="${labelledby}">
+                </div>`;
+            }
+
+        }
+
+        export function CreateTabs(tabLabels: string[], tabIDs: string[]): string {
+            let tabs = '';
+            let panes = '';
+
+            for (let i = 0; i < tabLabels.length; i++) {
+                let title = tabLabels[i];
+                let tabID = tabIDs[i];
+
+                tabs += Tab(title, tabID, (i === 0));
+                panes += TabPane(tabID, title, (i === 0));
+            }
+
+            return NavBar(tabs) + TabContents(panes);
+        }
+
+        export function TitleWithScores(title: string, bias_score?: string, support_score?: string) {
+            if( bias_score === undefined){
+                return `
+                <ul class="list-unstyled">
+                    <li> ${title} </li>
+                    <hr />
+                </ul>`;
+            }else{
+                return `
+                <ul class="list-unstyled">
+                    <li> ${title} </li>
+                    <hr />
+                    <li><h4 class="text-info">Bias Score: ${bias_score} </h4></li>
+                    <li><h4 class="text-info">Support Score: ${support_score} </h4></li>
+                </ul>`
+            }
+;
+        }
     }
+
 }
