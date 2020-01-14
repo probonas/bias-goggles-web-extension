@@ -13,71 +13,49 @@ export namespace utils {
         return target;
     }
 
-    export function refreshDataForDomain(domain: string, domainData: DomainData, callback: (domainData: DomainData) => void) {
+    export function refreshDataForDomain(domain: string, goggles: string, domainData: DomainData, callback: (domainData: DomainData) => void) {
 
         if (domainData === null) {
-            console.log(domain + " not found.");
+            console.log(goggles + '-' + domain + " not found.");
 
-            service.query(domain, (data: any) => {
+            service.query(domain, goggles, (data: any) => {
                 extension.storage.set(data, () => {
                     callback(domainData);
                 });
             });
         } else if (domainData.limit === 0) {
-            console.log(domain + " found. But data is considered obsolete. Updating scoreIndex!");
+            console.log(goggles + '-' + domain + " found. But data is considered obsolete. Updating scoreIndex!");
 
-            service.query(domain, (data: any) => {
+            service.query(domain, goggles, (data: any) => {
                 extension.storage.set(data, () => {
                     callback(domainData);
                 });
             });
         } else {
-            console.log(domain + " found.");
-            userSettings.get((settings) => {
-                domainData.limit--;
-                let appdata = {} as AppData;
-                appdata[settings.goggles + ' ' + domain] = domainData;
+            console.log(goggles + '-' + domain + " found.");
+            domainData.limit--;
+            let appdata = {} as AppData;
+            appdata[goggles + ' ' + domain] = domainData;
 
-                extension.storage.set(appdata, () => {
-                    callback(domainData);
-                });
+            extension.storage.set(appdata, () => {
+                callback(domainData);
             });
         }
 
     }
-    export function getBiasData(url: string, callback?: (data: Score, scoreIndex: number) => void) {
+
+    export function getBiasDataForGoggles(url: string, goggles: string, callback?: (data: Score, scoreIndex: number) => void) {
         userSettings.get(settings => {
             if (settings.enabled) {
                 if (url.startsWith('http') || url.startsWith('https')) {
-                    let domain = getDomainFromURL(url)
+                    let domain = getDomainFromURL(url);
 
-                    extension.storage.getScoresForDomain(domain, callback);
+                    extension.storage.getScoresForDomain(domain, goggles, callback);
                 }
             } else {
                 //-1 if disabled
                 callback(null, -1);
             }
-        });
-    }
-
-    export function getDataForActiveTab(callback: (domain: string, data: DomainData) => void): void {
-        getActiveTab((domain: string) => {
-            userSettings.get((settings) => {
-                if (settings.enabled) {
-                    extension.storage.getDomainData(utils.getDomainFromURL(domain), (items) => {
-                        if (callback === undefined)
-                            return;
-
-                        if (items === null) {
-                            callback(domain, null);
-                        } else {
-                            domain = utils.getDomainFromURL(domain);
-                            callback(domain, items);
-                        }
-
-                    });
-                }
-            });
         });
     }
 
