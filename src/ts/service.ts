@@ -2,6 +2,7 @@ import { get as httpGet } from "http";
 import { userSettings } from "./usersettings";
 import { AppData, DomainData } from "./types";
 import { extension } from "./storage";
+import { settings } from "cluster";
 
 export namespace service {
 
@@ -11,7 +12,7 @@ export namespace service {
         let scoreData = {} as AppData;
         let domainData = {} as AppData;
 
-        userSettings.getScoreIndex((settings) => {
+        userSettings.updateScoreIndex((settings) => {
 
             //the following are as returned from service
             //if anything changes in service

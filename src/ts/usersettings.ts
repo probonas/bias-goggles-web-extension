@@ -1,4 +1,5 @@
 import { UserSettings, UserSettingsMap, Goggle } from "./types";
+import { ScoreCard } from "./infoCard";
 
 export namespace userSettings {
 
@@ -43,7 +44,7 @@ export namespace userSettings {
         });
     };
 
-    export function getScoreIndex(callback: (settings: UserSettings) => void) {
+    export function updateScoreIndex(callback: (settings: UserSettings) => void) {
         userSettings.get((settings) => {
             settings.scoreIndex++;
             userSettings.update(settings, () => {
