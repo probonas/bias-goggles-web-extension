@@ -6,6 +6,7 @@ import { utils } from "./utils";
 import { popoverAnalytics } from "./analytics";
 import { extension } from "./storage";
 import { userSettings } from "./usersettings";
+import { settings } from "cluster";
 
 const popperid = 'bg-popper';
 const fadein = 800; //ms
@@ -133,13 +134,15 @@ export namespace popover {
 
         let pageDomain = utils.getDomainFromURL(window.location.href);
 
-        extension.storage.getDomainData(pageDomain, (srcDomainData) => {
-            utils.getBiasData(domain, (data, destIndex) => {
-                scoreData = data.scores[method];
-                popoverAnalytics.createNew(() => {
-                    createDiv();
-                    popoverAnalytics.setSourceScoreIndex(srcDomainData.scoreIndex);  //main frame
-                    popoverAnalytics.setDestScoreIndex(destIndex);                   //link
+        userSettings.get((settings) => {
+            extension.storage.getDomainData(pageDomain, settings.goggles, (srcDomainData) => {
+                utils.getBiasDataForGoggles(domain, settings.goggles,(data, destIndex) => {
+                    scoreData = data.scores[method];
+                    popoverAnalytics.createNew(() => {
+                        createDiv();
+                        popoverAnalytics.setSourceScoreIndex(srcDomainData.scoreIndex);  //main frame
+                        popoverAnalytics.setDestScoreIndex(destIndex);                   //link
+                    });
                 });
             });
         });
@@ -150,15 +153,10 @@ export namespace popover {
 function elementMouseOver(event: FocusEvent): void {
 
     if (event.target instanceof HTMLAreaElement || event.target instanceof HTMLAnchorElement) {
-        /*
+
         if (event.target.href[0] === '#' || event.target.href[0] === '/'
             || event.target.href.includes(window.location.origin)) {
             console.log('skipped for this link....');
-            return;
-        }
-        */
-
-        if (event.target.href[0] === '#'){
             return;
         }
 
