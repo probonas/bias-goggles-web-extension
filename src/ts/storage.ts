@@ -49,12 +49,9 @@ export namespace extension {
             });
         }
 
-        /* default goggle */
-        export function getDomainData(domain: string, callback: (item: DomainData) => void) {
-            userSettings.get((settings) => {
-                get(settings.goggles + ' ' + domain, (data) => {
-                    utils.refreshDataForDomain(domain, data, callback);
-                });
+        export function getDomainData(domain: string, goggles: string, callback: (item: DomainData) => void) {
+            get(goggles + ' ' + domain, (data) => {
+                utils.refreshDataForDomain(domain, goggles, data, callback);
             });
         }
 
@@ -65,9 +62,8 @@ export namespace extension {
             });
         }
 
-        /* for current goggle */
-        export function getScoresForDomain(domain: string, callback: (item: Score, index: number) => void) {
-            extension.storage.getDomainData(domain, (item) => {
+        export function getScoresForDomain(domain: string, goggle: string, callback: (item: Score, index: number) => void) {
+            extension.storage.getDomainData(domain, goggle, (item) => {
                 if (item != null)
                     extension.storage.getScoreData(item.scoreIndex, callback);
                 else
