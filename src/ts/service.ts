@@ -5,7 +5,7 @@ import { extension } from "./storage";
 
 export namespace service {
 
-    function parseDataFromService(data: string, callback: () => void) {
+    function parseDataFromServiceAndSave(data: string, goggles: string, callback: () => void) {
         let ret = JSON.parse(data);
 
         let scoreData = {} as AppData;
@@ -18,7 +18,7 @@ export namespace service {
             //the following should be updated as well
 
             //@ts-ignore
-            domainData[settings.goggles + ' ' + ret.doc.domain] = {
+            domainData[goggles + ' ' + ret.doc.domain] = {
                 limit: settings.forceRefreshLimit,
                 scoreIndex: settings.scoreIndex
             };
@@ -64,31 +64,29 @@ export namespace service {
         return prefix + encodeURIComponent(domain) + suffix;
     }
 
-    export function query(activeTab: string, callback?: (data: DomainData) => void): void {
+    export function query(activeTab: string, goggles: string, callback?: (data: DomainData) => void): void {
 
         let data: any = '';
 
         console.log('requesting: ' + activeTab);
 
-        userSettings.get((settings) => {
-            let targetURL = getRequestURL(activeTab, settings.goggles);
+        let targetURL = getRequestURL(activeTab, goggles);
 
-            httpGet(targetURL, res => {
+        httpGet(targetURL, res => {
 
-                res.on('data', chunk => {
-                    data += chunk;
-                });
+            res.on('data', chunk => {
+                data += chunk;
+            });
 
-                res.on('close', () => {
-                    if (res.statusCode === 200 || res.statusCode === 304) {
-                        parseDataFromService(data, () => {
-                            callback(data);
-                        });
-                    }
-                    else {
-                        callback(null);
-                    }
-                });
+            res.on('close', () => {
+                if (res.statusCode === 200 || res.statusCode === 304) {
+                    parseDataFromServiceAndSave(data, goggles, () => {
+                        callback(data);
+                    });
+                }
+                else {
+                    callback(null);
+                }
             });
         });
 
