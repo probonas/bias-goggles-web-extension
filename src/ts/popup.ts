@@ -174,6 +174,7 @@ export function updateContent(url: string, cleanTab: boolean, dismissable: boole
                         Math.fround(scoreData.scores['pr'].bias_score * 100).toFixed(2));
                     card.setStringContent('');
                     card.render(); //canvas can only be rendered if element is already in the dom
+                    
                     chart.draw(vector, 220, 300,
                         document.getElementById(cardID).getElementsByClassName('card-text')[0] as HTMLElement,
                         'chart' + cardID, true);
@@ -183,6 +184,7 @@ export function updateContent(url: string, cleanTab: boolean, dismissable: boole
                     card.setTitle(utils.getDomainFromURL(url));
                     card.setStringContent('');
                     card.render(); //canvas can only be rendered if element is already in the dom
+
                     chart.draw(vector, 220, 300,
                         document.getElementById(cardID).getElementsByClassName('card-text')[0] as HTMLElement,
                         'chart' + cardID, true);

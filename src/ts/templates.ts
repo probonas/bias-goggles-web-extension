@@ -1,12 +1,16 @@
+
 export namespace templates {
 
     export namespace get {
 
         export function InnerCard(title: string, body: string, id: string, tooltipOn: boolean, dismissable: boolean): string {
-            let style = '';
+            let btn = '';
 
-            if (!dismissable) {
-                style = "display: none;";
+            if (dismissable) {
+                btn = `
+                <button type="button" class="btn btn-light" aria-label="Close">
+                    <img src="icons/x.svg" width="18" height="18" title="Edit"/>
+                </button>`;
             };
 
             if (tooltipOn) {
@@ -17,17 +21,29 @@ export namespace templates {
 
                 return `
                 <div>
-                    <div class="card">
-                        <div class="card-body" id="${id}">
-                            <span data-toggle="tooltip" title="${tooltipText}">
-                                <button type="button" style="${style}" class="close" aria-label="Close">
-                                    <span aria-hidden="true">&times;</span>
-                                </button> 
-                                <h3 class="card-title">${title}</h3>
-                            </span>
-                            <h5>
-                                <p class="card-text">${body}</p>
-                            </h5>
+                    <div class="card" id="${id}">
+                        <div class="card-body">
+                            
+                            <div class="row float-right">
+                                    <button type="button" class="btn btn-light" aria-label="Edit">
+                                        <img src="icons/edit.svg" width="18" height="18" title="Edit"/>
+                                    </button>
+                                    
+                                    ${btn}
+
+                            </div>
+                            
+                            <div class="row">
+                                <span data-toggle="tooltip" title="${tooltipText}">
+                                    <h3 class="card-title">${title}</h3>
+                                </span>
+                            </div>
+                        
+                            <div class="row">
+                                <h5>
+                                    <p class="card-text">${body}</p>
+                                </h5>
+                            </div>
                         </div>
                     </div>
                     <div class="pt-2"></div>
@@ -36,15 +52,28 @@ export namespace templates {
             } else {
                 return `
                 <div>
-                    <div class="card">
-                        <div class="card-body" id="${id}">
-                            <button type="button" style="${style}" class="close" aria-label="Close">
-                                <span aria-hidden="true">&times;</span>
-                            </button>
-                            <h3 class="card-title">${title}</h3>
-                            <h5>
-                                <p class="card-text">${body}</p>
-                            </h5>
+                    <div class="card" id="${id}">
+                        <div class="card-body">
+                            
+                            <div class="row float-right">
+                                <button type="button" class="btn btn-light" aria-label="Edit">
+                                    <img src="icons/edit.svg" width="18" height="18" title="Edit"/>
+                                </button>
+                                    
+                                ${btn}
+
+                            </div>        
+
+                            <div class="row">
+                                <h3 class="card-title">${title}</h3>                            
+                            </div>
+
+                            </div class="row">
+                                <h5>
+                                    <p class="card-text">${body}</p>
+                                </h5>
+                            </div>
+
                         </div>
                     </div>
                     <div class="pt-2"></div>
@@ -217,13 +246,13 @@ export namespace templates {
         }
 
         export function TitleWithScores(title: string, bias_score?: string, support_score?: string) {
-            if( bias_score === undefined){
+            if (bias_score === undefined) {
                 return `
                 <ul class="list-unstyled">
                     <li> ${title} </li>
                     <hr />
                 </ul>`;
-            }else{
+            } else {
                 return `
                 <ul class="list-unstyled">
                     <li> ${title} </li>
@@ -232,7 +261,7 @@ export namespace templates {
                     <li><h4 class="text-info">Support Score: ${support_score} </h4></li>
                 </ul>`
             }
-;
+            ;
         }
     }
 

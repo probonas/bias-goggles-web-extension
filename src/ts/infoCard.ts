@@ -52,14 +52,15 @@ abstract class Card {
         }
 
         if (this.dismissable) {
-            (<HTMLButtonElement>document.getElementById(this.cardID).firstElementChild.firstElementChild).addEventListener('click', () => {
-                document.getElementById(this.cardID).parentElement.parentElement.remove();
+            (<HTMLButtonElement>document.getElementById(this.cardID).
+                getElementsByClassName('btn')[1]).addEventListener('click', () => {
+                this.delete();
             });
         }
     }
 
     public delete() {
-        document.getElementById(this.cardID).remove();
+        document.getElementById(this.cardID).parentElement.remove();
     }
 
 }
