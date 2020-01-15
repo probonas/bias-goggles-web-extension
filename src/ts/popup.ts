@@ -147,50 +147,47 @@ export function updateContent(url: string, cleanTab: boolean, dismissable: boole
         card.render();
 
         utils.getBiasDataForGoggles(url, tabID, (scoreData, scoreIndex) => {
+            let cardID = (++idCounter).toString();
 
             card.delete();
 
             if (scoreIndex === -1) {
-                let card = new GenericCard(idCounter.toString(), tabID, dismissable, false);
+                let card = new GenericCard(cardID, tabID, dismissable, false);
 
                 card.setTitle('Extension is disabled!');
                 card.setStringContent('Enable it, and try again');
                 card.render();
+            } else if (scoreIndex === -2) {
+                let card = new GenericCard(cardID, tabID, dismissable, false);
+                //
+                card.setTitle('Too bad... :(');
+                card.setHTMLContent(uncrawled.create404Msg(url, ['text-info']));
+                card.render();
             } else {
-                let cardID = (++idCounter).toString();
+                let vector = scoreData.scores['pr'].vector;
 
-                if (scoreData === null) {
-                    let card = new GenericCard(cardID, tabID, dismissable, false);
+                if (showScores) {
+                    let card = new ScoreCard(cardID, tabID, dismissable, false);
                     //
-                    card.setTitle('Too bad... :( ');
-                    card.setHTMLContent(uncrawled.create404Msg(url, ['text-info']));
-                    card.render();
+                    card.setTitle(utils.getDomainFromURL(url),
+                        Math.fround(scoreData.scores['pr'].bias_score * 100).toFixed(2),
+                        Math.fround(scoreData.scores['pr'].bias_score * 100).toFixed(2));
+                    card.setStringContent('');
+                    card.render(); //canvas can only be rendered if element is already in the dom
+                    chart.draw(vector, 220, 300,
+                        document.getElementById(cardID).getElementsByClassName('card-text')[0] as HTMLElement,
+                        'chart' + cardID, true);
                 } else {
-                    let vector = scoreData.scores['pr'].vector;
-
-                    if (showScores) {
-                        let card = new ScoreCard(cardID, tabID, dismissable, false);
-                        //
-                        card.setTitle(utils.getDomainFromURL(url),
-                            Math.fround(scoreData.scores['pr'].bias_score * 100).toFixed(2),
-                            Math.fround(scoreData.scores['pr'].bias_score * 100).toFixed(2));
-                        card.setStringContent('');
-                        card.render(); //canvas can only be rendered if element is already in the dom
-                        chart.draw(vector, 220, 300,
-                            document.getElementById(cardID).getElementsByClassName('card-text')[0] as HTMLElement,
-                            'chart' + cardID, true);
-                    } else {
-                        let card = new ScoreCard(cardID, tabID, dismissable, false);
-                        //
-                        card.setTitle(utils.getDomainFromURL(url));
-                        card.setStringContent('');
-                        card.render(); //canvas can only be rendered if element is already in the dom
-                        chart.draw(vector, 220, 300,
-                            document.getElementById(cardID).getElementsByClassName('card-text')[0] as HTMLElement,
-                            'chart' + cardID, true);
-                    }
-
+                    let card = new ScoreCard(cardID, tabID, dismissable, false);
+                    //
+                    card.setTitle(utils.getDomainFromURL(url));
+                    card.setStringContent('');
+                    card.render(); //canvas can only be rendered if element is already in the dom
+                    chart.draw(vector, 220, 300,
+                        document.getElementById(cardID).getElementsByClassName('card-text')[0] as HTMLElement,
+                        'chart' + cardID, true);
                 }
+
             }
         });
 
