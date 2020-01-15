@@ -25,7 +25,8 @@ export namespace templates {
                         <div class="card-body">
                             
                             <div class="row float-right">
-                                    <button type="button" class="btn btn-light" aria-label="Edit">
+                                    <button type="button" class="btn btn-light" aria-label="Edit" data-toggle="modal"
+                                    data-target="#compareModal">
                                         <img src="icons/edit.svg" width="18" height="18" title="Edit"/>
                                     </button>
                                     
@@ -56,7 +57,8 @@ export namespace templates {
                         <div class="card-body">
                             
                             <div class="row float-right">
-                                <button type="button" class="btn btn-light" aria-label="Edit">
+                                <button type="button" class="btn btn-light" aria-label="Edit" data-toggle="modal"
+                                data-target="#compareModal">
                                     <img src="icons/edit.svg" width="18" height="18" title="Edit"/>
                                 </button>
                                     
