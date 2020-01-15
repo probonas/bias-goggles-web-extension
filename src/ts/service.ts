@@ -2,7 +2,6 @@ import { get as httpGet } from "http";
 import { userSettings } from "./usersettings";
 import { AppData, DomainData } from "./types";
 import { extension } from "./storage";
-import { settings } from "cluster";
 
 export namespace service {
 
