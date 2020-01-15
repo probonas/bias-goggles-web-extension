@@ -7,10 +7,21 @@ export namespace utils {
 
     export function getDomainFromURL(target: string): string {
 
-        target = target.split("/")[2];
-        target = target.startsWith('www') ? target.substring(4) : target;
+        let prefixes = ['https://www.', 'http://www.', 'https://', 'http://', 'www.'];
 
-        return target;
+        for (let i = 0; i < prefixes.length; i++) {
+            if (target.startsWith(prefixes[i])) {
+                target = target.substring(prefixes[i].length);
+
+                if (target.includes('/')) {
+                    return target.split('/')[0];
+                } else {
+                    return target;
+                }
+            }
+        }
+
+        return null;
     }
 
     export function refreshDataForDomain(domain: string, goggles: string, domainData: DomainData, callback: (domainData: DomainData) => void) {
@@ -47,10 +58,8 @@ export namespace utils {
     export function getBiasDataForGoggles(url: string, goggles: string, callback?: (data: Score, scoreIndex: number) => void) {
         userSettings.get(settings => {
             if (settings.enabled) {
-                if (url.startsWith('http') || url.startsWith('https')) {
-                    let domain = getDomainFromURL(url);
-
-                    extension.storage.getScoresForDomain(domain, goggles, callback);
+                if (url) {
+                    extension.storage.getScoresForDomain(url, goggles, callback);
                 }
             } else {
                 //-1 if disabled
@@ -58,13 +67,6 @@ export namespace utils {
             }
         });
     }
-
-    export function getActiveTab(callback: (domain: string) => void) {
-        chrome.tabs.query({ 'active': true, 'currentWindow': true, 'lastFocusedWindow': true },
-            (tabs) => {
-                callback(tabs[0].url);
-            });
-    };
 
     export function disableExtension(option: OffOptions, callback?: () => void,
         reEnableCallback?: () => void) {
