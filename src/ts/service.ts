@@ -5,7 +5,7 @@ import { extension } from "./storage";
 
 export namespace service {
 
-    function parseDataFromServiceAndSave(data: string, goggles: string, callback: () => void) {
+    function parseDataFromService(data: string, goggles: string, callback: (domainData: AppData, scoreData: AppData) => void) {
         let ret = JSON.parse(data);
 
         let scoreData = {} as AppData;
@@ -48,10 +48,7 @@ export namespace service {
                 date: new Date()
             };
 
-            extension.storage.set(domainData, () => {
-                extension.storage.set(scoreData, callback);
-            });
-
+            callback(domainData, scoreData);
         });
     };
 
@@ -64,7 +61,7 @@ export namespace service {
         return prefix + encodeURIComponent(domain) + suffix;
     }
 
-    export function query(activeTab: string, goggles: string, callback?: (data: DomainData) => void): void {
+    export function query(activeTab: string, goggles: string, callback?: (domainData: AppData, scoreData: AppData) => void): void {
 
         let data: any = '';
 
@@ -80,12 +77,12 @@ export namespace service {
 
             res.on('close', () => {
                 if (res.statusCode === 200 || res.statusCode === 304) {
-                    parseDataFromServiceAndSave(data, goggles, () => {
-                        callback(data);
+                    parseDataFromService(data, goggles, (domainData, scoreData) => {
+                        callback(domainData, scoreData);
                     });
                 }
                 else {
-                    callback(null);
+                    callback(null, null);
                 }
             });
         });

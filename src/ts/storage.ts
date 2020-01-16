@@ -51,7 +51,10 @@ export namespace extension {
 
         export function getDomainData(domain: string, goggles: string, callback: (item: DomainData) => void) {
             get(goggles + ' ' + domain, (data) => {
-                utils.refreshDataForDomain(domain, goggles, data, callback);
+                utils.refreshDataForDomain(domain, goggles, data, () =>
+                    get(goggles + ' ' + domain, (data) => {
+                        callback(data);
+                    }));
             });
         }
 

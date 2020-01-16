@@ -24,22 +24,26 @@ export namespace utils {
         return null;
     }
 
-    export function refreshDataForDomain(domain: string, goggles: string, domainData: DomainData, callback: (domainData: DomainData) => void) {
+    export function refreshDataForDomain(domain: string, goggles: string, domainData: DomainData, callback: () => void) {
 
         if (domainData === null) {
             console.log(goggles + '-' + domain + " not found.");
 
-            service.query(domain, goggles, (data: any) => {
-                extension.storage.set(data, () => {
-                    callback(domainData);
+            service.query(domain, goggles, (domainData: AppData, scoreData: AppData) => {
+                extension.storage.set(domainData, () => {
+                    extension.storage.set(scoreData, () => {
+                        callback();
+                    });
                 });
             });
         } else if (domainData.limit === 0) {
             console.log(goggles + '-' + domain + " found. But data is considered obsolete. Updating scoreIndex!");
 
-            service.query(domain, goggles, (data: any) => {
-                extension.storage.set(data, () => {
-                    callback(domainData);
+            service.query(domain, goggles, (domainData: AppData, scoreData: AppData) => {
+                extension.storage.set(domainData, () => {
+                    extension.storage.set(scoreData, () => {
+                        callback();
+                    });
                 });
             });
         } else {
@@ -49,7 +53,7 @@ export namespace utils {
             appdata[goggles + ' ' + domain] = domainData;
 
             extension.storage.set(appdata, () => {
-                callback(domainData);
+                callback();
             });
         }
 
