@@ -1,12 +1,36 @@
 import { UserSettings, UserSettingsMap, Goggle } from "./types";
-import { ScoreCard } from "./infoCard";
 
 export namespace userSettings {
 
     export let settingsKey: string = 'settings';
 
+    export let scoreIndex: number = null;
+
+    export function initScoreIndex(callback?: () => void) {
+        get((settings) => {
+            scoreIndex = settings.scoreIndex;
+            if (callback)
+                callback();
+        });
+    }
+
+    /**
+     * Updates and returns the new score index
+     */
+    export function updateScoreIndex(): number {
+
+        scoreIndex++;
+
+        get((settings) => {
+            settings.scoreIndex = scoreIndex;
+            update(settings);
+        });
+
+        return scoreIndex;
+    }
+
     export function update(settings: UserSettings, callback?: () => void) {
-        return save(settings.method, settings.goggles, settings.forceRefreshLimit,
+        save(settings.method, settings.goggles, settings.forceRefreshLimit,
             settings.syncEnabled, settings.enabled, settings.pagePopoverEnabled,
             settings.scoreIndex, settings.gogglesList, callback);
     }
@@ -44,12 +68,4 @@ export namespace userSettings {
         });
     };
 
-    export function updateScoreIndex(callback: (settings: UserSettings) => void) {
-        userSettings.get((settings) => {
-            settings.scoreIndex++;
-            userSettings.update(settings, () => {
-                callback(settings);
-            });
-        });
-    }
 }

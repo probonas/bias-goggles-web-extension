@@ -58,7 +58,7 @@ export namespace chart {
 
     //elem must be present in the dom tree for the canvas to 
     //render properly
-    export function draw(vector: any, width: number, height: number, elem: HTMLElement,id: string, showLabels?: boolean) {
+    export function draw(vector: any, width: number, height: number, elem: HTMLElement, id: string, showLabels?: boolean) {
         let canvas: HTMLCanvasElement;
 
         if (!document.getElementById(id)) {
@@ -116,7 +116,14 @@ export namespace chart {
                         labels: {
                             usePointStyle: true,
                             fontSize: 11
-
+                        }
+                    },
+                    layout: {
+                        padding: {
+                            left: 5,
+                            right: 5,
+                            top: -60,
+                            bottom: 0
                         }
                     }
                 }
@@ -136,6 +143,14 @@ export namespace chart {
                 options: {
                     legend: {
                         display: false
+                    },
+                    layout: {
+                        padding: {
+                            left: 5,
+                            right: 5,
+                            top: -60,
+                            bottom: 0
+                        }
                     }
                 }
             });

@@ -1,15 +1,21 @@
-import { chart } from "./drawchart";
-import { uncrawled } from "./uncrawled";
 import { utils } from "./utils";
-import { OffOptions, Score, ContextBtnMsg, DomainData } from "./types";
+import {
+    OffOptions, Score, ContextBtnMsg,
+    DomainData
+} from "./types";
 import { userSettings } from "./usersettings";
 import { extension } from "./storage";
 import { templates } from "./templates";
 
-import { GenericCard, ScoreCard } from "./infoCard";
+import {
+    GenericCard, ScoreCard, UncrawledDomainCard,
+    ExtensionDisabledCard, NotAWebpageCard, SpinnerCard
+} from "./infoCard";
 
-import "bootstrap";
+import "bootstrap"; //@types/bootstrap
 import 'bootstrap/dist/css/bootstrap.min.css';
+import { settings } from "cluster";
+import { uncrawled } from "./uncrawled";
 
 const navId = 'nav-bar';
 const onBtnId = 'bg-onbtn';
@@ -20,18 +26,30 @@ const sessionOnlyID = 'bg-session-only';
 const permaID = 'bg-perma';
 const onID = 'bg-on';
 
+const compareModal = 'compareModal';
+const compareDataBtn = 'compare-data-btn';
+
 let idCounter = 0;
 let thisWindowID: number;
 
 let tabLabels = new Array();
 let tabIDs = new Array();
 
+let idToScoreCard: Map<string, ScoreCard> = new Map();
+let urlsToScoreCard: Map<string, ScoreCard> = new Map();
+let allGenericCards: GenericCard[] = [];
+
+let shownScoreCardsIDs: string[] = [];
+
 function clearInfoTab() {
-    for (let i = 0; i < tabIDs.length; i++) {
-        while (document.getElementById(tabIDs[i]).hasChildNodes()) {
-            document.getElementById(tabIDs[i]).firstChild.remove();
-        }
-    }
+
+    allGenericCards.forEach(card => card.remove());
+
+    allGenericCards = [];
+
+    shownScoreCardsIDs.forEach(cardID => idToScoreCard.get(cardID).remove());
+
+    shownScoreCardsIDs = [];
 }
 
 function showBtn(on: boolean) {
@@ -131,71 +149,74 @@ function showSuccessAlert(msg: string) {
     }, 2000);
 }
 
-export function updateContent(url: string, cleanTab: boolean, dismissable: boolean, showScores: boolean) {
+function newCardID(): string {
+    return (++idCounter).toString();
+}
+export function updateContent(url: string, cleanTab: boolean) {
 
     if (cleanTab)
         clearInfoTab();
 
-
-    for (let i = 0; i < tabIDs.length; i++) {
-        let tabID = tabIDs[i];
-
+    tabIDs.forEach(goggles => {
         //show spinner
-        let card = new GenericCard((++idCounter).toString(), tabID, true, false);
-        card.setTitle('Requesting data from service...');
-        card.setStringContent(templates.get.Spinner());
-        card.render();
+        let spinner = new SpinnerCard(newCardID(), goggles);
+        spinner.render();
 
-        utils.getBiasDataForGoggles(url, tabID, (scoreData, scoreIndex) => {
-            let cardID = (++idCounter).toString();
+        if (url === null) {
+            spinner.remove();
 
-            card.delete();
 
-            if (scoreIndex === -1) {
-                let card = new GenericCard(cardID, tabID, dismissable, false);
+            let card = new NotAWebpageCard(newCardID(), goggles);
+            card.render();
 
-                card.setTitle('Extension is disabled!');
-                card.setStringContent('Enable it, and try again');
-                card.render();
-            } else if (scoreIndex === -2) {
-                let card = new GenericCard(cardID, tabID, dismissable, false);
-                //
-                card.setTitle('Too bad... :(');
-                card.setHTMLContent(uncrawled.create404Msg(url, ['text-info']));
-                card.render();
-            } else {
-                let vector = scoreData.scores['pr'].vector;
+            allGenericCards.push(card);
+        } else if (urlsToScoreCard.has(url + goggles)) {
+            spinner.remove();
 
-                if (showScores) {
-                    let card = new ScoreCard(cardID, tabID, dismissable, false);
-                    //
-                    card.setTitle(utils.getDomainFromURL(url),
-                        Math.fround(scoreData.scores['pr'].bias_score * 100).toFixed(2),
-                        Math.fround(scoreData.scores['pr'].bias_score * 100).toFixed(2));
-                    card.setStringContent('');
-                    card.render(); //canvas can only be rendered if element is already in the dom
-                    
-                    chart.draw(vector, 220, 300,
-                        document.getElementById(cardID).getElementsByClassName('card-text')[0] as HTMLElement,
-                        'chart' + cardID, true);
+            //remove so as to redraw
+            if (shownScoreCardsIDs.includes(urlsToScoreCard.get(url + goggles).getCardID()))
+                urlsToScoreCard.get(url + goggles).remove();
+
+            //domain's card already in memomy
+            urlsToScoreCard.get(url + goggles).render();
+            shownScoreCardsIDs.push(urlsToScoreCard.get(url + goggles).getCardID());
+        } else {
+
+            utils.getBiasDataForGoggles(url, goggles, (scoreData, scoreIndex) => {
+
+                console.log(url, goggles, scoreIndex);
+
+                spinner.remove();
+
+                if (scoreIndex === -1) {
+                    let card = new ExtensionDisabledCard(newCardID(), goggles);
+                    card.render();
+                    allGenericCards.push(card);
+                } else if (scoreIndex === -2) {
+                    let card = new UncrawledDomainCard(newCardID(), goggles, url);
+                    card.render();
+                    allGenericCards.push(card);
                 } else {
-                    let card = new ScoreCard(cardID, tabID, dismissable, false);
-                    //
-                    card.setTitle(utils.getDomainFromURL(url));
+                    let cardID = newCardID();
+
+                    let card = new ScoreCard(cardID, goggles, false, scoreData, url);
+
+                    card.setTitle(url);
                     card.setStringContent('');
-                    card.render(); //canvas can only be rendered if element is already in the dom
 
-                    chart.draw(vector, 220, 300,
-                        document.getElementById(cardID).getElementsByClassName('card-text')[0] as HTMLElement,
-                        'chart' + cardID, true);
+                    card.render();
+
+                    urlsToScoreCard.set(url + goggles, card);
+                    idToScoreCard.set(cardID, card);
+                    shownScoreCardsIDs.push(cardID);
                 }
-
-            }
-        });
-
-    }
+            });
+        }
+    });
 
 }
+
+userSettings.initScoreIndex();
 
 createToggleBtn();
 
@@ -203,16 +224,16 @@ createToggleBtn();
 chrome.tabs.onActivated.addListener((activeTabInfo) => {
     if (activeTabInfo.windowId === thisWindowID)
         chrome.tabs.query({ windowId: thisWindowID, active: true }, (tabs) => {
-            updateContent(tabs[0].url, true, false, true);
+            updateContent(utils.getDomainFromURL(tabs[0].url), true);
         });
 });
 
 /* new page is loaded in the tab */
 chrome.tabs.onUpdated.addListener((tabID, chageInfo, tab) => {
     if (tab.windowId === thisWindowID) {
-        if (chageInfo.status == 'complete') {
+        if (chageInfo.status === 'loading') {
             chrome.tabs.query({ windowId: thisWindowID, active: true }, (tabs) => {
-                updateContent(tabs[0].url, true, false, true);
+                updateContent(utils.getDomainFromURL(tabs[0].url), true);
             });
         }
     }
@@ -221,13 +242,13 @@ chrome.tabs.onUpdated.addListener((tabID, chageInfo, tab) => {
 chrome.windows.getCurrent((windowInfo) => {
     thisWindowID = windowInfo.id;
     chrome.tabs.query({ windowId: thisWindowID, active: true }, (tabs) => {
-        updateContent(tabs[0].url, true, false, true);
+        updateContent(utils.getDomainFromURL(tabs[0].url), true);
     });
 });
 
 chrome.runtime.onMessage.addListener((msg: ContextBtnMsg) => {
     if (msg.windowID === thisWindowID)
-        updateContent(msg.url, false, true, true);
+        updateContent(utils.getDomainFromURL(msg.url), false);
 });
 
 let sync = <HTMLSelectElement>document.getElementById('syncSelect');
@@ -388,23 +409,24 @@ function showAnalyticsDataUnderSettings() {
 }
 
 document.getElementById('delete-data-btn').addEventListener('click', () => {
+    console.log('clear');
     extension.storage.clear();
 });
 
 userSettings.get((settings) => {
 
-    for (let i = 0; i < settings.gogglesList.length; i++) {
-        tabLabels.push(settings.gogglesList[i].name);
-        tabIDs.push(settings.gogglesList[i].id);
-    }
+    settings.gogglesList.forEach(value => {
+        tabLabels.push(value.name);
+        tabIDs.push(value.id);
+    });
 
     let tabs = templates.get.CreateTabs(tabLabels, tabIDs);
 
     document.getElementById('live-info').insertAdjacentHTML('beforeend', tabs);
 });
 
-showDomainDataUnderSettings();
-showAnalyticsDataUnderSettings();
+//showDomainDataUnderSettings();
+//showAnalyticsDataUnderSettings();
 
 //update data under settings without the need to reload popup/sidebar
 chrome.storage.onChanged.addListener((changes, areaName) => {
@@ -419,4 +441,126 @@ chrome.storage.onChanged.addListener((changes, areaName) => {
         showDomainDataUnderSettings();
         showAnalyticsDataUnderSettings();
     }
+});
+
+let uncrawledMsgInModal = false;
+
+document.body.addEventListener('compareCard', (e) => {
+    //@ts-ignore
+    let sourceCardID = e.detail;
+
+    let inputID = 'searchsite';
+    let searchID = 'searchsitebtn';
+    let dismissID = 'dismissCompareModel';
+    let msgBoxID = 'userInputContentBox';
+
+    let dismiss = <HTMLButtonElement>document.getElementById(dismissID);
+
+    let modal = document.getElementById(compareModal).getElementsByClassName('modal-body')[0];
+    let compare = document.getElementById(compareDataBtn);
+
+    let thisTabID = idToScoreCard.get(sourceCardID).getTabID();
+
+    let labelsAndIDs: Array<[string, string]> = new Array();
+
+    while (modal.hasChildNodes()) {
+        modal.firstChild.remove();
+    }
+
+    urlsToScoreCard.forEach((value, key) => {
+        if (value.getTabID() === thisTabID && value.getCardID() !== sourceCardID)
+            labelsAndIDs.push([value.getDomain(), key]);
+
+        console.log(key, value.getDomain());
+    });
+
+    labelsAndIDs.sort((val1, val2) => {
+        if (val1[0] > val2[0])
+            return 1;
+        else
+            return -1;
+    });
+
+    let sortedmap = new Map();
+
+    labelsAndIDs.forEach((value) => {
+        sortedmap.set(value[0], value[1]);
+    });
+
+    modal.insertAdjacentHTML('beforeend',
+        templates.get.CheckList('<b><i>sites you visited recently:</i></b>', sortedmap));
+
+    modal.insertAdjacentHTML('beforeend', templates.get.InputWithButon(inputID, searchID,
+        'e.g. kathimerini.gr', 'Search', '<b><i>enter site:</i></b>', msgBoxID));
+
+    let search = <HTMLButtonElement>document.getElementById(searchID);
+    let userInput = <HTMLInputElement>document.getElementById(inputID);
+    let msgBox = document.getElementById(msgBoxID);
+
+    compare.addEventListener('click', () => {
+        let checkInputs = modal.getElementsByClassName('form-check-input');
+
+        for (let i = 0; i < checkInputs.length; i++) {
+            //@ts-ignore
+            if (<HTMLInputElement>checkInputs[i].checked)
+                return;
+            //str += (<HTMLInputElement>checkInputs[i]).value + ' ';
+        };
+
+        dismiss.click();
+    });
+
+    search.addEventListener('click', () => {
+        let domain = utils.getDomainFromURL(userInput.value.trim());
+
+        //to support inputs like facebook.com
+        if (!domain)
+            domain = utils.getDomainFromURL('www.' + userInput.value.trim());
+
+        //if true user provided url is invalid
+        if (!domain)
+            return;
+
+        userSettings.get((settings) => {
+            for (let i = 0; i < settings.gogglesList.length; i++) {
+                let goggles = settings.gogglesList[i].id;
+
+                utils.getBiasDataForGoggles(domain, goggles, (scoreData, scoreIndex) => {
+                    //show only once
+                    if (i === 0) {
+
+                        if (uncrawledMsgInModal) {
+                            msgBox.lastChild.remove();
+                            uncrawledMsgInModal = false;
+                        }
+
+                        if (scoreIndex === -2) {
+                            if (!uncrawledMsgInModal) {
+                                msgBox.appendChild(uncrawled.create404Msg(domain, ['text-info']));
+                                uncrawledMsgInModal = true;
+                            }
+                        } else {
+                            let newEntry = templates.get.checkWithLabel(domain, domain + goggles, true);
+                            msgBox.insertAdjacentHTML('beforeend', newEntry);
+                        }
+
+                    }
+                });
+            }
+        });
+    });
+
+});
+
+document.body.addEventListener('closedCard', (e) => {
+    //@ts-ignore
+    let cardID = e.detail;
+
+    console.log('removed card with id ' + cardID);
+
+    if (idToScoreCard.has(cardID)) {
+        console.log('is score card!');
+        shownScoreCardsIDs = shownScoreCardsIDs.filter(value => value !== cardID);
+    }
+
 });

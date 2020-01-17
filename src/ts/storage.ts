@@ -67,7 +67,7 @@ export namespace extension {
 
         export function getScoresForDomain(domain: string, goggle: string, callback: (item: Score, index: number) => void) {
             extension.storage.getDomainData(domain, goggle, (item) => {
-                if (item != null)
+                if (item !== null)
                     extension.storage.getScoreData(item.scoreIndex, callback);
                 else
                     callback(null, -2);

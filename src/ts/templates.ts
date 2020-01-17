@@ -3,15 +3,23 @@ export namespace templates {
 
     export namespace get {
 
-        export function InnerCard(title: string, body: string, id: string, tooltipOn: boolean, dismissable: boolean): string {
-            let btn = '';
+        export function InnerCard(title: string, body: string, id: string, tooltipOn: boolean, dismissable: boolean, comparable: boolean): string {
+            let close = '';
+            let compare = '';
 
             if (dismissable) {
-                btn = `
-                <button type="button" class="btn btn-light" aria-label="Close">
-                    <img src="icons/x.svg" width="18" height="18" title="Edit"/>
+                close = `
+                <button type="button" class="btn btn-link _close">
+                    <img src="icons/x.svg" width="18" height="18" title="Close" >
                 </button>`;
             };
+
+            if (comparable) {
+                compare = `
+                <button type="button" class="btn btn-link compare" data-toggle="modal" data-target="#compareModal">
+                    <img src="icons/edit.svg" width="18" height="18" title="Compare" >
+                </button>`;
+            }
 
             if (tooltipOn) {
                 let tooltipText = title;
@@ -20,31 +28,25 @@ export namespace templates {
                 }
 
                 return `
-                <div>
-                    <div class="card" id="${id}">
+                <div id="${id}">
+                    <div class="card">
                         <div class="card-body">
                             
                             <div class="row float-right">
-                                    <button type="button" class="btn btn-light" aria-label="Edit" data-toggle="modal"
-                                    data-target="#compareModal">
-                                        <img src="icons/edit.svg" width="18" height="18" title="Edit"/>
-                                    </button>
-                                    
-                                    ${btn}
-
+                                    ${compare}
+                                    ${close}
                             </div>
-                            
+        
                             <div class="row">
                                 <span data-toggle="tooltip" title="${tooltipText}">
                                     <h3 class="card-title">${title}</h3>
                                 </span>
                             </div>
-                        
-                            <div class="row">
-                                <h5>
-                                    <p class="card-text">${body}</p>
-                                </h5>
-                            </div>
+ 
+                            <h5>
+                                <p class="card-text">${body}</p>
+                            </h5>
+
                         </div>
                     </div>
                     <div class="pt-2"></div>
@@ -52,29 +54,23 @@ export namespace templates {
 
             } else {
                 return `
-                <div>
-                    <div class="card" id="${id}">
+                <div id="${id}">
+                    <div class="card">
                         <div class="card-body">
                             
                             <div class="row float-right">
-                                <button type="button" class="btn btn-light" aria-label="Edit" data-toggle="modal"
-                                data-target="#compareModal">
-                                    <img src="icons/edit.svg" width="18" height="18" title="Edit"/>
-                                </button>
-                                    
-                                ${btn}
-
+                                ${compare}
+                                ${close}
                             </div>        
 
                             <div class="row">
                                 <h3 class="card-title">${title}</h3>                            
                             </div>
 
-                            </div class="row">
-                                <h5>
-                                    <p class="card-text">${body}</p>
-                                </h5>
-                            </div>
+                            
+                            <h5>
+                                <p class="card-text">${body}</p>
+                            </h5>
 
                         </div>
                     </div>
@@ -247,7 +243,7 @@ export namespace templates {
             return NavBar(tabs) + TabContents(panes);
         }
 
-        export function TitleWithScores(title: string, bias_score?: string, support_score?: string) {
+        export function TitleWithScores(title: string, bias_score?: number, support_score?: number) {
             if (bias_score === undefined) {
                 return `
                 <ul class="list-unstyled">
@@ -259,12 +255,55 @@ export namespace templates {
                 <ul class="list-unstyled">
                     <li> ${title} </li>
                     <hr />
-                    <li><h4 class="text-info">Bias Score: ${bias_score} </h4></li>
-                    <li><h4 class="text-info">Support Score: ${support_score} </h4></li>
+                    <li><h4 class="text-info">Bias Score: ${Math.fround(bias_score * 100).toFixed(2)} %</h4></li>
+                    <li><h4 class="text-info">Support Score: ${Math.fround(support_score * 100).toFixed(2)} %</h4></li>
                 </ul>`
             }
             ;
         }
+
+        export function checkWithLabel(label: string, id: string, preChecked?: boolean) {
+            let checked = '';
+
+            if (preChecked)
+                checked = 'checked';
+
+            return `
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="${id}" value="${label}" ${checked}>
+                <label class="form-check-label" for="${id}"> ${label} </label>
+            </div>`;
+        }
+
+        export function CheckList(listTitle: string, labelsAndIds: Map<string, string>) {
+            let ret = `<p>${listTitle}</p>`;
+
+            labelsAndIds.forEach((value, key) => {
+                ret += checkWithLabel(key, value);
+            });
+
+            return ret;
+        }
+
+        export function InputWithButon(inputID: string, btnID: string,
+            inputPlaceHolder: string, btnLabel: string, title?: string, contentID?: string) {
+
+            if (!title)
+                title = '';
+            if (!contentID)
+                contentID = '';
+
+            return `
+            <div class="dropdown-divider"></div>
+            <p id="${contentID}">${title}</p>
+            <div class="input-group mb-3">
+                <input id="${inputID}" type="text" class="form-control" placeholder="${inputPlaceHolder}" aria-label="${inputPlaceHolder}" aria-describedby="basic-addon2">
+                <div class="input-group-append">
+                    <button id="${btnID}" class="btn btn-outline-secondary" type="button">${btnLabel}</button>
+                </div>
+            </div>`
+        }
+
     }
 
 }

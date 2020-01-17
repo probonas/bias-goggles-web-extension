@@ -1,7 +1,6 @@
 import { get as httpGet } from "http";
 import { userSettings } from "./usersettings";
-import { AppData, DomainData } from "./types";
-import { extension } from "./storage";
+import { AppData } from "./types";
 
 export namespace service {
 
@@ -11,7 +10,9 @@ export namespace service {
         let scoreData = {} as AppData;
         let domainData = {} as AppData;
 
-        userSettings.updateScoreIndex((settings) => {
+        userSettings.get((settings) => {
+
+            let scoreIndex = userSettings.updateScoreIndex();
 
             //the following are as returned from service
             //if anything changes in service
@@ -20,10 +21,10 @@ export namespace service {
             //@ts-ignore
             domainData[goggles + ' ' + ret.doc.domain] = {
                 limit: settings.forceRefreshLimit,
-                scoreIndex: settings.scoreIndex
+                scoreIndex: scoreIndex
             };
 
-            scoreData[settings.scoreIndex] = {
+            scoreData[scoreIndex] = {
                 scores: {
                     'ic': {
                         //@ts-ignore
@@ -50,6 +51,7 @@ export namespace service {
 
             callback(domainData, scoreData);
         });
+
     };
 
     function getRequestURL(domain: string, goggles: string): string {
@@ -65,7 +67,7 @@ export namespace service {
 
         let data: any = '';
 
-        console.log('requesting: ' + activeTab);
+        console.log('requesting: ' + goggles + ' ' + activeTab);
 
         let targetURL = getRequestURL(activeTab, goggles);
 

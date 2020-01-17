@@ -27,9 +27,9 @@ export namespace utils {
     export function refreshDataForDomain(domain: string, goggles: string, domainData: DomainData, callback: () => void) {
 
         if (domainData === null) {
-            console.log(goggles + '-' + domain + " not found.");
+            console.log(goggles + ' ' + domain + " not found.");
 
-            service.query(domain, goggles, (domainData: AppData, scoreData: AppData) => {
+            service.query(domain, goggles, (domainData, scoreData) => {
                 extension.storage.set(domainData, () => {
                     extension.storage.set(scoreData, () => {
                         callback();
@@ -37,9 +37,9 @@ export namespace utils {
                 });
             });
         } else if (domainData.limit === 0) {
-            console.log(goggles + '-' + domain + " found. But data is considered obsolete. Updating scoreIndex!");
+            console.log(goggles + ' ' + domain + " found. But data is considered obsolete. Updating scoreIndex!");
 
-            service.query(domain, goggles, (domainData: AppData, scoreData: AppData) => {
+            service.query(domain, goggles, (domainData, scoreData) => {
                 extension.storage.set(domainData, () => {
                     extension.storage.set(scoreData, () => {
                         callback();
@@ -64,6 +64,8 @@ export namespace utils {
             if (settings.enabled) {
                 if (url) {
                     extension.storage.getScoresForDomain(url, goggles, callback);
+                } else {
+                    callback(null, -2);
                 }
             } else {
                 //-1 if disabled
