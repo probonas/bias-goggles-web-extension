@@ -97,14 +97,18 @@ export namespace templates {
                 </button>
             </div>`;
         }
-
+/*
+        <button type="button" class="btn btn-link compare" data-toggle="modal" data-target="#compareModal">
+            <img src="icons/edit.svg" width="18" height="18" title="Compare" >
+        </button>`;
+*/
         export function OffButton(offBtnId: string, oneHourID: string, twoHoursID: string,
             sessionOnlyID: string, permaID: string): string {
             return `
             <li class="nav-item dropdown" id="${offBtnId}">
-                <button id="on-off-dropdown" class="btn btn-outline-danger dropdown-toggle" data-toggle="dropdown" 
+                <button id="on-off-dropdown" class="btn" data-toggle="dropdown" 
                     data-boundary="window" type="button" aria-haspopup="true" aria-expanded="false">
-                    Disable
+                    <img src="icons/off.svg" width="18" height="18" title="OffButton" >
                 </button>
                 <div class="dropdown-menu" aria-labelledby="on-off-dropdown">
                     <button class="dropdown-item" id="${oneHourID}">for 1 hour</button>
@@ -120,7 +124,9 @@ export namespace templates {
 
             return `
             <li class="nav-item" id="${onBtnId}">
-                <button class="btn btn-outline-success" id="${onElementId}">Enable</button>
+                <button class="btn" id="${onElementId}">
+                    <img src="icons/on.svg" width="18" height="18" title="OnButton" >
+                </button>
             </li>`
         }
 

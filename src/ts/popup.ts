@@ -16,7 +16,6 @@ import "bootstrap"; //@types/bootstrap
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 import { uncrawled } from "./uncrawled";
-import { url } from "inspector";
 
 const navId = 'nav-bar';
 const onBtnId = 'bg-onbtn';
@@ -157,10 +156,10 @@ export function updateContent(url: string, cleanTab: boolean) {
 
             //domain's card already in memomy
             cards.getScoreCard(url, goggles).render();
-        } else if (cards.existsInCache(url,goggles)) {
+        } else if (cards.existsInCache(url, goggles)) {
             spinner.remove();
 
-            cards.getScoreCard(url,goggles).render();
+            cards.getScoreCard(url, goggles).render();
         } else {
 
             utils.getBiasDataForGoggles(url, goggles, (scoreData, scoreIndex) => {
