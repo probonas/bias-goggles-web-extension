@@ -16,6 +16,7 @@ import "bootstrap"; //@types/bootstrap
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 import { uncrawled } from "./uncrawled";
+import { url } from "inspector";
 
 const navId = 'nav-bar';
 const onBtnId = 'bg-onbtn';
@@ -559,7 +560,10 @@ document.body.addEventListener('compareCard', (e) => {
 
                     if (scoreData !== null) {
                         let card = new ScoreCard(goggles, false, scoreData, domain);
+                        card.setTitle(domain);
                         card.render();
+                        //hide card
+                        card.remove();
                     }
 
                 });
