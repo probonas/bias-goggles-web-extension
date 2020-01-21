@@ -12,16 +12,23 @@ let scoreCardsCache: Map<string, ScoreCard> = new Map();
 
 export namespace cards {
 
-    export function hasScoreCard(domain: string, forgoggle: string) {
-        return allScoreCards.has(domain + forgoggle) || scoreCardsCache.has(domain + forgoggle);
-    }
-
     export function getScoreCard(domain: string, forgoggle: string) {
         if (allScoreCards.has(domain + forgoggle))
             return allScoreCards.get(domain + forgoggle);
-        else
+        else if (scoreCardsCache.has(domain + forgoggle))
             return scoreCardsCache.get(domain + forgoggle);
+        else
+            throw new Error('card for ' + domain + ' ' + forgoggle + ' not found!');
     }
+
+    export function exists(domain: string, forgoggle: string) {
+        return allScoreCards.has(domain + forgoggle);
+    }
+
+    export function existsInCache(domain: string, forgoggle: string) {
+        return scoreCardsCache.has(domain + forgoggle);
+    }
+
 
     export function clearAllCards() {
         allGeneric.forEach(card => card.remove());
@@ -62,14 +69,14 @@ export namespace cards {
     }
 
     export function getAllScoreCards(): Map<string, ScoreCard> {
-        let retMap = new Map<string,ScoreCard>();
+        let retMap = new Map<string, ScoreCard>();
 
-        allScoreCards.forEach((value,key)=>{
-            retMap.set(key,value);
+        allScoreCards.forEach((value, key) => {
+            retMap.set(key, value);
         });
 
-        scoreCardsCache.forEach((value,key)=>{
-            retMap.set(key,value);
+        scoreCardsCache.forEach((value, key) => {
+            retMap.set(key, value);
         });
 
         return retMap;

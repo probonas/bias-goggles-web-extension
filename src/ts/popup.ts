@@ -148,7 +148,7 @@ export function updateContent(url: string, cleanTab: boolean) {
 
             new NotAWebpageCard(goggles).render();
 
-        } else if (cards.hasScoreCard(url, goggles)) {
+        } else if (cards.exists(url, goggles)) {
             spinner.remove();
 
             //remove so as to redraw
@@ -156,6 +156,10 @@ export function updateContent(url: string, cleanTab: boolean) {
 
             //domain's card already in memomy
             cards.getScoreCard(url, goggles).render();
+        } else if (cards.existsInCache(url,goggles)) {
+            spinner.remove();
+
+            cards.getScoreCard(url,goggles).render();
         } else {
 
             utils.getBiasDataForGoggles(url, goggles, (scoreData, scoreIndex) => {
