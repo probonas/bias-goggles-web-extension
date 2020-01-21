@@ -102,7 +102,7 @@ export namespace popover {
                 let score = createScoreInfoDiv();
                 div.appendChild(score);
 
-                chart.draw(scoreData.vector, 150, 200, div, 'chart');
+                chart.drawPolar(scoreData.vector, 150, 200, div, 'chart');
             }
 
             popper = new Popper(anchorElement, popperDiv, getSettings());

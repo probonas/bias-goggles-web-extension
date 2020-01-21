@@ -1,6 +1,10 @@
-import { Chart } from "chart.js";
+import { Chart, PositionType } from "chart.js";
+import { AppData, Dictionary } from "./types";
 
 export namespace chart {
+
+    const dataColorLightnes = 70;
+    const dataBorderLightness = 50;
 
     class HSL {
         private hue: number;
@@ -56,9 +60,41 @@ export namespace chart {
 
     }
 
+    const commonOptionsWithoutLabels = {
+        legend: {
+            display: false
+        },
+        layout: {
+            padding: {
+                left: 5,
+                right: 5,
+                top: -60,
+                bottom: 0
+            }
+        }
+    };
+
+    const commonOptionsWithLabels = {
+        legend: {
+            position: <PositionType>'bottom',
+            labels: {
+                usePointStyle: true,
+                fontSize: 11
+            }
+        },
+        layout: {
+            padding: {
+                left: 5,
+                right: 5,
+                top: -60,
+                bottom: 0
+            }
+        }
+    };
+
     //elem must be present in the dom tree for the canvas to 
     //render properly
-    export function draw(vector: any, width: number, height: number, elem: HTMLElement, id: string, showLabels?: boolean) {
+    export function drawPolar(vector: any, width: number, height: number, elem: HTMLElement, id: string, showLabels?: boolean) {
         let canvas: HTMLCanvasElement;
 
         if (!document.getElementById(id)) {
@@ -74,9 +110,6 @@ export namespace chart {
 
         let ctx = canvas.getContext('2d');
 
-        const dataColorLightnes = 70;
-        const dataBorderLightness = 50;
-
         let dataLabels = new Array;
         let data = new Array;
         let dataColors = new Array;
@@ -87,7 +120,7 @@ export namespace chart {
             dataLabels.push(i);
         }
 
-        let dataPainter = new DiscreteColorBuilder(dataLabels.length, 100, dataColorLightnes);
+        let dataPainter = new DiscreteColorBuilder(dataLabels.length, 90, dataColorLightnes);
         let borderPainter = new DiscreteColorBuilder(dataLabels.length, 100, dataBorderLightness);
 
         dataLabels.forEach((value) => {
@@ -110,23 +143,7 @@ export namespace chart {
                     }],
                     labels: dataLabels
                 },
-                options: {
-                    legend: {
-                        position: 'bottom',
-                        labels: {
-                            usePointStyle: true,
-                            fontSize: 11
-                        }
-                    },
-                    layout: {
-                        padding: {
-                            left: 5,
-                            right: 5,
-                            top: -60,
-                            bottom: 0
-                        }
-                    }
-                }
+                options: commonOptionsWithLabels
             });
         } else {
             new Chart(ctx, {
@@ -140,19 +157,71 @@ export namespace chart {
                     }],
                     labels: dataLabels
                 },
-                options: {
-                    legend: {
-                        display: false
-                    },
-                    layout: {
-                        padding: {
-                            left: 5,
-                            right: 5,
-                            top: -60,
-                            bottom: 0
-                        }
-                    }
-                }
+                options: commonOptionsWithoutLabels
+            });
+        }
+    }
+
+    export function drawRadar(dataVectors: Dictionary, width: number, height: number, elem: HTMLElement, id: string,
+        showLabels?: boolean) {
+
+        let canvas: HTMLCanvasElement;
+
+        if (!document.getElementById(id)) {
+            canvas = document.createElement('canvas');
+            canvas.id = id;
+            canvas.width = width;
+            canvas.height = height;
+
+            elem.appendChild(canvas);
+        } else {
+            canvas = <HTMLCanvasElement>document.getElementById(id);
+        }
+
+        let ctx = canvas.getContext('2d');
+
+        let dataSeries = new Array;
+
+        let dataSeriesLabels = Object.keys(dataVectors);
+        let dataLabels = Object.keys(dataVectors[dataSeriesLabels[0]]);
+
+        let dataPainter = new DiscreteColorBuilder(dataSeriesLabels.length, 80, dataColorLightnes);
+        let borderPainter = new DiscreteColorBuilder(dataSeriesLabels.length, 90, dataBorderLightness);
+
+        //console.log('---------------------------');
+        //console.log(dataVectors);
+        //console.log(dataSeriesLabels);
+        //console.log(dataLabels);
+
+        dataSeriesLabels.forEach((value, index) => {
+            dataSeries.push({
+                label: value,
+                data: Object.values(dataVectors[value]),
+                borderColor: borderPainter.next().toCssHSL(),
+                backgroundColor: dataPainter.next().toCssHSL(),
+                fill: true
+            });
+        });
+
+        //console.log(dataSeries);
+
+        if (showLabels) {
+            new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    datasets: dataSeries,
+                    labels: dataLabels
+                },
+                options: commonOptionsWithLabels
+            });
+        } else {
+            new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    datasets: dataSeries,
+                    labels: dataLabels
+                },
+                options: commonOptionsWithoutLabels
             });
         }
     }

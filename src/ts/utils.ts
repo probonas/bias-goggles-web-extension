@@ -10,6 +10,10 @@ export namespace utils {
         let prefixes = ['https://www.', 'http://www.', 'https://', 'http://', 'www.'];
 
         for (let i = 0; i < prefixes.length; i++) {
+            
+            while (target.endsWith('/'))
+                target = target.substr(0, target.length - 1);
+                
             if (target.startsWith(prefixes[i])) {
                 target = target.substring(prefixes[i].length);
 

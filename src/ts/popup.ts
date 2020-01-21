@@ -9,12 +9,12 @@ import { templates } from "./templates";
 
 import {
     GenericCard, ScoreCard, UncrawledDomainCard,
-    ExtensionDisabledCard, NotAWebpageCard, SpinnerCard
+    ExtensionDisabledCard, NotAWebpageCard, SpinnerCard, CompareCard, cards
 } from "./infoCard";
 
 import "bootstrap"; //@types/bootstrap
 import 'bootstrap/dist/css/bootstrap.min.css';
-import { settings } from "cluster";
+
 import { uncrawled } from "./uncrawled";
 
 const navId = 'nav-bar';
@@ -29,28 +29,10 @@ const onID = 'bg-on';
 const compareModal = 'compareModal';
 const compareDataBtn = 'compare-data-btn';
 
-let idCounter = 0;
 let thisWindowID: number;
 
 let tabLabels = new Array();
 let tabIDs = new Array();
-
-let idToScoreCard: Map<string, ScoreCard> = new Map();
-let urlsToScoreCard: Map<string, ScoreCard> = new Map();
-let allGenericCards: GenericCard[] = [];
-
-let shownScoreCardsIDs: string[] = [];
-
-function clearInfoTab() {
-
-    allGenericCards.forEach(card => card.remove());
-
-    allGenericCards = [];
-
-    shownScoreCardsIDs.forEach(cardID => idToScoreCard.get(cardID).remove());
-
-    shownScoreCardsIDs = [];
-}
 
 function showBtn(on: boolean) {
 
@@ -149,37 +131,31 @@ function showSuccessAlert(msg: string) {
     }, 2000);
 }
 
-function newCardID(): string {
-    return (++idCounter).toString();
-}
+
 export function updateContent(url: string, cleanTab: boolean) {
 
     if (cleanTab)
-        clearInfoTab();
+        cards.clearAllCards();
 
     tabIDs.forEach(goggles => {
-        //show spinner
-        let spinner = new SpinnerCard(newCardID(), goggles);
+
+        let spinner = new SpinnerCard(goggles);
+
         spinner.render();
 
         if (url === null) {
             spinner.remove();
 
+            new NotAWebpageCard(goggles).render();
 
-            let card = new NotAWebpageCard(newCardID(), goggles);
-            card.render();
-
-            allGenericCards.push(card);
-        } else if (urlsToScoreCard.has(url + goggles)) {
+        } else if (cards.hasScoreCard(url, goggles)) {
             spinner.remove();
 
             //remove so as to redraw
-            if (shownScoreCardsIDs.includes(urlsToScoreCard.get(url + goggles).getCardID()))
-                urlsToScoreCard.get(url + goggles).remove();
+            cards.getScoreCard(url, goggles).remove();
 
             //domain's card already in memomy
-            urlsToScoreCard.get(url + goggles).render();
-            shownScoreCardsIDs.push(urlsToScoreCard.get(url + goggles).getCardID());
+            cards.getScoreCard(url, goggles).render();
         } else {
 
             utils.getBiasDataForGoggles(url, goggles, (scoreData, scoreIndex) => {
@@ -189,26 +165,13 @@ export function updateContent(url: string, cleanTab: boolean) {
                 spinner.remove();
 
                 if (scoreIndex === -1) {
-                    let card = new ExtensionDisabledCard(newCardID(), goggles);
-                    card.render();
-                    allGenericCards.push(card);
+                    new ExtensionDisabledCard(goggles).render();
                 } else if (scoreIndex === -2) {
-                    let card = new UncrawledDomainCard(newCardID(), goggles, url);
-                    card.render();
-                    allGenericCards.push(card);
+                    new UncrawledDomainCard(goggles, url).render();
                 } else {
-                    let cardID = newCardID();
-
-                    let card = new ScoreCard(cardID, goggles, false, scoreData, url);
-
+                    let card = new ScoreCard(goggles, false, scoreData, url);
                     card.setTitle(url);
-                    card.setStringContent('');
-
                     card.render();
-
-                    urlsToScoreCard.set(url + goggles, card);
-                    idToScoreCard.set(cardID, card);
-                    shownScoreCardsIDs.push(cardID);
                 }
             });
         }
@@ -300,7 +263,7 @@ saveSettingsBtn.addEventListener('click', () => {
 function showDomainDataUnderSettings() {
     extension.storage.getAllDomainData((data) => {
         let domainDataOverviewDiv = document.getElementById('domainDataOverview');
-        let cards: string = '';
+        let domainCards: string = '';
 
         let innerTables = '';
 
@@ -375,10 +338,10 @@ function showDomainDataUnderSettings() {
 
                 innerTables += templates.get.Table('Goggles:', goggleName, rows) + '<br>';
             }
-            cards += templates.get.AccordionCard(domain, innerTables, ++idCounter, 'domainDataOverview');
+            domainCards += templates.get.AccordionCard(domain, innerTables, cards.getUniqueID(), 'domainDataOverview');
         }
 
-        domainDataOverviewDiv.insertAdjacentHTML('afterbegin', cards);
+        domainDataOverviewDiv.insertAdjacentHTML('afterbegin', domainCards);
     });
 }
 
@@ -388,7 +351,7 @@ function showAnalyticsDataUnderSettings() {
             return;
 
         let analyticsDataOverviewDiv = document.getElementById('analyticsDataOverview');
-        let cards = '';
+        let analyticsCards = '';
 
         for (let i = 0; i < analytics.total; i++) {
             let rows = '';
@@ -401,10 +364,10 @@ function showAnalyticsDataUnderSettings() {
             }
 
             table = templates.get.Table('Key', 'Value', rows);
-            cards += templates.get.AccordionCard('Analytics Data #' + i, table, ++idCounter, 'analyticsDataOverview');
+            analyticsCards += templates.get.AccordionCard('Analytics Data #' + i, table, cards.getUniqueID(), 'analyticsDataOverview');
         }
 
-        analyticsDataOverviewDiv.insertAdjacentHTML('afterbegin', cards);
+        analyticsDataOverviewDiv.insertAdjacentHTML('afterbegin', analyticsCards);
     });
 }
 
@@ -444,34 +407,81 @@ chrome.storage.onChanged.addListener((changes, areaName) => {
 });
 
 let uncrawledMsgInModal = false;
+let modalBody = document.getElementById(compareModal).getElementsByClassName('modal-body')[0];
+let modalTitle = document.getElementById(compareModal).getElementsByClassName('modal-title')[0];
+let compare = document.getElementById(compareDataBtn);
+
+compare.addEventListener('click', () => {
+    let dismissID = 'dismissCompareModel';
+
+    let checkInputs = modalBody.getElementsByClassName('form-check-input');
+    let dismiss = <HTMLButtonElement>document.getElementById(dismissID);
+
+    let checked = new Array();
+
+    for (let i = 0; i < checkInputs.length; i++) {
+        //@ts-ignore
+        if (<HTMLInputElement>checkInputs[i].checked)
+            checked.push((<HTMLInputElement>checkInputs[i]).value);
+    };
+
+
+    //console.log(checked);
+    //console.log(urlsToScoreCard);
+
+    userSettings.get((settings) => {
+
+        for (let i = 0; i < settings.gogglesList.length; i++) {
+            let goggles = settings.gogglesList[i].id;
+            let scoreData: Array<Score> = new Array();
+
+            checked.forEach((checkedDomain) => {
+                let data = cards.getScoreCard(checkedDomain, goggles);
+
+                if (data)
+                    scoreData.push(data.getScore());
+
+            });
+
+            //console.log(scoreData);
+            let compareCard = new CompareCard(goggles, scoreData, checked);
+
+            compareCard.setTitle('Overview');
+            compareCard.render();
+        }
+
+        //hide modal
+        dismiss.click();
+    });
+});
+
 
 document.body.addEventListener('compareCard', (e) => {
     //@ts-ignore
     let sourceCardID = e.detail;
 
+    let sourceCard = cards.getCardWithID(sourceCardID) as ScoreCard;
+    let thisTabID = sourceCard.getTabID();
+
     let inputID = 'searchsite';
     let searchID = 'searchsitebtn';
-    let dismissID = 'dismissCompareModel';
     let msgBoxID = 'userInputContentBox';
-
-    let dismiss = <HTMLButtonElement>document.getElementById(dismissID);
-
-    let modal = document.getElementById(compareModal).getElementsByClassName('modal-body')[0];
-    let compare = document.getElementById(compareDataBtn);
-
-    let thisTabID = idToScoreCard.get(sourceCardID).getTabID();
 
     let labelsAndIDs: Array<[string, string]> = new Array();
 
-    while (modal.hasChildNodes()) {
-        modal.firstChild.remove();
+    while (modalTitle.hasChildNodes()) {
+        modalTitle.firstChild.remove();
     }
 
-    urlsToScoreCard.forEach((value, key) => {
+    while (modalBody.hasChildNodes()) {
+        modalBody.firstChild.remove();
+    }
+
+    cards.getAllScoreCards().forEach((value, key) => {
         if (value.getTabID() === thisTabID && value.getCardID() !== sourceCardID)
             labelsAndIDs.push([value.getDomain(), key]);
 
-        console.log(key, value.getDomain());
+        //console.log(key, value.getDomain());
     });
 
     labelsAndIDs.sort((val1, val2) => {
@@ -487,28 +497,25 @@ document.body.addEventListener('compareCard', (e) => {
         sortedmap.set(value[0], value[1]);
     });
 
-    modal.insertAdjacentHTML('beforeend',
+    modalTitle.insertAdjacentHTML('beforeend',
+        'Compare <b><i>' + sourceCard.getDomain() + '</b></i> with...');
+
+    modalBody.insertAdjacentHTML('beforeend',
+        templates.get.checkWithLabel(sourceCard.getDomain(),
+            sourceCard.getDomain() + sourceCard.getTabID(),
+            true, true));
+
+    modalBody.insertAdjacentHTML('beforeend',
         templates.get.CheckList('<b><i>sites you visited recently:</i></b>', sortedmap));
 
-    modal.insertAdjacentHTML('beforeend', templates.get.InputWithButon(inputID, searchID,
-        'e.g. kathimerini.gr', 'Search', '<b><i>enter site:</i></b>', msgBoxID));
+    modalBody.insertAdjacentHTML('beforeend',
+        templates.get.InputWithButon(inputID, searchID,
+            'e.g. kathimerini.gr', 'Search', '<b><i>enter site:</i></b>',
+            msgBoxID));
 
     let search = <HTMLButtonElement>document.getElementById(searchID);
     let userInput = <HTMLInputElement>document.getElementById(inputID);
     let msgBox = document.getElementById(msgBoxID);
-
-    compare.addEventListener('click', () => {
-        let checkInputs = modal.getElementsByClassName('form-check-input');
-
-        for (let i = 0; i < checkInputs.length; i++) {
-            //@ts-ignore
-            if (<HTMLInputElement>checkInputs[i].checked)
-                return;
-            //str += (<HTMLInputElement>checkInputs[i]).value + ' ';
-        };
-
-        dismiss.click();
-    });
 
     search.addEventListener('click', () => {
         let domain = utils.getDomainFromURL(userInput.value.trim());
@@ -545,22 +552,14 @@ document.body.addEventListener('compareCard', (e) => {
                         }
 
                     }
+
+                    if (scoreData !== null) {
+                        let card = new ScoreCard(goggles, false, scoreData, domain);
+                        card.render();
+                    }
+
                 });
             }
         });
     });
-
-});
-
-document.body.addEventListener('closedCard', (e) => {
-    //@ts-ignore
-    let cardID = e.detail;
-
-    console.log('removed card with id ' + cardID);
-
-    if (idToScoreCard.has(cardID)) {
-        console.log('is score card!');
-        shownScoreCardsIDs = shownScoreCardsIDs.filter(value => value !== cardID);
-    }
-
 });

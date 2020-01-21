@@ -262,16 +262,20 @@ export namespace templates {
             ;
         }
 
-        export function checkWithLabel(label: string, id: string, preChecked?: boolean) {
+        export function checkWithLabel(label: string, id: string, preChecked?: boolean, isHidden?: boolean) {
             let checked = '';
+            let hidden = '';
 
             if (preChecked)
                 checked = 'checked';
 
+            if (isHidden)
+                hidden = 'display: none;';
+
             return `
-            <div class="form-check">
+            <div class="form-check" style="${hidden}">
                 <input class="form-check-input" type="checkbox" id="${id}" value="${label}" ${checked}>
-                <label class="form-check-label" for="${id}"> ${label} </label>
+                <label class="form-check-label" for="${id}" > ${label} </label>
             </div>`;
         }
 

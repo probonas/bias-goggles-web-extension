@@ -6,12 +6,34 @@ const config = require('./webpack.config');
 
 var devExports = new Array();
 
-var unitTests = Object.assign({}, config.configcaffold, {
-    name: 'unit-tests',
-    entry: config.testsRoot + '/index.ts',
+var firefoxUnitTests = Object.assign({}, {
+    name: 'firefox-unit-tests',
+    entry: {
+        main: config.testsRoot + '/index.ts',
+    },
     output: {
         path: config.destinationRoot + "/firefox/tests",
-        filename: '[name].js'
+    },
+    plugins: [
+        new FileManagerPlugin(
+            {
+                onEnd: {
+                    copy: [
+                        { source: config.testsJasmineRoot + '/*', destination: config.destinationRoot + '/firefox/tests' },
+                    ]
+                }
+            })
+    ]
+});
+
+
+var chromiumUnitTests = Object.assign({}, {
+    name: 'chromium-unit-tests',
+    entry: {
+        main: config.testsRoot + '/index.ts',
+    },
+    output: {
+        path: config.destinationRoot + "/chromium/tests",
     },
     plugins: [
         new FileManagerPlugin(
@@ -19,17 +41,20 @@ var unitTests = Object.assign({}, config.configcaffold, {
                 onEnd: {
                     copy: [
                         { source: config.testsJasmineRoot + '/*', destination: config.destinationRoot + '/chromium/tests' },
-                        { source: config.testsJasmineRoot + '/*', destination: config.destinationRoot + '/firefox/tests' }
                     ]
                 }
             })
     ]
 });
 
-common.push(unitTests);
+devExports.push(common.firefox);
+devExports.push(common.chromium);
 
-for (var i = 0; i < common.length; i++) {
-    devExports[i] = merge(common[i], {
+devExports.push(merge(common.firefox, firefoxUnitTests));
+devExports.push(chromiumUnitTests = merge(common.chromium, chromiumUnitTests));
+
+for (var i = 0; i < devExports.length; i++) {
+    devExports[i] = merge(devExports[i], {
         mode: "development",
         devtool: "inline-source-map"
     });

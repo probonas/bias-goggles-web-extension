@@ -1,10 +1,10 @@
-export let PoliticalParties : Goggle = {
+export let PoliticalParties: Goggle = {
     description: 'A goggle about political parties in Greece',
     name: 'Political Parties [GR]',
     id: 'political-parties'
 }
 
-export let SportsTeams : Goggle = {
+export let SportsTeams: Goggle = {
     description: 'A goggle about sports teams in Greece',
     name: 'Sports Teams [GR]',
     id: 'sport-teams'
@@ -56,6 +56,10 @@ export interface UserSettings {
 
 export type AppData = {
     [key: string]: DomainData | Score;
+}
+
+export type Dictionary = {
+    [key: string]: any;
 }
 
 export type DomainData = {

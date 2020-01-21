@@ -1,8 +1,87 @@
 
 import { templates } from "./templates";
-import { Score } from "./types";
+import { Score, Dictionary } from "./types";
 import { chart } from "./drawchart";
 import { uncrawled } from "./uncrawled";
+
+let allGeneric: Array<Card> = new Array();
+let allScoreCards: Map<string, ScoreCard> = new Map();
+let allCompareCards: Array<CompareCard> = new Array();
+
+let scoreCardsCache: Map<string, ScoreCard> = new Map();
+
+export namespace cards {
+
+    export function hasScoreCard(domain: string, forgoggle: string) {
+        return allScoreCards.has(domain + forgoggle) || scoreCardsCache.has(domain + forgoggle);
+    }
+
+    export function getScoreCard(domain: string, forgoggle: string) {
+        if (allScoreCards.has(domain + forgoggle))
+            return allScoreCards.get(domain + forgoggle);
+        else
+            return scoreCardsCache.get(domain + forgoggle);
+    }
+
+    export function clearAllCards() {
+        allGeneric.forEach(card => card.remove());
+        allGeneric = new Array();
+
+        allScoreCards.forEach(card => card.remove());
+        allScoreCards.clear();
+
+        allCompareCards.forEach(card => card.remove());
+        allCompareCards = new Array();
+    }
+
+    export function getCardWithID(cardID: string): ScoreCard | null {
+
+        let card = null;
+
+        allGeneric.forEach((value) => {
+            if (value.getCardID() === cardID)
+                card = value;
+        });
+
+        allScoreCards.forEach((value, key) => {
+            if (value.getCardID() === cardID)
+                card = value;
+        });
+
+        scoreCardsCache.forEach((value, key) => {
+            if (value.getCardID() === cardID)
+                card = value;
+        });
+
+        allCompareCards.forEach((value) => {
+            if (value.getCardID() === cardID)
+                card = value;
+        });
+
+        return card;
+    }
+
+    export function getAllScoreCards(): Map<string, ScoreCard> {
+        let retMap = new Map<string,ScoreCard>();
+
+        allScoreCards.forEach((value,key)=>{
+            retMap.set(key,value);
+        });
+
+        scoreCardsCache.forEach((value,key)=>{
+            retMap.set(key,value);
+        });
+
+        return retMap;
+    }
+
+    export function getUniqueID() {
+        return (++id);
+    }
+
+}
+
+let id = 0;
 
 abstract class Card {
     protected title: string;
@@ -15,16 +94,23 @@ abstract class Card {
     protected stringContent: string;
     protected htmlContent: HTMLElement;
 
-    constructor(cardID: string, tabID: string, dismissable: boolean, comparable: boolean, tooltipOn: boolean) {
-        this.cardID = cardID;
+    constructor(tabID: string, dismissable: boolean,
+        comparable: boolean, tooltipOn: boolean) {
+
+        this.cardID = (++id).toString();
+
         this.tabID = tabID;
         this.dismissable = dismissable;
+        this.comparable = comparable;
         this.tooltipOn = tooltipOn;
 
-        this.comparable = comparable;
         this.title = null;
         this.stringContent = null;
         this.htmlContent = null;
+    }
+
+    public getCardID(): string {
+        return this.cardID;
     }
 
     public getTabID(): string {
@@ -37,6 +123,10 @@ abstract class Card {
 
     public setHTMLContent(contents: HTMLElement) {
         this.htmlContent = contents;
+    }
+
+    public setTitle(title: string) {
+        this.title = title;
     }
 
     public render() {
@@ -65,8 +155,6 @@ abstract class Card {
             (<HTMLButtonElement>document.getElementById(this.cardID).
                 getElementsByClassName('_close')[0]).addEventListener('click', () => {
                     this.remove();
-                    let msg = new CustomEvent('closedCard', { detail: this.cardID });
-                    document.body.dispatchEvent(msg);
                 });
         }
     }
@@ -74,17 +162,24 @@ abstract class Card {
     public remove() {
         if (document.getElementById(this.cardID))
             document.getElementById(this.cardID).remove();
+        else
+            console.log('failed to remove ' + this.cardID);
     }
 
 }
 export class GenericCard extends Card {
-    constructor(cardID: string, tabID: string, tooltipOn: boolean) {
-        super(cardID, tabID, true, false, tooltipOn);
+    constructor(tabID: string, tooltipOn: boolean) {
+        super(tabID, true, false, tooltipOn);
+
+        allGeneric.push(this);
     }
 
-    public setTitle(title: string) {
-        this.title = title;
+    public remove() {
+        super.remove();
+
+        allGeneric = allGeneric.filter(value => value.getCardID() !== this.cardID);
     }
+
 }
 
 export class ScoreCard extends Card {
@@ -92,12 +187,14 @@ export class ScoreCard extends Card {
     private score: Score;
     private domain: string;
 
-    constructor(cardID: string, tabID: string, tooltipOn: boolean,
+    constructor(tabID: string, tooltipOn: boolean,
         scoreData: Score, domain: string) {
-        super(cardID, tabID, true, true, tooltipOn);
+        super(tabID, true, true, tooltipOn);
 
         this.score = scoreData;
         this.domain = domain;
+
+        this.setStringContent('');
     }
 
     public setTitle(title: string) {
@@ -114,19 +211,38 @@ export class ScoreCard extends Card {
         return this.domain;
     }
 
-    public getCardID(): string {
-        return this.cardID;
+    public getScore(): Score {
+        return this.score;
     }
 
     public render() {
         super.render();
         this.setEditBtn();
 
+        allScoreCards.set(this.domain + this.tabID, this);
+
         //canvas can only be rendered if element is already in the dom
-        chart.draw(this.getScoreDataVector(), 440, 680,
+        chart.drawPolar(this.getScoreDataVector(), 440, 680,
             document.getElementById(this.cardID).getElementsByClassName('card-text')[0] as HTMLElement,
             'chart' + this.cardID, true);
 
+    }
+
+    public remove() {
+        super.remove();
+
+        allScoreCards.delete(this.domain + this.tabID);
+        scoreCardsCache.set(this.domain + this.tabID, this);
+
+        allScoreCards.forEach((value, key) => {
+            if (value.getDomain() === this.domain) {
+                allScoreCards.delete(key);
+                value.remove();
+            }
+        });
+
+        console.log('removing...');
+        console.log(this.domain, this.tabID, this.cardID);
     }
 
     private setEditBtn() {
@@ -139,8 +255,8 @@ export class ScoreCard extends Card {
 
 export class ExtensionDisabledCard extends GenericCard {
 
-    constructor(cardID: string, tabID: string) {
-        super(cardID, tabID, false);
+    constructor(tabID: string) {
+        super(tabID, false);
         this.setTitle('Extension is disabled!');
         this.setStringContent('Enable it, and try again');
     }
@@ -149,8 +265,8 @@ export class ExtensionDisabledCard extends GenericCard {
 
 export class UncrawledDomainCard extends GenericCard {
 
-    constructor(cardID: string, tabID: string, domain: string) {
-        super(cardID, tabID, false);
+    constructor(tabID: string, domain: string) {
+        super(tabID, false);
 
         this.setTitle('Too bad... :(');
         this.setHTMLContent(uncrawled.create404Msg(domain, ['text-info']));
@@ -160,8 +276,8 @@ export class UncrawledDomainCard extends GenericCard {
 
 export class NotAWebpageCard extends GenericCard {
 
-    constructor(cardID: string, tabID: string) {
-        super(cardID, tabID, false);
+    constructor(tabID: string) {
+        super(tabID, false);
 
         this.setTitle('This isn\'t a webpage!');
         this.setStringContent('');
@@ -170,10 +286,63 @@ export class NotAWebpageCard extends GenericCard {
 }
 
 export class SpinnerCard extends GenericCard {
-    constructor(cardID: string, tabID: string) {
-        super(cardID, tabID, false);
+    constructor(tabID: string) {
+        super(tabID, false);
 
         this.setTitle('Requesting data from service...');
         this.setStringContent(templates.get.Spinner());
+    }
+}
+
+export class CompareCard extends Card {
+
+    private data: Dictionary;
+    private comparedDomains: Array<string>;
+
+    constructor(tabID: string, scoreData: Score[],
+        urlsForScoredata: Array<string>) {
+        super(tabID, true, false, false);
+
+        this.data = {};
+
+        scoreData.forEach((score, index) => {
+            let url = urlsForScoredata[index];
+
+            this.data[url] = score.scores['pr'].vector;
+        });
+
+        this.comparedDomains = urlsForScoredata;
+
+        this.setStringContent('');
+    }
+
+    public getComparedDomains(): Array<string> {
+        return this.comparedDomains;
+    }
+
+    public remove() {
+        super.remove();
+
+        let siblings = allCompareCards.filter((value =>
+            value.getComparedDomains() === this.comparedDomains));
+
+        allCompareCards = allCompareCards.filter(value =>
+            value.getComparedDomains() !== this.comparedDomains)
+
+        if (siblings)
+            siblings.forEach(value => {
+                value.remove();
+            });
+    }
+
+    public render() {
+        super.render();
+
+        allCompareCards.push(this);
+
+        chart.drawRadar(this.data, 440, 680,
+            document.getElementById(this.cardID).getElementsByClassName('card-text')[0] as HTMLElement,
+            'chart' + this.cardID, true);
+
     }
 }

@@ -31,6 +31,7 @@ var chromium = merge(distScaffold, {
     }
 });
 
-module.exports = [
-    firefox, chromium
-];
+module.exports = {
+    'firefox': firefox,
+    'chromium': chromium
+};

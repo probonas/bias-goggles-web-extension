@@ -3,11 +3,13 @@ const common = require('./webpack.common');
 
 var prodExports = new Array();
 
-for (var i = 0; i < common.length; i++) {
-    prodExports[i] = merge(common[i], {
-        mode: "production",
-    });
-}
+prodExports.push(merge(common.firefox, {
+    mode: "production",
+}));
+
+prodExports.push(merge(common.chromium, {
+    mode: "production",
+}));
 
 console.log('====================');
 console.log('Building: Production');
