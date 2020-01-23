@@ -8,14 +8,15 @@ import { extension } from "./storage";
 import { templates } from "./templates";
 
 import {
-    GenericCard, ScoreCard, UncrawledDomainCard,
-    ExtensionDisabledCard, NotAWebpageCard, SpinnerCard, CompareCard, cards
+    ScoreCard, UncrawledDomainCard, ExtensionDisabledCard,
+    NotAWebpageCard, SpinnerCard, CompareCard, cards
 } from "./infoCard";
 
 import "bootstrap"; //@types/bootstrap
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 import { uncrawled } from "./uncrawled";
+import { chart } from "./drawchart";
 
 const navId = 'nav-bar';
 const onBtnId = 'bg-onbtn';
@@ -570,3 +571,38 @@ document.body.addEventListener('compareCard', (e) => {
         });
     });
 });
+
+const analyticsTabID = 'analytics';
+
+let analyticsTab = document.getElementById(analyticsTabID);
+
+let fakeDates = new Array();
+let fakeValues = new Array<number>();
+
+let colors = new Array();
+//mock data
+for (let i = 1; i < 2; i++) {
+    for (let j = 1; j < 15; j++) {
+        fakeDates.push(new Date(2020, i, j));
+
+        fakeValues.push(Math.random() * 50);
+
+        colors.push(
+            'rgba(' +
+            Math.random() * 255 + ',' +
+            Math.random() * 255 + ',' +
+            Math.random() * 255 + ',' +
+            Math.random() + ')');
+    }
+}
+
+chart.drawTimeline({
+    labels: fakeDates,
+    datasets: [
+        {
+            label: 'Usage',
+            data: fakeValues,
+            borderWidth: 1
+        }
+    ]
+}, 300, 100, analyticsTab, 'line-' + cards.getUniqueID());
