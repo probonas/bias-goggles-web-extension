@@ -229,7 +229,7 @@ export namespace chart {
             width, 60, elem);
 
         selectionOverlay.style.position = "absolute";
-        selectionOverlay.style.pointerEvents = "none";
+        //selectionOverlay.style.pointerEvents = "none";
 
         let selectionCtx = selectionOverlay.getContext('2d');
 
@@ -238,10 +238,42 @@ export namespace chart {
 
         let timelineCtx = timelineCanvas.getContext('2d');
 
+        let sliderChanged = false;
+
         let selectionRect = {
-            w: 0,
             startX: 0,
+            endX: 0
         };
+
+        const drawDefaultSlider = (chart: Chart) => {
+            selectionCtx.globalAlpha = 0.3;
+            selectionCtx.clearRect(0, 0, selectionOverlay.width, selectionOverlay.height);
+
+            let tlmiddle = (chart.chartArea.left + chart.chartArea.right) / 2;
+            let defaultWidth = (chart.chartArea.right - chart.chartArea.left) * 0.3;
+
+            /*
+            console.log(
+                tlmiddle - defaultWidth / 2,
+                chart.chartArea.bottom,
+                defaultWidth,
+                chart.chartArea.top - chart.chartArea.bottom
+            );
+            */
+
+            //selectionOverlay.getBoundingClientRect() returns the whole canvas
+            //and not just the rect, so we need to following to keep track of rect's
+            //coordinates.
+            selectionRect.startX = tlmiddle - defaultWidth / 2;
+            selectionRect.endX = selectionRect.startX + defaultWidth;
+
+            selectionCtx.fillRect(
+                selectionRect.startX,
+                chart.chartArea.bottom,
+                defaultWidth,
+                chart.chartArea.top - chart.chartArea.bottom
+            );
+        }
 
         let timelineChart = new Chart(timelineCtx, {
             type: 'line',
@@ -252,17 +284,11 @@ export namespace chart {
                     mode: 'index'
                 },
                 elements: {
-                    //point: {
-                    //radius: 0
-                    //}
+                    point: {
+                        radius: 0
+                    }
                 },
                 responsive: true,
-                onResize: () => {
-                    selectionOverlay.width = timelineChart.width;
-                    selectionOverlay.height = timelineChart.height;
-                    selectionCtx = selectionOverlay.getContext('2d');
-                    timelineCtx = timelineCanvas.getContext('2d');
-                },
                 legend: {
                     display: false
                 },
@@ -285,67 +311,94 @@ export namespace chart {
 
                     }]
                 }
-            }
+            },
+            plugins: [{
+                afterRender: (chart, options) => {
+                    if (sliderChanged) {
+                        //redraw slider as changed by user
+                    } else {
+                        drawDefaultSlider(chart);
+                    }
+                }
+            }]
         });
 
-        console.log(timelineCanvas.width, timelineCanvas.height);
 
-        let startIndex = 0;
-        let endIndex = 0;
+        let selectedChartData = {
+            startDataIndex: 0,
+            endDataIndex: 0
+        };
 
-        let drag = false;
+        type actions = 'left-resize' | 'right-resize' | 'move';
+        let action: actions;
 
-        timelineCanvas.addEventListener('pointerdown', ev => {
-            drag = true;
-            startIndex = 0;
-
-            let rect = selectionOverlay.getBoundingClientRect();
-            selectionRect.startX = ev.clientX - rect.left;
-
+        selectionOverlay.addEventListener('pointerdown', ev => {
             //@ts-ignore
             let points = timelineChart.getElementsAtEventForMode(ev, 'index', {
                 intersect: false
             });
 
-            console.log('this', points);
             //@ts-ignore
-            startIndex = points[0]._index;
-
-            console.log('data selected');
-            let data = timelineChart.data.labels.slice(startIndex, endIndex);
-            console.log(data);
+            selectedChartData.startDataIndex = points[0]._index;
         });
 
-        timelineCanvas.addEventListener('pointermove', ev => {
+        selectionOverlay.addEventListener('pointermove', ev => {
+            let tlRect = timelineChart.canvas.getBoundingClientRect();
+            let threshold = (selectionRect.endX - selectionRect.startX) * 0.1;
 
-            let rect = timelineCanvas.getBoundingClientRect();
-
-            if (drag) {
-
-                if (ev.clientX < timelineChart.chartArea.left) {
-                    selectionRect.w = timelineChart.chartArea.left - selectionRect.startX;
-                } else if (ev.clientX > timelineChart.chartArea.right) {
-                    selectionRect.w = timelineChart.chartArea.right - selectionRect.startX;
-                } else {
-                    selectionRect.w = ev.clientX - rect.left - selectionRect.startX;
-                }
-
-                selectionCtx.globalAlpha = 0.5;
-
-                selectionCtx.clearRect(0, 0, selectionOverlay.width, selectionOverlay.height);
-
-                selectionCtx.fillRect(selectionRect.startX,
-                    timelineChart.chartArea.top,
-                    selectionRect.w,
-                    timelineChart.chartArea.bottom - timelineChart.chartArea.top);
-
-            } else {
-                selectionCtx.clearRect(0, 0, timelineCanvas.width, timelineCanvas.height);
+            const valueInRange = (value: number, lowerLimit: number, upperLimit: number) => {
+                return value >= lowerLimit && value <= upperLimit;
             }
 
+            if (valueInRange(ev.clientX - tlRect.left, selectionRect.startX - threshold,
+                selectionRect.startX + threshold)) {
+                selectionOverlay.style.cursor = 'ew-resize';
+            } else if (valueInRange(ev.clientX - tlRect.left, selectionRect.endX - threshold,
+                selectionRect.endX + threshold)) {
+                selectionOverlay.style.cursor = 'ew-resize';
+            } else if (valueInRange(ev.clientX - tlRect.left, selectionRect.startX + threshold,
+                selectionRect.endX - threshold)) {
+                selectionOverlay.style.cursor = 'grab';
+            }
+
+            if (action === 'left-resize') {
+                //selectionRect.left = ev.clientX - tlRect.left;
+            } else if (action === 'right-resize') {
+                //selectionRect.endX = ev.clientX - tlRect.left;
+            } else if (action === 'move') {
+                //console.log('implement move');
+            }
+            /*
+                        if (ev.clientX < timelineChart.chartArea.left) {
+                            selectionRect.width = timelineChart.chartArea.left - selectionRect.left;
+                        } else if (ev.clientX > timelineChart.chartArea.right) {
+                            selectionRect.width = timelineChart.chartArea.right - selectionRect.left;
+                        } else if (ev.clientX > selectionRect.right) {
+                            selectionRect.width = ev.clientX - tlRect.left - selectionRect.left;
+                        } else if (ev.clientX < selectionRect.left) {
+            
+                        }
+            */
+            //selectionCtx.globalAlpha = 0.3;
+
+            //selectionCtx.clearRect(0, 0, selectionOverlay.width, selectionOverlay.height);
+
+            /*
+            selectionCtx.fillRect(
+                selectionRect.left,
+                timelineChart.chartArea.bottom,
+                selectionRect.width,
+                timelineChart.chartArea.top - timelineChart.chartArea.bottom);
+            */
         });
 
-        timelineCanvas.addEventListener('pointerup', (ev) => {
+        selectionOverlay.addEventListener('pointerup', (ev) => {
+            let rect = timelineCanvas.getBoundingClientRect();
+
+            selectionOverlay.style.cursor = 'default';
+            //selectionRect.endX = ev.clientX - rect.left;
+
+            /*
             drag = false;
 
             //@ts-ignore
@@ -353,14 +406,16 @@ export namespace chart {
                 intersect: false
             });
 
+            selectionRect.resizing = false;
+            selectionRect.endX = ev.clientX - timelineCanvas.getBoundingClientRect().left;
+
             //@ts-ignore
-            endIndex = points[0]._index;
+            endDataIndex = points[0]._index;
 
             console.log('data selected');
-
-            let data = timelineChart.data.labels.slice(startIndex, endIndex);
-
+            let data = timelineChart.data.labels.slice(startDataIndex, endDataIndex);
             console.log(data);
+            */
         });
     }
 }
