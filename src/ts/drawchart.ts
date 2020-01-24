@@ -1,6 +1,9 @@
 import { Chart, PositionType } from "chart.js";
 import { Dictionary } from "./types";
 
+import "chartjs-plugin-annotation";
+import "chartjs-plugin-draggable";
+
 export namespace chart {
 
     const dataColorLightnes = 70;
@@ -224,55 +227,75 @@ export namespace chart {
     export function drawTimeline(vector: any, width: number, height: number,
         elem: HTMLElement, id: string) {
 
-
-        let selectionOverlay = createCanvas('selection-overlay',
-            width, 60, elem);
-
-        selectionOverlay.style.position = "absolute";
-        //selectionOverlay.style.pointerEvents = "none";
-
-        let selectionCtx = selectionOverlay.getContext('2d');
-
-        let timelineCanvas = createCanvas('timeline', selectionOverlay.width,
-            selectionOverlay.height, elem);
+        let timelineCanvas = createCanvas('timeline', width, height, elem);
 
         let timelineCtx = timelineCanvas.getContext('2d');
 
-        let sliderChanged = false;
-
-        let selectionRect = {
-            startX: 0,
-            endX: 0
+        let selectedChartData = {
+            startDate: null as Date,
+            endDate: null as Date
         };
 
-        const drawDefaultSlider = (chart: Chart) => {
-            selectionCtx.globalAlpha = 0.3;
-            selectionCtx.clearRect(0, 0, selectionOverlay.width, selectionOverlay.height);
+        let fromID = 'line1';
+        let fromIndex = null;
+        let toID = 'line2';
+        let toIndex = null;
 
-            let tlmiddle = (chart.chartArea.left + chart.chartArea.right) / 2;
-            let defaultWidth = (chart.chartArea.right - chart.chartArea.left) * 0.3;
+        //@ts-ignore
+        let data: Array<Date> = vector.labels;
 
-            /*
-            console.log(
-                tlmiddle - defaultWidth / 2,
-                chart.chartArea.bottom,
-                defaultWidth,
-                chart.chartArea.top - chart.chartArea.bottom
-            );
-            */
+        fromIndex = Math.floor(data.length / 2 - data.length / 10);
+        toIndex = Math.floor(data.length / 2 + data.length / 10);
 
-            //selectionOverlay.getBoundingClientRect() returns the whole canvas
-            //and not just the rect, so we need to following to keep track of rect's
-            //coordinates.
-            selectionRect.startX = tlmiddle - defaultWidth / 2;
-            selectionRect.endX = selectionRect.startX + defaultWidth;
+        selectedChartData.startDate = data[fromIndex];
+        selectedChartData.endDate = data[toIndex];
 
-            selectionCtx.fillRect(
-                selectionRect.startX,
-                chart.chartArea.bottom,
-                defaultWidth,
-                chart.chartArea.top - chart.chartArea.bottom
-            );
+        console.log(fromIndex);
+        console.log(toIndex);
+
+        let startedFrom: Date = null;
+
+        const makeDraggableLine = (index: Date, id: string) => {
+            return {
+                id: id,
+                type: 'line',
+                mode: 'vertical',
+                scaleID: 'x-axis-0',
+                draggable: true,
+                onDragStart: function () {
+                    startedFrom = this.value;
+                },
+                onDragEnd: function () {
+                    if (selectedChartData.startDate === startedFrom) {
+                        if (this.value > selectedChartData.endDate) {
+                            selectedChartData.startDate = selectedChartData.endDate;
+                            selectedChartData.endDate = this.value;
+                        } else {
+                            selectedChartData.startDate = this.value;
+                        }
+                    } else {
+                        if (this.value < selectedChartData.startDate) {
+                            selectedChartData.endDate = selectedChartData.startDate;
+                            selectedChartData.startDate = this.value;
+                        } else {
+                            selectedChartData.endDate = this.value;
+                        }
+                    }
+
+                    if (selectedChartData.startDate > selectedChartData.endDate)
+                        throw new Error('err@@@');
+
+                    console.log(selectedChartData.startDate, selectedChartData.endDate);
+                },
+                value: index,
+                borderWidth: 3,
+                borderColor: 'black',
+                label: {
+                    enabled: true,
+                    position: "center",
+                    content: ' '
+                }
+            }
         }
 
         let timelineChart = new Chart(timelineCtx, {
@@ -281,7 +304,8 @@ export namespace chart {
             options: {
                 tooltips: {
                     intersect: false, //use nearest
-                    mode: 'index'
+                    mode: 'index',
+                    enabled: false
                 },
                 elements: {
                     point: {
@@ -296,126 +320,34 @@ export namespace chart {
                     xAxes: [{
                         type: 'time',
                         time: {
-                            minUnit: "day"
+                            unit: "day"
                         },
                         ticks: {
                             autoSkip: true,
+                        },
+                        id: 'x-axis-0',
+                        scaleLabel: {
+                            labelString: 'Extension Usage'
                         }
                     }],
                     yAxes: [{
                         position: "left",
                         ticks: {
                             display: false,
-                            reverse: false
                         },
-
+                        id: 'y-axis-0'
                     }]
+                },
+                //@ts-ignore
+                annotation: {
+                    drawTime: 'afterDatasetsDraw',
+                    events: ['click'],
+                    annotations: [
+                        makeDraggableLine(selectedChartData.startDate, fromID),
+                        makeDraggableLine(selectedChartData.endDate, toID)
+                    ]
                 }
-            },
-            plugins: [{
-                afterRender: (chart, options) => {
-                    if (sliderChanged) {
-                        //redraw slider as changed by user
-                    } else {
-                        drawDefaultSlider(chart);
-                    }
-                }
-            }]
-        });
-
-
-        let selectedChartData = {
-            startDataIndex: 0,
-            endDataIndex: 0
-        };
-
-        type actions = 'left-resize' | 'right-resize' | 'move';
-        let action: actions;
-
-        selectionOverlay.addEventListener('pointerdown', ev => {
-            //@ts-ignore
-            let points = timelineChart.getElementsAtEventForMode(ev, 'index', {
-                intersect: false
-            });
-
-            //@ts-ignore
-            selectedChartData.startDataIndex = points[0]._index;
-        });
-
-        selectionOverlay.addEventListener('pointermove', ev => {
-            let tlRect = timelineChart.canvas.getBoundingClientRect();
-            let threshold = (selectionRect.endX - selectionRect.startX) * 0.1;
-
-            const valueInRange = (value: number, lowerLimit: number, upperLimit: number) => {
-                return value >= lowerLimit && value <= upperLimit;
             }
-
-            if (valueInRange(ev.clientX - tlRect.left, selectionRect.startX - threshold,
-                selectionRect.startX + threshold)) {
-                selectionOverlay.style.cursor = 'ew-resize';
-            } else if (valueInRange(ev.clientX - tlRect.left, selectionRect.endX - threshold,
-                selectionRect.endX + threshold)) {
-                selectionOverlay.style.cursor = 'ew-resize';
-            } else if (valueInRange(ev.clientX - tlRect.left, selectionRect.startX + threshold,
-                selectionRect.endX - threshold)) {
-                selectionOverlay.style.cursor = 'grab';
-            }
-
-            if (action === 'left-resize') {
-                //selectionRect.left = ev.clientX - tlRect.left;
-            } else if (action === 'right-resize') {
-                //selectionRect.endX = ev.clientX - tlRect.left;
-            } else if (action === 'move') {
-                //console.log('implement move');
-            }
-            /*
-                        if (ev.clientX < timelineChart.chartArea.left) {
-                            selectionRect.width = timelineChart.chartArea.left - selectionRect.left;
-                        } else if (ev.clientX > timelineChart.chartArea.right) {
-                            selectionRect.width = timelineChart.chartArea.right - selectionRect.left;
-                        } else if (ev.clientX > selectionRect.right) {
-                            selectionRect.width = ev.clientX - tlRect.left - selectionRect.left;
-                        } else if (ev.clientX < selectionRect.left) {
-            
-                        }
-            */
-            //selectionCtx.globalAlpha = 0.3;
-
-            //selectionCtx.clearRect(0, 0, selectionOverlay.width, selectionOverlay.height);
-
-            /*
-            selectionCtx.fillRect(
-                selectionRect.left,
-                timelineChart.chartArea.bottom,
-                selectionRect.width,
-                timelineChart.chartArea.top - timelineChart.chartArea.bottom);
-            */
-        });
-
-        selectionOverlay.addEventListener('pointerup', (ev) => {
-            let rect = timelineCanvas.getBoundingClientRect();
-
-            selectionOverlay.style.cursor = 'default';
-            //selectionRect.endX = ev.clientX - rect.left;
-
-            /*
-            drag = false;
-
-            //@ts-ignore
-            let points = timelineChart.getElementsAtEventForMode(ev, 'index', {
-                intersect: false
-            });
-
-            selectionRect.resizing = false;
-            selectionRect.endX = ev.clientX - timelineCanvas.getBoundingClientRect().left;
-
-            //@ts-ignore
-            endDataIndex = points[0]._index;
-
-            console.log('data selected');
-            let data = timelineChart.data.labels.slice(startDataIndex, endDataIndex);
-            console.log(data);
-            */
         });
     }
 }

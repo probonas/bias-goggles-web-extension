@@ -581,18 +581,11 @@ let fakeValues = new Array<number>();
 
 let colors = new Array();
 //mock data
-for (let i = 1; i < 2; i++) {
+for (let i = 1; i < 4; i++) {
     for (let j = 1; j < 15; j++) {
         fakeDates.push(new Date(2020, i, j));
 
         fakeValues.push(Math.random() * 50);
-
-        colors.push(
-            'rgba(' +
-            Math.random() * 255 + ',' +
-            Math.random() * 255 + ',' +
-            Math.random() * 255 + ',' +
-            Math.random() + ')');
     }
 }
 
@@ -602,7 +595,8 @@ chart.drawTimeline({
         {
             label: 'Usage',
             data: fakeValues,
-            borderWidth: 1
+            borderWidth: 1,
+            backgroundColor: 'lightgrey'
         }
     ]
 }, 300, 100, analyticsTab, 'line-' + cards.getUniqueID());
