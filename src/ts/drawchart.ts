@@ -3,6 +3,7 @@ import { Dictionary } from "./types";
 
 import "chartjs-plugin-annotation";
 import "chartjs-plugin-draggable";
+import { templates } from "./templates";
 
 export namespace chart {
 
@@ -253,7 +254,17 @@ export namespace chart {
         console.log(fromIndex);
         console.log(toIndex);
 
-        let startedFrom: Date = null;
+        let startedFromLower: boolean;
+
+        const updateDateInfo = (data: any) => {
+            let row = templates.get.TableRow(data.startDate.toString(), data.endDate.toString(), false);
+            let table = templates.get.Table('From Date:', 'To Date:', row);
+
+            while (dateInfoDiv.hasChildNodes())
+                dateInfoDiv.firstChild.remove();
+
+            dateInfoDiv.insertAdjacentHTML('beforeend', table);
+        }
 
         const makeDraggableLine = (index: Date, id: string) => {
             return {
@@ -263,18 +274,33 @@ export namespace chart {
                 scaleID: 'x-axis-0',
                 draggable: true,
                 onDragStart: function () {
-                    startedFrom = this.value;
+
+                    if (this.value === selectedChartData.startDate) {
+                        startedFromLower = true;
+                    } else if (this.value === selectedChartData.endDate) {
+                        startedFromLower = false;
+                    } else {
+                        console.log(this.value, selectedChartData.startDate, selectedChartData.endDate);
+                        throw new Error('nonono');
+                    }
+
                 },
-                onDragEnd: function () {
-                    if (selectedChartData.startDate === startedFrom) {
-                        if (this.value > selectedChartData.endDate) {
+                onDrag: function () {
+
+                    if (startedFromLower) {
+
+                        if (this.value >= selectedChartData.endDate) {
+                            startedFromLower = false;
                             selectedChartData.startDate = selectedChartData.endDate;
                             selectedChartData.endDate = this.value;
                         } else {
                             selectedChartData.startDate = this.value;
                         }
+
                     } else {
-                        if (this.value < selectedChartData.startDate) {
+
+                        if (this.value <= selectedChartData.startDate) {
+                            startedFromLower = true;
                             selectedChartData.endDate = selectedChartData.startDate;
                             selectedChartData.startDate = this.value;
                         } else {
@@ -282,10 +308,10 @@ export namespace chart {
                         }
                     }
 
-                    if (selectedChartData.startDate > selectedChartData.endDate)
-                        throw new Error('err@@@');
-
-                    console.log(selectedChartData.startDate, selectedChartData.endDate);
+                    updateDateInfo(selectedChartData);
+                },
+                onDragEnd: function () {
+                    console.log(Object.values(data));
                 },
                 value: index,
                 borderWidth: 3,
@@ -349,5 +375,9 @@ export namespace chart {
                 }
             }
         });
+
+        let dateInfoDiv = document.createElement('div');
+        elem.appendChild(dateInfoDiv);
+        updateDateInfo(selectedChartData);
     }
 }
