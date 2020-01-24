@@ -17,11 +17,12 @@
   "license": "ISC",
   "dependencies": {
     "bootstrap": "^4.4.1",
+    "chart.js": "^2.7.0",
+    "chartjs-plugin-annotation": "^0.5.7",
     "chartjs-plugin-zoom": "^0.7.5",
     "jquery": "^3.4.1",
     "node": "^13.5.0",
-    "popper.js": "^1.16.0",
-    "chart.js": "^2.7.0"
+    "popper.js": "^1.16.0"
   },
   "devDependencies": {
     "@types/bootstrap": "^4.3.1",
@@ -32,6 +33,7 @@
     "@types/jasmine": "^3.5.0",
     "@types/node": "^13.1.6",
     "@types/popper.js": "^1.11.0",
+    "chartjs-plugin-draggable": "^0.1.6",
     "create-web-ext": "^1.0.0",
     "css-loader": "^3.4.0",
     "expect.js": "^0.3.1",
