@@ -310,9 +310,6 @@ export namespace chart {
 
                     updateDateInfo(selectedChartData);
                 },
-                onDragEnd: function () {
-                    console.log(Object.values(data));
-                },
                 value: index,
                 borderWidth: 3,
                 borderColor: 'black',
@@ -379,5 +376,7 @@ export namespace chart {
         let dateInfoDiv = document.createElement('div');
         elem.appendChild(dateInfoDiv);
         updateDateInfo(selectedChartData);
+
+        /* add graphs here */
     }
 }
