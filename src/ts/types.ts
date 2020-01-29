@@ -68,8 +68,9 @@ export type DomainData = {
 }
 
 export type Score = {
-    date: Date;
+    date: number; //ms since UTC epoch
     scores: Scores;
+    goggle: string;
 };
 
 type Scores = {

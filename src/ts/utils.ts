@@ -10,10 +10,10 @@ export namespace utils {
         let prefixes = ['https://www.', 'http://www.', 'https://', 'http://', 'www.'];
 
         for (let i = 0; i < prefixes.length; i++) {
-            
+
             while (target.endsWith('/'))
                 target = target.substr(0, target.length - 1);
-                
+
             if (target.startsWith(prefixes[i])) {
                 target = target.substring(prefixes[i].length);
 
@@ -154,6 +154,39 @@ export namespace utils {
     export function showCorrectBadge() {
         userSettings.get((settings) => {
             updateBadge(settings);
+        });
+    }
+
+    export function getScoreData(from: Date, to: Date, callback: (data: Score[] | null) => void) {
+
+        extension.storage.getAllDomainData((data) => {
+
+            let keys = Object.keys(data);
+            let scores = new Array<Score>();
+
+            for (let key in keys) {
+                let score: Score;
+
+                if ((<Score>data[key]).scores !== undefined) {
+                    score = <Score>data[key];
+
+                    if (score.date >= from.getTime() && score.date <= to.getTime()) {
+                        scores.push(score);
+                    }
+
+                    if (score.date > to.getTime()) {
+                        break;
+                    }
+
+                }
+            }
+
+            if (scores.length === 0) {
+                callback(null);
+            } else {
+                callback(scores);
+            }
+
         });
     }
 
