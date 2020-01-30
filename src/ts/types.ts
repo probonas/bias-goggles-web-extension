@@ -104,3 +104,27 @@ export type AnalyticsData = {
         [key: number]: PopoverAnalytics
     };
 }
+
+export type MinMaxAvgScores = {
+    [key: number]: PerGoggle
+}
+
+type PerGoggle = {
+    [key: string]: PerMethodValue
+}
+
+type PerMethodValue = {
+    [key: string]: MinMaxAvgScoreValue
+}
+
+type MinMaxAvgScoreValue = {
+    maxBias: number,
+    minBias: number,
+    avgBias: number,
+
+    maxSupport: number,
+    minSupport: number,
+    avgSupport: number,
+
+    totalEntries: number
+}
