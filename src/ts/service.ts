@@ -46,7 +46,8 @@ export namespace service {
                         vector: ret.doc.pr.vector
                     }
                 },
-                date: new Date()
+                date: new Date().getTime(),
+                goggle: settings.goggles
             };
 
             callback(domainData, scoreData);

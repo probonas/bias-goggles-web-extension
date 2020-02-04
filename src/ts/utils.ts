@@ -1,4 +1,4 @@
-import { AppData, DomainData, UserSettings, Score, OffOptions } from './types';
+import { AppData, DomainData, UserSettings, Score, OffOptions, MinMaxAvgScores } from './types';
 import { extension } from "./storage";
 import { service } from './service';
 import { userSettings } from './usersettings';
@@ -10,10 +10,10 @@ export namespace utils {
         let prefixes = ['https://www.', 'http://www.', 'https://', 'http://', 'www.'];
 
         for (let i = 0; i < prefixes.length; i++) {
-            
+
             while (target.endsWith('/'))
                 target = target.substr(0, target.length - 1);
-                
+
             if (target.startsWith(prefixes[i])) {
                 target = target.substring(prefixes[i].length);
 
@@ -157,5 +157,119 @@ export namespace utils {
         });
     }
 
+    export function filterScoreData(data: Array<Score>, from: Date, to: Date): Array<Score> | null {
+        let scores = new Array<Score>();
+
+        for (let i = 0; i < data.length; i++) {
+            let score: Score = data[i];
+
+            if (score.date >= from.getTime() && score.date <= to.getTime()) {
+                scores.push(score);
+            }
+
+            if (score.date > to.getTime()) {
+                break;
+            }
+        }
+
+        if (scores.length === 0) {
+            return null;
+        } else {
+            return scores;
+        }
+
+    }
+
+
+    export function calculateMinMaxAvgScoresPerGoggleAndMethod(scores: Array<Score>): MinMaxAvgScores {
+        let minMaxAvgData: MinMaxAvgScores = {};
+
+        if (scores === null || scores.length === 0) {
+            return null;
+        }
+
+        let methods = Object.keys(scores[0].scores);
+
+        scores.forEach((scoreObj) => {
+
+            if (minMaxAvgData[scoreObj.date] !== undefined &&
+                minMaxAvgData[scoreObj.date][scoreObj.goggle] !== undefined) {
+                let entry = minMaxAvgData[scoreObj.date][scoreObj.goggle];
+
+                for (let method in methods) {
+                    let m = methods[method];
+
+                    if (entry[m].maxBias < scoreObj.scores[m].bias_score)
+                        entry[m].maxBias = scoreObj.scores[m].bias_score;
+
+                    if (entry[m].minBias > scoreObj.scores[m].bias_score)
+                        entry[m].minBias = scoreObj.scores[m].bias_score;
+
+                    entry[m].avgBias += scoreObj.scores[m].bias_score;
+
+                    if (entry[m].maxSupport < scoreObj.scores[m].support_score)
+                        entry[m].maxSupport = scoreObj.scores[m].support_score;
+
+                    if (entry[m].minSupport > scoreObj.scores[m].support_score)
+                        entry[m].minSupport = scoreObj.scores[m].support_score;
+
+                    entry[m].avgSupport += scoreObj.scores[m].support_score;
+                    entry[m].totalEntries++;
+                }
+
+            } else {
+                let entry;
+
+                if (minMaxAvgData[scoreObj.date] === undefined) {
+                    minMaxAvgData[scoreObj.date] = {}
+                }
+
+                if (minMaxAvgData[scoreObj.date][scoreObj.goggle] !== undefined) {
+                    entry = minMaxAvgData[scoreObj.date][scoreObj.goggle];
+                } else {
+                    entry = minMaxAvgData[scoreObj.date][scoreObj.goggle] = {};
+                }
+
+                for (let method in methods) {
+                    let m = methods[method];
+
+                    entry[m] = {
+                        maxBias: scoreObj.scores[m].bias_score,
+                        minBias: scoreObj.scores[m].bias_score,
+                        avgBias: scoreObj.scores[m].bias_score,
+
+                        maxSupport: scoreObj.scores[m].support_score,
+                        minSupport: scoreObj.scores[m].support_score,
+                        avgSupport: scoreObj.scores[m].support_score,
+
+                        totalEntries: 1
+                    }
+                }
+
+            }
+
+        });
+
+        let dateKeys = Object.keys(minMaxAvgData);
+
+        for (let date in dateKeys) {
+            let d = Number.parseInt(dateKeys[date]);
+            let goggles = Object.keys(minMaxAvgData[d]);
+
+            for (let goggle in goggles) {
+                let g = goggles[goggle];
+
+                for (let method in methods) {
+                    let m = methods[method];
+                    let entry = minMaxAvgData[d][g][m];
+                    entry.avgBias = entry.avgBias / entry.totalEntries;
+                    entry.avgSupport = entry.avgSupport / entry.totalEntries;
+                }
+
+            }
+        }
+
+        return minMaxAvgData;
+    }
 }
 

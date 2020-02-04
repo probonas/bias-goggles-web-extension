@@ -87,6 +87,28 @@ export namespace extension {
             });
         }
 
+        export function getAllScoreData(callback: (scores: Array<Score>) => void) {
+            let scores = Array<Score>();
+
+            getAllDomainData((items) => {
+                let keys = Object.keys(items);
+
+                for (let key in keys) {
+
+                    if (items[key] && (<Score>items[key]).date !== undefined) {
+                        scores.push(<Score>items[key]);
+                    }
+                }
+
+                if (scores.length === 0) {
+                    callback(null);
+                } else {
+                    callback(scores);
+                }
+
+            });
+        }
+
         export function getAnalytics(callback: (item: AnalyticsData) => void) {
             get('analytics', callback);
         }

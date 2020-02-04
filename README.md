@@ -18,6 +18,15 @@ npm run-script build
 npm run-script test
 ```
 
+### How to load on Firefox
+
+Go to:
+```bash
+about:debugging
+```
+
+Then click 'This firefox' and then 'Load temporary plugin'
+
 ## Notes
 The extension is located under dist folder. For now use the dist/firefox files regardless
 of the browser you are installing it.

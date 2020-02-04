@@ -68,8 +68,9 @@ export type DomainData = {
 }
 
 export type Score = {
-    date: Date;
+    date: number; //ms since UTC epoch
     scores: Scores;
+    goggle: string;
 };
 
 type Scores = {
@@ -102,4 +103,28 @@ export type AnalyticsData = {
     data: {
         [key: number]: PopoverAnalytics
     };
+}
+
+export type MinMaxAvgScores = {
+    [key: number]: PerGoggle
+}
+
+type PerGoggle = {
+    [key: string]: PerMethodValue
+}
+
+type PerMethodValue = {
+    [key: string]: MinMaxAvgScoreValue
+}
+
+type MinMaxAvgScoreValue = {
+    maxBias: number,
+    minBias: number,
+    avgBias: number,
+
+    maxSupport: number,
+    minSupport: number,
+    avgSupport: number,
+
+    totalEntries: number
 }
