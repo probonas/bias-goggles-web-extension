@@ -30,13 +30,13 @@ export namespace userSettings {
     }
 
     export function update(settings: UserSettings, callback?: () => void) {
-        save(settings.method, settings.goggles, settings.forceRefreshLimit,
-            settings.syncEnabled, settings.enabled, settings.pagePopoverEnabled,
+        save(settings.method, settings.goggles, settings.syncEnabled,
+            settings.enabled, settings.pagePopoverEnabled,
             settings.scoreIndex, settings.gogglesList, callback);
     }
 
     export function save(method: string, googlesToUse: string,
-        limit: number, syncEnabled: boolean, enabled: boolean,
+        syncEnabled: boolean, enabled: boolean,
         pagePopoverEnabled: boolean, scoreIndex: number,
         gogglesList: Goggle[], callback?: () => void) {
 
@@ -45,7 +45,6 @@ export namespace userSettings {
         settings[settingsKey] = {
             method: method,
             goggles: googlesToUse,
-            forceRefreshLimit: limit,
             syncEnabled: syncEnabled,
             enabled: enabled,
             scoreIndex: scoreIndex,

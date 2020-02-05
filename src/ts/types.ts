@@ -46,7 +46,6 @@ export interface UserSettings {
     method: string;
     goggles: string;
     gogglesList: Goggle[];
-    forceRefreshLimit: number;
     syncEnabled: boolean;
     enabled: boolean;
     scoreIndex: number;
@@ -63,7 +62,7 @@ export type Dictionary = {
 }
 
 export type DomainData = {
-    limit: number;
+    hits: number;
     scoreIndex: number;
 }
 

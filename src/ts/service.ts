@@ -20,7 +20,7 @@ export namespace service {
 
             //@ts-ignore
             domainData[goggles + ' ' + ret.doc.domain] = {
-                limit: settings.forceRefreshLimit,
+                hits: 1,
                 scoreIndex: scoreIndex
             };
 

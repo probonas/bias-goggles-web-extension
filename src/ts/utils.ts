@@ -40,27 +40,35 @@ export namespace utils {
                     });
                 });
             });
-        } else if (domainData.limit === 0) {
-            console.log(goggles + ' ' + domain + " found. But data is considered obsolete. Updating scoreIndex!");
+        } else {
+            extension.storage.getScoreData(domainData.scoreIndex, (score, index) => {
+                let now = new Date();
+                let scoreDate = new Date(score.date);
 
-            service.query(domain, goggles, (domainData, scoreData) => {
-                extension.storage.set(domainData, () => {
-                    extension.storage.set(scoreData, () => {
+                if (now.getFullYear() > scoreDate.getFullYear() ||
+                    now.getMonth() > scoreDate.getMonth() ||
+                    now.getDay() > scoreDate.getDay()) {
+                    console.log(goggles + ' ' + domain + " found. But data is considered obsolete. Updating scoreIndex!");
+
+                    service.query(domain, goggles, (domainData, scoreData) => {
+                        extension.storage.set(domainData, () => {
+                            extension.storage.set(scoreData, () => {
+                                callback();
+                            });
+                        });
+                    });
+                } else {
+                    console.log(goggles + ' ' + domain + " found.");
+                    domainData.hits++;
+                    let appdata = {} as AppData;
+                    appdata[goggles + ' ' + domain] = domainData;
+
+                    extension.storage.set(appdata, () => {
                         callback();
                     });
-                });
-            });
-        } else {
-            console.log(goggles + '-' + domain + " found.");
-            domainData.limit--;
-            let appdata = {} as AppData;
-            appdata[goggles + ' ' + domain] = domainData;
-
-            extension.storage.set(appdata, () => {
-                callback();
+                }
             });
         }
-
     }
 
     export function getBiasDataForGoggles(url: string, goggles: string, callback?: (data: Score, scoreIndex: number) => void) {
