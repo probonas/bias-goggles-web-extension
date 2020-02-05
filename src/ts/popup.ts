@@ -1,7 +1,7 @@
 import { utils } from "./utils";
 import {
     OffOptions, Score, ContextBtnMsg,
-    DomainData, AppData
+    DomainData
 } from "./types";
 import { userSettings } from "./usersettings";
 import { extension } from "./storage";
@@ -647,7 +647,7 @@ extension.storage.getAllScoreData((scores) => {
                 'support', settings.gogglesList[i].id, settings.method)
             );
 
-            analyticsTab.insertAdjacentHTML('beforeend', '<br>');
+            analyticsTab.insertAdjacentHTML('beforeend', '<br>');   
         }
 
     });

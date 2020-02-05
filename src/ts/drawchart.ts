@@ -1,4 +1,4 @@
-import { Chart, PositionType, ChartTitleOptions, ChartData, ChartDataSets } from "chart.js";
+import { Chart, PositionType, ChartTitleOptions, ChartData, ChartDataSets, ChartTooltipItem } from "chart.js";
 import { Dictionary, MinMaxAvgScores } from "./types";
 
 import "chartjs-plugin-annotation";
@@ -15,6 +15,13 @@ export namespace chart {
     const green = 'rgb(0,100,0)';
     const red = 'rgb(139,0,0)';
     const grey = 'rgba(128,128,128,0.6)';
+
+    const dateOptions = {
+        weekday: 'short',
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric'
+    };
 
     class HSL {
         private hue: number;
@@ -253,13 +260,6 @@ export namespace chart {
         let selectedChartData = newSelectionDataObj();
 
         const updateDateInfo = (data: SelectionData) => {
-            let dateOptions = {
-                weekday: 'short',
-                day: 'numeric',
-                month: 'short',
-                year: 'numeric'
-            };
-
             let row = templates.get.TableRow(
                 data.a.toLocaleDateString('en-GB', dateOptions),
                 data.b.toLocaleDateString('en-GB', dateOptions),
@@ -299,7 +299,6 @@ export namespace chart {
                         startedFrom = this.value;
                     }
 
-                    console.log('started ', startedFrom)
                 },
                 onDrag: function () {
                     //@ts-ignore
@@ -321,10 +320,8 @@ export namespace chart {
                             tempSelectionData.a = dragValue;
                             tempSelectionData.b = selectedChartData.a;
                         }
-                    } else {
-                        throw new Error('what?');
                     }
-
+                    
                     updateDateInfo(tempSelectionData);
                 },
                 onDragEnd: function () {
@@ -436,6 +433,16 @@ export namespace chart {
             data: {},
             options: {
                 title: title,
+                tooltips: {
+                    callbacks: {
+                        title: (item: ChartTooltipItem[], data: ChartData) => {
+                            return (new Date(item[0].xLabel)).toLocaleDateString('en-GB', dateOptions);
+                        },
+                        label: (tooltipItem: ChartTooltipItem, data: ChartData) => {
+                            return data.datasets[tooltipItem.datasetIndex].label + ': ' + (<number>tooltipItem.yLabel).toFixed(5);
+                        }
+                    }
+                },
                 scales: {
                     xAxes: [{
                         type: 'time',
