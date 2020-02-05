@@ -74,7 +74,7 @@ export namespace extension {
             });
         }
 
-        export function getAllDomainData(callback: (items: AppData) => void): void {
+        export function getAllData(callback: (items: AppData) => void): void {
             get(null, (items: AppData) => {
                 //exclude user settings data
                 delete items['settings'];
@@ -88,15 +88,16 @@ export namespace extension {
         }
 
         export function getAllScoreData(callback: (scores: Array<Score>) => void) {
-            let scores = Array<Score>();
+            let scores = new Array<Score>();
 
-            getAllDomainData((items) => {
+            getAllData((items) => {
                 let keys = Object.keys(items);
 
                 for (let key in keys) {
+                    let k = keys[key];
 
-                    if (items[key] && (<Score>items[key]).date !== undefined) {
-                        scores.push(<Score>items[key]);
+                    if ((<Score>items[k]).date !== undefined) {
+                        scores.push(<Score>items[k]);
                     }
                 }
 
@@ -108,6 +109,30 @@ export namespace extension {
 
             });
         }
+
+        export function getAllDomainData(callback: (domainData: Map<string,DomainData>) => void) {
+            let datamap = new Map<string,DomainData>();
+
+            getAllData((items) => {
+                let keys = Object.keys(items);
+
+                for (let key in keys) {
+                    let k = keys[key];
+
+                    if ((<DomainData>items[k]).hits !== undefined) {
+                        datamap.set(k,<DomainData>items[k]);
+                    }
+
+                }
+
+                if (datamap.size === 0) {
+                    callback(null);
+                } else {
+                    callback(datamap);
+                }
+
+            });
+        };
 
         export function getAnalytics(callback: (item: AnalyticsData) => void) {
             get('analytics', callback);
