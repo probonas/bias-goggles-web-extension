@@ -1,14 +1,20 @@
-import { Chart, PositionType } from "chart.js";
-import { Dictionary } from "./types";
+import { Chart, PositionType, ChartTitleOptions, ChartData, ChartDataSets } from "chart.js";
+import { Dictionary, MinMaxAvgScores } from "./types";
 
 import "chartjs-plugin-annotation";
 import "chartjs-plugin-draggable";
 import { templates } from "./templates";
+import { extension } from "./storage";
+import { utils } from "./utils";
 
 export namespace chart {
 
     const dataColorLightnes = 70;
     const dataBorderLightness = 50;
+
+    const green = 'rgb(0,100,0)';
+    const red = 'rgb(139,0,0)';
+    const grey = 'rgba(128,128,128,0.6)';
 
     class HSL {
         private hue: number;
@@ -225,39 +231,39 @@ export namespace chart {
         }
     }
 
-    export function drawTimeline(vector: any, width: number, height: number,
-        elem: HTMLElement, id: string) {
+    export function drawTimeline(dataVector: ChartData, title: ChartTitleOptions, width: number, height: number,
+        elem: HTMLElement, bindedWith: Chart[]) {
 
         let timelineCanvas = createCanvas('timeline', width, height, elem);
 
         let timelineCtx = timelineCanvas.getContext('2d');
 
-        let selectedChartData = {
-            startDate: null as Date,
-            endDate: null as Date
+        type SelectionData = {
+            a: Date,
+            b: Date
         };
 
-        let fromID = 'line1';
-        let fromIndex = null;
-        let toID = 'line2';
-        let toIndex = null;
+        const newSelectionDataObj = (): SelectionData => {
+            return {
+                a: null,
+                b: null
+            } as SelectionData;
+        }
 
-        //@ts-ignore
-        let data: Array<Date> = vector.labels;
+        let selectedChartData = newSelectionDataObj();
 
-        fromIndex = Math.floor(data.length / 2 - data.length / 10);
-        toIndex = Math.floor(data.length / 2 + data.length / 10);
+        const updateDateInfo = (data: SelectionData) => {
+            let dateOptions = {
+                weekday: 'short',
+                day: 'numeric',
+                month: 'short',
+                year: 'numeric'
+            };
 
-        selectedChartData.startDate = data[fromIndex];
-        selectedChartData.endDate = data[toIndex];
-
-        console.log(fromIndex);
-        console.log(toIndex);
-
-        let startedFromLower: boolean;
-
-        const updateDateInfo = (data: any) => {
-            let row = templates.get.TableRow(data.startDate.toString(), data.endDate.toString(), false);
+            let row = templates.get.TableRow(
+                data.a.toLocaleDateString('en-GB', dateOptions),
+                data.b.toLocaleDateString('en-GB', dateOptions),
+                false);
             let table = templates.get.Table('From Date:', 'To Date:', row);
 
             while (dateInfoDiv.hasChildNodes())
@@ -266,50 +272,16 @@ export namespace chart {
             dateInfoDiv.insertAdjacentHTML('beforeend', table);
         }
 
-        const makeDraggableLine = (index: Date, id: string) => {
+        let tempSelectionData = newSelectionDataObj();
+        let startedFrom: Date = null;
+
+        const slider = (index: Date, id: string) => {
             return {
                 id: id,
                 type: 'line',
                 mode: 'vertical',
                 scaleID: 'x-axis-0',
                 draggable: true,
-                onDragStart: function () {
-
-                    if (this.value === selectedChartData.startDate) {
-                        startedFromLower = true;
-                    } else if (this.value === selectedChartData.endDate) {
-                        startedFromLower = false;
-                    } else {
-                        console.log(this.value, selectedChartData.startDate, selectedChartData.endDate);
-                        throw new Error('nonono');
-                    }
-
-                },
-                onDrag: function () {
-
-                    if (startedFromLower) {
-
-                        if (this.value >= selectedChartData.endDate) {
-                            startedFromLower = false;
-                            selectedChartData.startDate = selectedChartData.endDate;
-                            selectedChartData.endDate = this.value;
-                        } else {
-                            selectedChartData.startDate = this.value;
-                        }
-
-                    } else {
-
-                        if (this.value <= selectedChartData.startDate) {
-                            startedFromLower = true;
-                            selectedChartData.endDate = selectedChartData.startDate;
-                            selectedChartData.startDate = this.value;
-                        } else {
-                            selectedChartData.endDate = this.value;
-                        }
-                    }
-
-                    updateDateInfo(selectedChartData);
-                },
                 value: index,
                 borderWidth: 3,
                 borderColor: 'black',
@@ -317,14 +289,83 @@ export namespace chart {
                     enabled: true,
                     position: "center",
                     content: ' '
+                },
+                onDragStart: function () {
+                    //@ts-ignore
+                    if (this.value._d !== undefined) {
+                        //@ts-ignore
+                        startedFrom = this.value._d;
+                    } else {
+                        startedFrom = this.value;
+                    }
+
+                    console.log('started ', startedFrom)
+                },
+                onDrag: function () {
+                    //@ts-ignore
+                    let dragValue = this.value._d;
+
+                    if (startedFrom === selectedChartData.a) {
+                        if (dragValue < selectedChartData.b) {
+                            tempSelectionData.a = dragValue;
+                            tempSelectionData.b = selectedChartData.b;
+                        } else {
+                            tempSelectionData.a = selectedChartData.b;
+                            tempSelectionData.b = dragValue;
+                        }
+                    } else if (startedFrom === selectedChartData.b) {
+                        if (dragValue > selectedChartData.a) {
+                            tempSelectionData.a = selectedChartData.a;
+                            tempSelectionData.b = dragValue;
+                        } else {
+                            tempSelectionData.a = dragValue;
+                            tempSelectionData.b = selectedChartData.a;
+                        }
+                    } else {
+                        throw new Error('what?');
+                    }
+
+                    updateDateInfo(tempSelectionData);
+                },
+                onDragEnd: function () {
+                    selectedChartData.a = tempSelectionData.a;
+                    selectedChartData.b = tempSelectionData.b;
+
+                    timeline.options.plugins.updateBinded();
                 }
             }
         }
 
-        let timelineChart = new Chart(timelineCtx, {
+        let timeline = new Chart(timelineCtx, {
             type: 'line',
-            data: vector,
+            data: dataVector,
+            plugins: [{
+                beforeInit: (chartInstance: Chart) => {
+                    //@ts-ignore
+                    let data: Array<Date> = dataVector.labels;
+
+                    let fromIndex = Math.floor(data.length / 2 - data.length / 10);
+                    let toIndex = Math.floor(data.length / 2 + data.length / 10);
+
+                    selectedChartData.a = data[fromIndex];
+                    selectedChartData.b = data[toIndex];
+
+                    //add slider annotaions
+                    //@ts-ignore
+                    chartInstance.options.annotation.annotations.push(slider(selectedChartData.a, 'slider1'));
+                    //@ts-ignore
+                    chartInstance.options.annotation.annotations.push(slider(selectedChartData.b, 'slider2'));
+
+                    chartInstance.options.plugins.updateBinded();
+                }
+            }, {
+                afterRender: () => {
+                    //draw date info table when chart is rendered for the first time
+                    updateDateInfo(selectedChartData);
+                }
+            }],
             options: {
+                title: title,
                 tooltips: {
                     intersect: false, //use nearest
                     mode: 'index',
@@ -348,10 +389,7 @@ export namespace chart {
                         ticks: {
                             autoSkip: true,
                         },
-                        id: 'x-axis-0',
-                        scaleLabel: {
-                            labelString: 'Extension Usage'
-                        }
+                        id: 'x-axis-0'
                     }],
                     yAxes: [{
                         position: "left",
@@ -365,18 +403,146 @@ export namespace chart {
                 annotation: {
                     drawTime: 'afterDatasetsDraw',
                     events: ['click'],
-                    annotations: [
-                        makeDraggableLine(selectedChartData.startDate, fromID),
-                        makeDraggableLine(selectedChartData.endDate, toID)
-                    ]
+                    annotations: []
+                },
+                plugins: {
+                    updateBinded: () => {
+                        extension.storage.getAllScoreData((scores) => {
+                            let selected = utils.filterScoreData(scores, selectedChartData.a, selectedChartData.b);
+                            let minMaxAvgData = utils.calculateMinMaxAvgScoresPerGoggleAndMethod(selected);
+
+                            bindedWith.forEach((chart) => {
+                                chart.options.plugins.updateData(chart, minMaxAvgData);
+                            });
+                        });
+                    }
                 }
             }
         });
 
         let dateInfoDiv = document.createElement('div');
         elem.appendChild(dateInfoDiv);
-        updateDateInfo(selectedChartData);
+    }
 
-        /* add graphs here */
+    export function drawLineChartForTimeline(title: ChartTitleOptions, width: number, height: number, pos: HTMLElement,
+        type: 'bias' | 'support', goggle: string, method: string) {
+
+        let lineCanvas = createCanvas(type + goggle, width, height, pos);
+
+        let lineContext = lineCanvas.getContext('2d');
+
+        return new Chart(lineContext, {
+            type: 'line',
+            data: {},
+            options: {
+                title: title,
+                scales: {
+                    xAxes: [{
+                        type: 'time',
+                        time: {
+                            unit: "day"
+                        },
+                        ticks: {
+                            autoSkip: true,
+                        }
+                    }],
+                    yAxes: [{
+                        ticks: {
+                            suggestedMax: 1,
+                            suggestedMin: 0,
+                            stepSize: 0.05
+                        }
+                    }]
+                },
+                plugins: {
+                    updateData: (chart: Chart, data: MinMaxAvgScores) => {
+                        while (chart.data.labels.length !== 0)
+                            chart.data.labels.pop();
+
+                        while (chart.data.datasets.length !== 0)
+                            chart.data.datasets.pop();
+
+                        let isBiasGraph = type === 'bias';
+
+                        let dates = Object.keys(data);
+
+                        let datesLabels = new Array<Date>();
+                        let minBiasDataSets = new Array<number>();
+                        let maxBiasDataSets = new Array<number>();
+                        let avgBiasDataSets = new Array<number>();
+
+                        let minSupportDataSets = new Array<number>();
+                        let maxSupportDataSets = new Array<number>();
+                        let avgSupportDataSets = new Array<number>();
+
+                        for (let date in dates) {
+                            let d = Number.parseInt(dates[date]);
+
+                            //make labels for chart from timestamps
+                            datesLabels.push(new Date(d));
+
+                            if (data[d][goggle] !== undefined) {
+                                if (isBiasGraph) {
+                                    minBiasDataSets.push(data[d][goggle][method].minBias);
+                                    maxBiasDataSets.push(data[d][goggle][method].maxBias);
+                                    avgBiasDataSets.push(data[d][goggle][method].avgBias);
+                                } else {
+                                    minSupportDataSets.push(data[d][goggle][method].minSupport);
+                                    maxSupportDataSets.push(data[d][goggle][method].maxSupport);
+                                    avgSupportDataSets.push(data[d][goggle][method].avgSupport);
+                                }
+                            } else {
+                                if (isBiasGraph) {
+                                    minBiasDataSets.push(0);
+                                    maxBiasDataSets.push(0);
+                                    avgBiasDataSets.push(0);
+                                } else {
+                                    minSupportDataSets.push(0);
+                                    maxSupportDataSets.push(0);
+                                    avgSupportDataSets.push(0);
+                                }
+                            }
+                        }
+
+                        datesLabels.forEach((date) => {
+                            //@ts-ignore
+                            chart.data.labels.push(date);
+                        });
+
+                        const datasetWrapper = (label: string, data_: Array<number>, color: string, dashed: boolean) => {
+                            if (dashed) {
+                                return {
+                                    label: label,
+                                    data: data_,
+                                    borderColor: color,
+                                    fill: false,
+                                    borderDash: [10, 10],
+                                    cubicInterpolationMode: 'monotone'
+                                } as ChartDataSets
+                            } else {
+                                return {
+                                    label: label,
+                                    data: data_,
+                                    borderColor: color,
+                                    fill: false
+                                } as ChartDataSets
+                            }
+                        };
+
+                        if (isBiasGraph) {
+                            chart.data.datasets.push(datasetWrapper('Min Bias', minBiasDataSets, green, true));
+                            chart.data.datasets.push(datasetWrapper('Max Bias', maxBiasDataSets, red, true));
+                            chart.data.datasets.push(datasetWrapper('Average Bias', avgBiasDataSets, grey, false));
+                        } else {
+                            chart.data.datasets.push(datasetWrapper('Min Support', minSupportDataSets, green, true));
+                            chart.data.datasets.push(datasetWrapper('Max Support', maxSupportDataSets, red, true));
+                            chart.data.datasets.push(datasetWrapper('Average Support', avgSupportDataSets, grey, false));
+                        }
+
+                        chart.update();
+                    }
+                }
+            }
+        });
     }
 }

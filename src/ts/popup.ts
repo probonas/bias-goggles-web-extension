@@ -1,7 +1,7 @@
 import { utils } from "./utils";
 import {
     OffOptions, Score, ContextBtnMsg,
-    DomainData
+    DomainData, AppData
 } from "./types";
 import { userSettings } from "./usersettings";
 import { extension } from "./storage";
@@ -17,6 +17,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 
 import { uncrawled } from "./uncrawled";
 import { chart } from "./drawchart";
+import { settings } from "cluster";
 
 const navId = 'nav-bar';
 const onBtnId = 'bg-onbtn';
@@ -576,27 +577,82 @@ const analyticsTabID = 'analytics';
 
 let analyticsTab = document.getElementById(analyticsTabID);
 
-let fakeDates = new Array();
-let fakeValues = new Array<number>();
+let analyticsCharts = Array<Chart>();
 
-let colors = new Array();
-//mock data
-for (let i = 1; i < 4; i++) {
-    for (let j = 1; j < 15; j++) {
-        fakeDates.push(new Date(2020, i, j));
+extension.storage.getAllScoreData((scores) => {
 
-        fakeValues.push(Math.random() * 50);
-    }
-}
+    let dates = new Array<Date>();
+    let values = new Array<number>();
+    let count = 0;
+    let d = null;
 
-chart.drawTimeline({
-    labels: fakeDates,
-    datasets: [
-        {
-            label: 'Usage',
-            data: fakeValues,
-            borderWidth: 1,
-            backgroundColor: 'lightgrey'
+    for (let i in scores) {
+
+        if (d === null) {
+            d = scores[i].date;
         }
-    ]
-}, 300, 100, analyticsTab, 'line-' + cards.getUniqueID());
+
+        if (d !== scores[i].date) {
+            dates.push(new Date(d));
+            values.push(count);
+
+            d = scores[i].date;
+            count = 0;
+        } else {
+            count++;
+        }
+
+    }
+
+    chart.drawTimeline(
+        {
+            //@ts-ignore
+            labels: dates,
+            datasets: [
+                {
+                    data: values,
+                    borderWidth: 1,
+                    backgroundColor: 'lightgrey'
+                }
+            ]
+        },
+        {
+            display: true,
+            text: 'Extension Usage',
+            position: 'top'
+        },
+        300, 100, analyticsTab, analyticsCharts);
+
+    userSettings.get((settings) => {
+
+        for (let i = 0; i < settings.gogglesList.length; i++) {
+
+            analyticsCharts.push(
+                chart.drawLineChartForTimeline(        {
+                    display: true,
+                    text: 'bias for ' + settings.gogglesList[i].name,
+                    position: 'bottom'
+                },400, 200, analyticsTab, 
+                'bias', settings.gogglesList[i].id, settings.method)
+            );
+
+            analyticsTab.insertAdjacentHTML('beforeend', '<br>');
+            
+            analyticsCharts.push(
+                chart.drawLineChartForTimeline(        {
+                    display: true,
+                    text: 'support for ' + settings.gogglesList[i].name,
+                    position: 'bottom'
+                },400, 200, analyticsTab, 
+                'support', settings.gogglesList[i].id, settings.method)
+            );
+
+            analyticsTab.insertAdjacentHTML('beforeend', '<br>');
+        }
+
+    });
+});
+
+
+
+
