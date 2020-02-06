@@ -267,88 +267,90 @@ saveSettingsBtn.addEventListener('click', () => {
 });
 
 function showDomainDataUnderSettings() {
-    extension.storage.getAllDomainData((data) => {
+    /*
+     extension.storage.getAllDomainData((data) => {
         let domainDataOverviewDiv = document.getElementById('domainDataOverview');
-        let domainCards: string = '';
-
-        let innerTables = '';
-
-        //console.log(data);
-
-        let formattedData: { [key: string]: { [key: string]: any } } = {};
-
-        for (let key in data) {
-
-            if (!isNaN(parseInt(key)))
-                continue;
-
-            let goggle = key.split(' ')[0];
-            let domain = key.split(' ')[1];
-
-            let domainData = <DomainData>data[key];
-
-            //console.log(domainData.scoreIndex);
-
-            let scores = (<Score>data[domainData.scoreIndex]).scores;
-
-            if (typeof formattedData[domain] === 'undefined')
-                formattedData[domain] = {};
-
-            formattedData[domain][goggle] = {
-                scores
-            };
-        }
-
-        for (let key in Object.keys(formattedData)) {
-            let domain = Object.keys(formattedData)[key];
-            innerTables = '';
-
-            for (let goggleKey in Object.keys(formattedData[domain])) {
-                let goggleName = Object.keys(formattedData[domain])[goggleKey];
-
-                let biasData = formattedData[domain][goggleName];
-
-                //@ts-ignore
-                let pr = biasData.scores['pr'];
-                //@ts-ignore
-                let lt = biasData.scores['lt'];
-                //@ts-ignore
-                let ic = biasData.scores['ic'];
-
-                let unrollscore = (scoreValue: any) => {
-                    let ret = '';
-
-                    for (let property in Object.keys(scoreValue)) {
-                        let propertyName = Object.keys(scoreValue)[property];
-
-                        if (propertyName === 'vector') {
-                            ret += templates.get.TableRow('Vectors', 'Support', true);
-
-                            for (let vectorKey in Object.keys(scoreValue[propertyName])) {
-                                let vectorName = Object.keys(scoreValue[propertyName])[vectorKey];
-
-                                ret += templates.get.TableRow(vectorName, scoreValue[propertyName][vectorName], false);
-                            }
-
-                        } else {
-                            ret += templates.get.TableRow(propertyName, scoreValue[propertyName], false);
-                        }
-                    }
-
-                    return ret;
-                }
-
-                let rows = unrollscore(pr);
-                //rows += unrollscore(lt);
-                //rows += unrollscore(ic);
-
-                innerTables += templates.get.Table('Goggles:', goggleName, rows) + '<br>';
-            }
-            domainCards += templates.get.AccordionCard(domain, innerTables, cards.getUniqueID(), 'domainDataOverview');
-        }
-
-        domainDataOverviewDiv.insertAdjacentHTML('afterbegin', domainCards);
-    });
+         let domainCards: string = '';
+ 
+         let innerTables = '';
+ 
+         //console.log(data);
+ 
+         let formattedData: { [key: string]: { [key: string]: any } } = {};
+ 
+         for (let key in data) {
+ 
+             if (!isNaN(parseInt(key)))
+                 continue;
+ 
+             let goggle = key.split(' ')[0];
+             let domain = key.split(' ')[1];
+ 
+             let domainData = <DomainData>data[key];
+ 
+             //console.log(domainData.scoreIndex);
+ 
+             let scores = (<Score>data[domainData.scoreIndex]).scores;
+ 
+             if (typeof formattedData[domain] === 'undefined')
+                 formattedData[domain] = {};
+ 
+             formattedData[domain][goggle] = {
+                 scores
+             };
+         }
+ 
+         for (let key in Object.keys(formattedData)) {
+             let domain = Object.keys(formattedData)[key];
+             innerTables = '';
+ 
+             for (let goggleKey in Object.keys(formattedData[domain])) {
+                 let goggleName = Object.keys(formattedData[domain])[goggleKey];
+ 
+                 let biasData = formattedData[domain][goggleName];
+ 
+                 //@ts-ignore
+                 let pr = biasData.scores['pr'];
+                 //@ts-ignore
+                 let lt = biasData.scores['lt'];
+                 //@ts-ignore
+                 let ic = biasData.scores['ic'];
+ 
+                 let unrollscore = (scoreValue: any) => {
+                     let ret = '';
+ 
+                     for (let property in Object.keys(scoreValue)) {
+                         let propertyName = Object.keys(scoreValue)[property];
+ 
+                         if (propertyName === 'vector') {
+                             ret += templates.get.TableRow('Vectors', 'Support', true);
+ 
+                             for (let vectorKey in Object.keys(scoreValue[propertyName])) {
+                                 let vectorName = Object.keys(scoreValue[propertyName])[vectorKey];
+ 
+                                 ret += templates.get.TableRow(vectorName, scoreValue[propertyName][vectorName], false);
+                             }
+ 
+                         } else {
+                             ret += templates.get.TableRow(propertyName, scoreValue[propertyName], false);
+                         }
+                     }
+ 
+                     return ret;
+                 }
+ 
+                 let rows = unrollscore(pr);
+                 //rows += unrollscore(lt);
+                 //rows += unrollscore(ic);
+ 
+                 innerTables += templates.get.Table('Goggles:', goggleName, rows) + '<br>';
+             }
+             domainCards += templates.get.AccordionCard(domain, innerTables, cards.getUniqueID(), 'domainDataOverview');
+         }
+ 
+         domainDataOverviewDiv.insertAdjacentHTML('afterbegin', domainCards);
+     });
+     */
 }
 
 function showAnalyticsDataUnderSettings() {
@@ -586,17 +588,17 @@ extension.storage.getAllScoreData((scores) => {
     let count = 0;
     let d = null;
 
-    for (let i in scores) {
-
+    for (let [key,value] of scores) {
+    
         if (d === null) {
-            d = scores[i].date;
+            d = value.date;
         }
 
-        if (d !== scores[i].date) {
+        if (d !== value.date) {
             dates.push(new Date(d));
             values.push(count);
 
-            d = scores[i].date;
+            d = value.date;
             count = 0;
         } else {
             count++;
@@ -628,26 +630,48 @@ extension.storage.getAllScoreData((scores) => {
         for (let i = 0; i < settings.gogglesList.length; i++) {
 
             analyticsCharts.push(
-                chart.drawLineChartForTimeline(        {
+                chart.drawLineChartForTimeline({
                     display: true,
                     text: 'bias for ' + settings.gogglesList[i].name,
                     position: 'bottom'
-                },400, 200, analyticsTab, 
-                'bias', settings.gogglesList[i].id, settings.method)
+                }, 400, 200, analyticsTab,
+                    'bias', settings.gogglesList[i].id, settings.method)
             );
 
             analyticsTab.insertAdjacentHTML('beforeend', '<br>');
-            
+
             analyticsCharts.push(
-                chart.drawLineChartForTimeline(        {
+                chart.drawLineChartForTimeline({
                     display: true,
                     text: 'support for ' + settings.gogglesList[i].name,
                     position: 'bottom'
-                },400, 200, analyticsTab, 
-                'support', settings.gogglesList[i].id, settings.method)
+                }, 400, 200, analyticsTab,
+                    'support', settings.gogglesList[i].id, settings.method)
             );
 
-            analyticsTab.insertAdjacentHTML('beforeend', '<br>');   
+            analyticsTab.insertAdjacentHTML('beforeend', '<br>');
+
+            analyticsCharts.push(
+                chart.drawStackedBar({
+                    display: true,
+                    text: 'top biased domains for ' + settings.gogglesList[i].name,
+                    position: 'bottom'
+                }, 400, 200, analyticsTab,
+                    'top bias', settings.gogglesList[i].id, settings.method)
+            );
+
+            analyticsTab.insertAdjacentHTML('beforeend', '<br>');
+
+            analyticsCharts.push(
+                chart.drawStackedBar({
+                    display: true,
+                    text: 'top support domains for ' + settings.gogglesList[i].name,
+                    position: 'bottom'
+                }, 400, 200, analyticsTab,
+                    'top support', settings.gogglesList[i].id, settings.method)
+            );
+
+            analyticsTab.insertAdjacentHTML('beforeend', '<br>');
         }
 
     });

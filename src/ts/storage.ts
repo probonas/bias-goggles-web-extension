@@ -87,8 +87,8 @@ export namespace extension {
             });
         }
 
-        export function getAllScoreData(callback: (scores: Array<Score>) => void) {
-            let scores = new Array<Score>();
+        export function getAllScoreData(callback: (scores: Map<number, Score>) => void) {
+            let scores = new Map<number, Score>();
 
             getAllData((items) => {
                 let keys = Object.keys(items);
@@ -97,11 +97,11 @@ export namespace extension {
                     let k = keys[key];
 
                     if ((<Score>items[k]).date !== undefined) {
-                        scores.push(<Score>items[k]);
+                        scores.set(parseInt(key), <Score>items[k]);
                     }
                 }
 
-                if (scores.length === 0) {
+                if (scores.size === 0) {
                     callback(null);
                 } else {
                     callback(scores);
@@ -110,8 +110,8 @@ export namespace extension {
             });
         }
 
-        export function getAllDomainData(callback: (domainData: Map<string,DomainData>) => void) {
-            let datamap = new Map<string,DomainData>();
+        export function getAllDomainData(callback: (domainData: Map<string, DomainData>) => void) {
+            let datamap = new Map<string, DomainData>();
 
             getAllData((items) => {
                 let keys = Object.keys(items);
@@ -119,8 +119,8 @@ export namespace extension {
                 for (let key in keys) {
                     let k = keys[key];
 
-                    if ((<DomainData>items[k]).hits !== undefined) {
-                        datamap.set(k,<DomainData>items[k]);
+                    if ((<DomainData>items[k]).scoreIndex !== undefined) {
+                        datamap.set(k, <DomainData>items[k]);
                     }
 
                 }

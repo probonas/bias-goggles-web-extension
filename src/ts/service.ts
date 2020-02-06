@@ -20,8 +20,8 @@ export namespace service {
 
             //@ts-ignore
             domainData[goggles + ' ' + ret.doc.domain] = {
-                hits: 1,
-                scoreIndex: scoreIndex
+                scoreIndex: scoreIndex,
+                prevIndices: new Array<number>()
             };
 
             scoreData[scoreIndex] = {
@@ -46,6 +46,7 @@ export namespace service {
                         vector: ret.doc.pr.vector
                     }
                 },
+                hits: 1,
                 date: new Date().getTime(),
                 goggle: settings.goggles
             };

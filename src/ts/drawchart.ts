@@ -1,5 +1,5 @@
 import { Chart, PositionType, ChartTitleOptions, ChartData, ChartDataSets, ChartTooltipItem } from "chart.js";
-import { Dictionary, MinMaxAvgScores } from "./types";
+import { Dictionary, MinMaxAvgScores, Score, DomainData } from "./types";
 
 import "chartjs-plugin-annotation";
 import "chartjs-plugin-draggable";
@@ -321,7 +321,7 @@ export namespace chart {
                             tempSelectionData.b = selectedChartData.a;
                         }
                     }
-                    
+
                     updateDateInfo(tempSelectionData);
                 },
                 onDragEnd: function () {
@@ -405,11 +405,19 @@ export namespace chart {
                 plugins: {
                     updateBinded: () => {
                         extension.storage.getAllScoreData((scores) => {
-                            let selected = utils.filterScoreData(scores, selectedChartData.a, selectedChartData.b);
-                            let minMaxAvgData = utils.calculateMinMaxAvgScoresPerGoggleAndMethod(selected);
+                            extension.storage.getAllDomainData((domains) => {
 
-                            bindedWith.forEach((chart) => {
-                                chart.options.plugins.updateData(chart, minMaxAvgData);
+                                let scoresForSelection = utils.filterScoreData(scores, selectedChartData.a, selectedChartData.b);
+                                console.log('filtered ', scoresForSelection);
+
+                                let domainsForSelection = utils.filterDomainData(scoresForSelection, domains);
+                                console.log('filtered domain', domainsForSelection);
+
+                                let minMaxAvgData = utils.calculateMinMaxAvgScoresPerGoggleAndMethod(scoresForSelection);
+
+                                bindedWith.forEach((chart) => {
+                                    chart.options.plugins.updateData(chart, minMaxAvgData, scores, domains);
+                                });
                             });
                         });
                     }
@@ -545,6 +553,41 @@ export namespace chart {
                             chart.data.datasets.push(datasetWrapper('Max Support', maxSupportDataSets, red, true));
                             chart.data.datasets.push(datasetWrapper('Average Support', avgSupportDataSets, grey, false));
                         }
+
+                        chart.update();
+                    }
+                }
+            }
+        });
+    }
+
+    export function drawStackedBar(title: ChartTitleOptions, width: number, height: number, pos: HTMLElement,
+        type: 'top bias' | 'top support', goggle: string, method: string) {
+
+        let stackedCanvas = createCanvas(type + goggle, width, height, pos);
+
+        let stackedContext = stackedCanvas.getContext('2d');
+
+        return new Chart(stackedContext, {
+            type: 'bar',
+            data: {},
+            options: {
+                title: title,
+                scales: {
+                    xAxes: [{
+                        type: 'time',
+                        time: {
+                            unit: "day"
+                        },
+                        ticks: {
+                            autoSkip: true,
+                        }
+                    }],
+                },
+                plugins: {
+                    updateData: (chart: Chart, minMaxAvg: MinMaxAvgScores, scores: Array<Score>, domains: Map<string, DomainData>) => {
+
+                        //let data = utils.getTop(type, minMaxAvg, scores, domains);
 
                         chart.update();
                     }

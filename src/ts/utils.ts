@@ -50,7 +50,11 @@ export namespace utils {
                     now.getDay() > scoreDate.getDay()) {
                     console.log(goggles + ' ' + domain + " found. But data is considered obsolete. Updating scoreIndex!");
 
+                    domainData.prevIndices.push(domainData.scoreIndex);
+                    let oldIndices = domainData.prevIndices;
+
                     service.query(domain, goggles, (domainData, scoreData) => {
+                        (<DomainData>(Object.values(domainData)[0])).prevIndices = oldIndices;
                         extension.storage.set(domainData, () => {
                             extension.storage.set(scoreData, () => {
                                 callback();
@@ -59,9 +63,9 @@ export namespace utils {
                     });
                 } else {
                     console.log(goggles + ' ' + domain + " found.");
-                    domainData.hits++;
+                    score.hits++;
                     let appdata = {} as AppData;
-                    appdata[goggles + ' ' + domain] = domainData;
+                    appdata[index] = score;
 
                     extension.storage.set(appdata, () => {
                         callback();
@@ -165,22 +169,15 @@ export namespace utils {
         });
     }
 
-    export function filterScoreData(data: Array<Score>, from: Date, to: Date): Array<Score> | null {
-        let scores = new Array<Score>();
+    export function filterScoreData(data: Map<number, Score>, from: Date, to: Date): Map<number, Score> | null {
+        let scores = new Map<number, Score>();
 
-        for (let i = 0; i < data.length; i++) {
-            let score: Score = data[i];
+        data.forEach((value, key) => {
+            if (value.date >= from.getTime() && value.date <= to.getTime())
+                scores.set(key, value);
+        });
 
-            if (score.date >= from.getTime() && score.date <= to.getTime()) {
-                scores.push(score);
-            }
-
-            if (score.date > to.getTime()) {
-                break;
-            }
-        }
-
-        if (scores.length === 0) {
+        if (scores.size === 0) {
             return null;
         } else {
             return scores;
@@ -188,15 +185,38 @@ export namespace utils {
 
     }
 
+    export function filterDomainData(indices: Map<number, Score>, domainData: Map<string, DomainData>): Map<string, DomainData> | null {
+        let domains = new Map<string, DomainData>();
 
-    export function calculateMinMaxAvgScoresPerGoggleAndMethod(scores: Array<Score>): MinMaxAvgScores {
+        indices.forEach((value, scoreIndex) => {
+            for (let [key, value] of domainData) {
+                if (scoreIndex === value.scoreIndex) {
+                    domains.set(key, value);
+                    break;
+                } else if (value.prevIndices.includes(scoreIndex)) {
+                    domains.set(key, value);
+                    break;
+                }
+
+            }
+
+        });
+
+        if (domains.size === 0) {
+            return null;
+        } else {
+            return domains;
+        }
+    }
+
+    export function calculateMinMaxAvgScoresPerGoggleAndMethod(scores: Map<number, Score>): MinMaxAvgScores {
         let minMaxAvgData: MinMaxAvgScores = {};
 
-        if (scores === null || scores.length === 0) {
+        if (scores === null || scores.size === 0) {
             return null;
         }
 
-        let methods = Object.keys(scores[0].scores);
+        let methods = Object.keys((<Score>scores.values().next().value).scores)
 
         scores.forEach((scoreObj) => {
 
@@ -278,6 +298,17 @@ export namespace utils {
         }
 
         return minMaxAvgData;
+    }
+
+    export function getTop(type: 'top bias' | 'top support', minMaxAvgData: MinMaxAvgScores,
+        scores: Array<Score>, domainData: Map<string, DomainData>) {
+
+        if (type === 'top bias') {
+
+        } else {
+
+        }
+
     }
 }
 

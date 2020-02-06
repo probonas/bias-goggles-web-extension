@@ -62,14 +62,15 @@ export type Dictionary = {
 }
 
 export type DomainData = {
-    hits: number;
     scoreIndex: number;
+    prevIndices: Array<number>
 }
 
 export type Score = {
     date: number; //ms since UTC epoch
     scores: Scores;
     goggle: string;
+    hits: number;
 };
 
 type Scores = {
