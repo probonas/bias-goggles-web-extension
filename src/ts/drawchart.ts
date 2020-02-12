@@ -1,5 +1,5 @@
 import { Chart, PositionType, ChartTitleOptions, ChartData, ChartDataSets, ChartTooltipItem } from "chart.js";
-import { Dictionary, MinMaxAvgScores, Score, DomainData } from "./types";
+import { Dictionary, Score, PoliticalParties } from "./types";
 
 import "chartjs-plugin-annotation";
 import "chartjs-plugin-draggable";
@@ -72,6 +72,8 @@ export namespace chart {
         }
 
         public next(): HSL {
+            if(this.last === this.colors.length)
+                this.last = 0;
             return this.colors[this.last++];
         }
 
@@ -405,19 +407,19 @@ export namespace chart {
                 plugins: {
                     updateBinded: () => {
                         extension.storage.getAllScoreData((scores) => {
-                            extension.storage.getAllDomainData((domains) => {
+                            extension.storage.getAllDomainDataInverse((domains) => {
 
                                 let scoresForSelection = utils.filterScoreData(scores, selectedChartData.a, selectedChartData.b);
-                                console.log('filtered ', scoresForSelection);
+                                //console.log('filtered scores', scoresForSelection);
 
                                 let domainsForSelection = utils.filterDomainData(scoresForSelection, domains);
-                                console.log('filtered domain', domainsForSelection);
+                                //console.log('filtered domains', domainsForSelection);
 
-                                let minMaxAvgData = utils.calculateMinMaxAvgScoresPerGoggleAndMethod(scoresForSelection);
 
                                 bindedWith.forEach((chart) => {
-                                    chart.options.plugins.updateData(chart, minMaxAvgData, scores, domains);
+                                    chart.options.plugins.updateData(chart, scoresForSelection, domainsForSelection);
                                 });
+
                             });
                         });
                     }
@@ -463,14 +465,15 @@ export namespace chart {
                     }],
                     yAxes: [{
                         ticks: {
-                            suggestedMax: 1,
-                            suggestedMin: 0,
-                            stepSize: 0.05
+                            min: 0,
+                            stepSize: 0.005
                         }
                     }]
                 },
                 plugins: {
-                    updateData: (chart: Chart, data: MinMaxAvgScores) => {
+                    updateData: (chart: Chart, scores: Map<number, Score>) => {
+                        let minMaxAvgData = utils.calculateMinMaxAvgScores(scores, goggle, method);
+
                         while (chart.data.labels.length !== 0)
                             chart.data.labels.pop();
 
@@ -479,7 +482,7 @@ export namespace chart {
 
                         let isBiasGraph = type === 'bias';
 
-                        let dates = Object.keys(data);
+                        let dates = Object.keys(minMaxAvgData);
 
                         let datesLabels = new Array<Date>();
                         let minBiasDataSets = new Array<number>();
@@ -496,15 +499,15 @@ export namespace chart {
                             //make labels for chart from timestamps
                             datesLabels.push(new Date(d));
 
-                            if (data[d][goggle] !== undefined) {
+                            if (minMaxAvgData[d][goggle] !== undefined) {
                                 if (isBiasGraph) {
-                                    minBiasDataSets.push(data[d][goggle][method].minBias);
-                                    maxBiasDataSets.push(data[d][goggle][method].maxBias);
-                                    avgBiasDataSets.push(data[d][goggle][method].avgBias);
+                                    minBiasDataSets.push(minMaxAvgData[d][goggle][method].minBias);
+                                    maxBiasDataSets.push(minMaxAvgData[d][goggle][method].maxBias);
+                                    avgBiasDataSets.push(minMaxAvgData[d][goggle][method].avgBias);
                                 } else {
-                                    minSupportDataSets.push(data[d][goggle][method].minSupport);
-                                    maxSupportDataSets.push(data[d][goggle][method].maxSupport);
-                                    avgSupportDataSets.push(data[d][goggle][method].avgSupport);
+                                    minSupportDataSets.push(minMaxAvgData[d][goggle][method].minSupport);
+                                    maxSupportDataSets.push(minMaxAvgData[d][goggle][method].maxSupport);
+                                    avgSupportDataSets.push(minMaxAvgData[d][goggle][method].avgSupport);
                                 }
                             } else {
                                 if (isBiasGraph) {
@@ -562,9 +565,9 @@ export namespace chart {
     }
 
     export function drawStackedBar(title: ChartTitleOptions, width: number, height: number, pos: HTMLElement,
-        type: 'top bias' | 'top support', goggle: string, method: string) {
+        goggle: string, method: string) {
 
-        let stackedCanvas = createCanvas(type + goggle, width, height, pos);
+        let stackedCanvas = createCanvas('top biased based on support' + goggle, width, height, pos);
 
         let stackedContext = stackedCanvas.getContext('2d');
 
@@ -573,6 +576,12 @@ export namespace chart {
             data: {},
             options: {
                 title: title,
+                tooltips: {
+                    mode: 'single'
+                },
+                legend: {
+                    display: false,
+                },
                 scales: {
                     xAxes: [{
                         type: 'time',
@@ -581,13 +590,86 @@ export namespace chart {
                         },
                         ticks: {
                             autoSkip: true,
-                        }
+                        },
+                        stacked: true
                     }],
+                    yAxes: [{
+                        stacked: true,
+                        position: "left"
+                    }]
                 },
                 plugins: {
-                    updateData: (chart: Chart, minMaxAvg: MinMaxAvgScores, scores: Array<Score>, domains: Map<string, DomainData>) => {
+                    updateData: (chart: Chart, scores: Map<number, Score>, scoresToDomains: Map<number, string>) => {
+                        const datasetWrapper = (label: string, data_: Array<number>, color: string) => {
+                            return {
+                                backgroundColor: color,
+                                label: label,
+                                data: data_,
+                            } as ChartDataSets
+                        };
 
-                        //let data = utils.getTop(type, minMaxAvg, scores, domains);
+                        while (chart.data.labels.length !== 0)
+                            chart.data.labels.pop();
+
+                        while (chart.data.datasets.length !== 0)
+                            chart.data.datasets.pop();
+
+                        let top = utils.getTopSupportive(scores, goggle, method);
+
+                        scoresToDomains = new Map([...scoresToDomains].filter(value => goggle === value[1].split(' ')[0]));
+
+                        //remove goggles and keep domain name only
+                        scoresToDomains = new Map([...([...scoresToDomains].map((value) => {
+                            value[1] = value[1].split(' ')[1];
+                            return value;
+                        }))]);
+
+                        let domains = new Set<string>();
+
+                        scoresToDomains.forEach((value) => {
+                            domains.add(value);
+                        });
+
+                        top.forEach((perDayScores) => {
+                            let date = [...perDayScores.entries()];
+                            //@ts-ignore
+                            chart.data.labels.push(new Date(date[0][1].date));
+
+                        });
+
+
+                        let color = new DiscreteColorBuilder(domains.size / 2, dataColorLightnes, dataBorderLightness);
+
+                        //for every domain returned from top
+                        domains.forEach((domain) => {
+                            let dataFound = false;
+                            let data = new Array<number>();
+
+                            //for every day selected
+                            top.forEach((perDayScoresMap, mapIndex) => {
+                                let dataFound = false;
+
+                                //look if data for this domain exist for this date
+                                perDayScoresMap.forEach((score, scoreIndex) => {
+
+                                    if (scoresToDomains.has(scoreIndex) && scoresToDomains.get(scoreIndex) === domain) {
+                                        //push a value
+                                        data.push(score.scores[method].bias_score);
+                                        if (dataFound) {
+                                            console.error('??');
+                                        }
+
+                                        dataFound = true;
+                                    }
+
+                                });
+
+                                if (!dataFound)
+                                    data.push(0);
+                            });
+
+                            chart.data.datasets.push(datasetWrapper(domain, data, color.next().toCssHSL()));
+                        });
 
                         chart.update();
                     }

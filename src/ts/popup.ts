@@ -1,7 +1,6 @@
 import { utils } from "./utils";
 import {
     OffOptions, Score, ContextBtnMsg,
-    DomainData
 } from "./types";
 import { userSettings } from "./usersettings";
 import { extension } from "./storage";
@@ -9,7 +8,7 @@ import { templates } from "./templates";
 
 import {
     ScoreCard, UncrawledDomainCard, ExtensionDisabledCard,
-    NotAWebpageCard, SpinnerCard, CompareCard, cards
+    NotAWebpageCard, SpinnerCard, CompareCard, cards, GenericCard
 } from "./infoCard";
 
 import "bootstrap"; //@types/bootstrap
@@ -17,7 +16,6 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 
 import { uncrawled } from "./uncrawled";
 import { chart } from "./drawchart";
-import { settings } from "cluster";
 
 const navId = 'nav-bar';
 const onBtnId = 'bg-onbtn';
@@ -185,7 +183,7 @@ export function updateContent(url: string, cleanTab: boolean) {
 
 }
 
-userSettings.initScoreIndex();
+userSettings.load();
 
 createToggleBtn();
 
@@ -353,32 +351,6 @@ function showDomainDataUnderSettings() {
      */
 }
 
-function showAnalyticsDataUnderSettings() {
-    extension.storage.getAnalytics((analytics) => {
-        if (analytics === null)
-            return;
-
-        let analyticsDataOverviewDiv = document.getElementById('analyticsDataOverview');
-        let analyticsCards = '';
-
-        for (let i = 0; i < analytics.total; i++) {
-            let rows = '';
-            let table = '';
-
-            for (let analyticsKey in Object.keys(analytics.data[i])) {
-                let name = Object.keys(analytics.data[i])[analyticsKey];
-                //@ts-ignore
-                rows += createRowForTable(name, (analytics.data[i])[name], false);
-            }
-
-            table = templates.get.Table('Key', 'Value', rows);
-            analyticsCards += templates.get.AccordionCard('Analytics Data #' + i, table, cards.getUniqueID(), 'analyticsDataOverview');
-        }
-
-        analyticsDataOverviewDiv.insertAdjacentHTML('afterbegin', analyticsCards);
-    });
-}
-
 document.getElementById('delete-data-btn').addEventListener('click', () => {
     console.log('clear');
     extension.storage.clear();
@@ -410,7 +382,6 @@ chrome.storage.onChanged.addListener((changes, areaName) => {
             document.getElementById('analyticsDataOverview').firstChild.remove();
 
         showDomainDataUnderSettings();
-        showAnalyticsDataUnderSettings();
     }
 });
 
@@ -583,99 +554,92 @@ let analyticsCharts = Array<Chart>();
 
 extension.storage.getAllScoreData((scores) => {
 
-    let dates = new Array<Date>();
-    let values = new Array<number>();
-    let count = 0;
-    let d = null;
+    let x = new Array<Date>();
+    let y = new Array<number>();
+    let total: number = 0;
+    let prevValue: number = null;
 
-    for (let [key,value] of scores) {
-    
-        if (d === null) {
-            d = value.date;
+    scores.forEach((currValue, key) => {
+
+        if (prevValue && prevValue !== currValue.date) {
+            x.push(new Date(prevValue));
+            y.push(total);
+            total = 0;
         }
 
-        if (d !== value.date) {
-            dates.push(new Date(d));
-            values.push(count);
-
-            d = value.date;
-            count = 0;
-        } else {
-            count++;
-        }
-
-    }
-
-    chart.drawTimeline(
-        {
-            //@ts-ignore
-            labels: dates,
-            datasets: [
-                {
-                    data: values,
-                    borderWidth: 1,
-                    backgroundColor: 'lightgrey'
-                }
-            ]
-        },
-        {
-            display: true,
-            text: 'Extension Usage',
-            position: 'top'
-        },
-        300, 100, analyticsTab, analyticsCharts);
-
-    userSettings.get((settings) => {
-
-        for (let i = 0; i < settings.gogglesList.length; i++) {
-
-            analyticsCharts.push(
-                chart.drawLineChartForTimeline({
-                    display: true,
-                    text: 'bias for ' + settings.gogglesList[i].name,
-                    position: 'bottom'
-                }, 400, 200, analyticsTab,
-                    'bias', settings.gogglesList[i].id, settings.method)
-            );
-
-            analyticsTab.insertAdjacentHTML('beforeend', '<br>');
-
-            analyticsCharts.push(
-                chart.drawLineChartForTimeline({
-                    display: true,
-                    text: 'support for ' + settings.gogglesList[i].name,
-                    position: 'bottom'
-                }, 400, 200, analyticsTab,
-                    'support', settings.gogglesList[i].id, settings.method)
-            );
-
-            analyticsTab.insertAdjacentHTML('beforeend', '<br>');
-
-            analyticsCharts.push(
-                chart.drawStackedBar({
-                    display: true,
-                    text: 'top biased domains for ' + settings.gogglesList[i].name,
-                    position: 'bottom'
-                }, 400, 200, analyticsTab,
-                    'top bias', settings.gogglesList[i].id, settings.method)
-            );
-
-            analyticsTab.insertAdjacentHTML('beforeend', '<br>');
-
-            analyticsCharts.push(
-                chart.drawStackedBar({
-                    display: true,
-                    text: 'top support domains for ' + settings.gogglesList[i].name,
-                    position: 'bottom'
-                }, 400, 200, analyticsTab,
-                    'top support', settings.gogglesList[i].id, settings.method)
-            );
-
-            analyticsTab.insertAdjacentHTML('beforeend', '<br>');
-        }
+        prevValue = currValue.date;
+        total += currValue.hits;
 
     });
-});
+
+    if (x.length >= 7) {
+
+        chart.drawTimeline(
+            {
+                //@ts-ignore
+                labels: x,
+                datasets: [
+                    {
+                        data: y,
+                        borderWidth: 1,
+                        backgroundColor: 'lightgrey'
+                    }
+                ]
+            },
+            {
+                display: true,
+                text: 'Extension Usage',
+                position: 'top'
+            },
+            300, 100, analyticsTab, analyticsCharts);
+
+        userSettings.get((settings) => {
+
+            for (let i = 0; i < settings.gogglesList.length; i++) {
+
+                analyticsCharts.push(
+                    chart.drawLineChartForTimeline({
+                        display: true,
+                        text: 'bias for ' + settings.gogglesList[i].name,
+                        position: 'bottom'
+                    }, 400, 200, analyticsTab,
+                        'bias', settings.gogglesList[i].id, settings.method)
+                );
+
+                analyticsTab.insertAdjacentHTML('beforeend', '<br>');
+
+                analyticsCharts.push(
+                    chart.drawLineChartForTimeline({
+                        display: true,
+                        text: 'support for ' + settings.gogglesList[i].name,
+                        position: 'bottom'
+                    }, 400, 200, analyticsTab,
+                        'support', settings.gogglesList[i].id, settings.method)
+                );
+
+                analyticsTab.insertAdjacentHTML('beforeend', '<br>');
+
+                analyticsCharts.push(
+                    chart.drawStackedBar({
+                        display: true,
+                        text: 'top 3 biased domains for ' + settings.gogglesList[i].name,
+                        position: 'bottom'
+                    }, 400, 200, analyticsTab,
+                        settings.gogglesList[i].id, settings.method)
+                );
+
+                analyticsTab.insertAdjacentHTML('beforeend', '<br>');
+            }
+
+        });
+    } else {
+        let noDataAvailableCard = new GenericCard(analyticsTabID, false);
+        noDataAvailableCard.setTitle('No data available yet ...');
+        noDataAvailableCard.setStringContent('One must use the extension for more than a week before any analytics data is available.')
+        noDataAvailableCard.render();
+    }
+
+}, true);
 
 
 
