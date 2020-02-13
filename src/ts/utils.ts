@@ -268,7 +268,7 @@ export namespace utils {
         return minMaxAvgData;
     }
 
-    export function getTopSupportive(scores: Map<number, Score>, goggle: string, method: string): Array<Map<number, Score>> {
+    export function getTopSupportive(scores: Map<number, Score>, method: string): Array<Map<number, Score>> {
 
         let splittedPerDay = new Array<Map<number, Score>>();
         let perDayMap = new Map<number, Score>();
@@ -295,7 +295,7 @@ export namespace utils {
         });
 
         splittedPerDay = splittedPerDay.map((perDayScoreMap) => {
-            return new Map([...perDayScoreMap].slice(0,10));
+            return new Map([...perDayScoreMap].slice(0,5));
         });
 
         splittedPerDay = splittedPerDay.map((perDayScoreMap) => {
