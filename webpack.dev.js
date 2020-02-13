@@ -9,7 +9,8 @@ var devExports = new Array();
 var firefoxUnitTests = Object.assign({}, {
     name: 'firefox-unit-tests',
     entry: {
-        "storage.test": config.testsRoot + '/storage.test.ts'
+        "storage.test": config.testsRoot + '/storage.test.ts',
+        "mockUsage.test": config.testsRoot + '/mockUsage.test.ts'
     },
     output: {
         path: config.destinationRoot + "/firefox/tests",
@@ -30,7 +31,8 @@ var firefoxUnitTests = Object.assign({}, {
 var chromiumUnitTests = Object.assign({}, {
     name: 'chromium-unit-tests',
     entry: {
-        "storage.test": config.testsRoot + '/storage.test.ts'
+        "storage.test": config.testsRoot + '/storage.test.ts',
+        "mockUsage.test": config.testsRoot + '/mockUsage.test.ts'
     },
     output: {
         path: config.destinationRoot + "/chromium/tests",

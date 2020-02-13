@@ -32,39 +32,6 @@ let month: number;
 let day: number;
 let year: number;
 
-async function mockUsage(callback: () => void) {
-
-    console.log('=============');
-    console.log('MOCKING USAGE');
-    console.log('=============');
-
-    for (let m = 0; m < totalMonths; m++) {
-        for (let d = 1; d <= totalDays; d++) {
-
-            jasmine.clock().install();
-            jasmine.clock().mockDate(new Date(2020, m, d));
-
-            for (let i = 0; i < totalDomains; i++) {
-                for (let g = 0; g < goggles.length; g++) {
-
-                    extension.storage.getLatestScoreData(utils.getDomainFromURL(alexatop300gr[i]),
-                        goggles[g].id, (score: Score, index: number) => {
-
-                            if (m === totalMonths - 1 &&
-                                d === totalDays &&
-                                i === totalDomains - 1 &&
-                                g === goggles.length - 1)
-                                callback();
-                        });
-
-                }
-            }
-            jasmine.clock().uninstall();
-        }
-    }
-
-};
-
 function resetEnvironment(callback: () => void) {
     chrome.storage.local.clear(() => {
         userSettings.initialize(callback);

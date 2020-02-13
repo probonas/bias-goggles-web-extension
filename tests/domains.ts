@@ -1,5 +1,6 @@
 
-export let alexatop300gr = ["www.11888.gr/",
+export let alexatop300gr = [
+    "www.11888.gr/",
     "www.4troxoi.gr/",
     "www.902.gr/",
     "www.ab.gr/",
