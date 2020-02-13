@@ -29,7 +29,6 @@ export namespace cards {
         return scoreCardsCache.has(domain + forgoggle);
     }
 
-
     export function clearAllCards() {
         allGeneric.forEach(card => card.remove());
         allGeneric = new Array();
@@ -114,6 +113,7 @@ abstract class Card {
         this.title = null;
         this.stringContent = null;
         this.htmlContent = null;
+
     }
 
     public getCardID(): string {
@@ -150,27 +150,38 @@ abstract class Card {
 
         if (this.stringContent !== null) {
             let card = templates.get.InnerCard(this.title, this.stringContent, this.cardID, this.tooltipOn, this.dismissable, this.comparable);
-            pos.insertAdjacentHTML('beforeend', card);
+            pos.insertAdjacentHTML('afterbegin', card);
         } else {
             let card = templates.get.InnerCard(this.title, '', this.cardID, this.tooltipOn, this.dismissable, this.comparable);
-            pos.insertAdjacentHTML('beforeend', card);
+            pos.insertAdjacentHTML('afterbegin', card);
             document.getElementById(this.cardID).getElementsByClassName('card-text')[0].appendChild(this.htmlContent);
         }
 
-        if (this.dismissable) {
+        //fade in
+        setTimeout(() => {
+            document.getElementById(this.cardID).children[1].classList.add('show');
+        }, 250);
 
-            (<HTMLButtonElement>document.getElementById(this.cardID).
-                getElementsByClassName('_close')[0]).addEventListener('click', () => {
-                    this.remove();
-                });
-        }
+        (<HTMLButtonElement>document.getElementById(this.cardID).
+            getElementsByClassName('_close')[0]).addEventListener('click', () => {
+                document.getElementById(this.cardID).children[1].classList.remove('show');
+                document.getElementById(this.cardID).children[1].classList.add('hide');
+
+                //hide animation takes a while so we need to wait 
+                //before removing card from dom
+                setTimeout(() => {
+                    document.getElementById(this.cardID).remove();
+                }, 200);
+            });
     }
 
     public remove() {
-        if (document.getElementById(this.cardID))
-            document.getElementById(this.cardID).remove();
-        else
-            console.log('failed to remove ' + this.cardID);
+
+        console.log('--->', (<HTMLButtonElement>document.getElementById(this.cardID).
+            getElementsByClassName('_close')[0]));
+
+        (<HTMLButtonElement>document.getElementById(this.cardID).
+            getElementsByClassName('_close')[0]).click();
     }
 
 }

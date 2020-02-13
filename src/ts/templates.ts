@@ -29,7 +29,8 @@ export namespace templates {
 
                 return `
                 <div id="${id}">
-                    <div class="card">
+                    <br>
+                    <div class="card fade">
                         <div class="card-body">
                             
                             <div class="row float-right">
@@ -55,7 +56,8 @@ export namespace templates {
             } else {
                 return `
                 <div id="${id}">
-                    <div class="card">
+                    <br>
+                    <div class="card fade">
                         <div class="card-body">
                             
                             <div class="row float-right">
@@ -97,11 +99,11 @@ export namespace templates {
                 </button>
             </div>`;
         }
-/*
-        <button type="button" class="btn btn-link compare" data-toggle="modal" data-target="#compareModal">
-            <img src="icons/edit.svg" width="18" height="18" title="Compare" >
-        </button>`;
-*/
+        /*
+                <button type="button" class="btn btn-link compare" data-toggle="modal" data-target="#compareModal">
+                    <img src="icons/edit.svg" width="18" height="18" title="Compare" >
+                </button>`;
+        */
         export function OffButton(offBtnId: string, oneHourID: string, twoHoursID: string,
             sessionOnlyID: string, permaID: string): string {
             return `
