@@ -1,5 +1,5 @@
 
-import { AppData, DomainData, Score } from "./types";
+import { AppData, DomainData, Score, UNCRAWLED_URL } from "./types";
 import { userSettings } from "./usersettings";
 import { utils } from "./utils";
 
@@ -133,7 +133,10 @@ export namespace extension {
                 } else {
                     console.info(key + ' not found');
                     utils.queryServiceAndSet(domain, goggle, (domainData, scoreData) => {
-                        callback(scoreData, domainData.scoreIndex);
+                        if (domainData)
+                            callback(scoreData, domainData.scoreIndex);
+                        else
+                            callback(null, UNCRAWLED_URL);
                     });
                 }
             });
@@ -242,7 +245,7 @@ export namespace extension {
                 if (scores.size === 0) {
                     callback(null);
                 } else {
-                    if (sorted) {
+                    if (!sorted) {
                         callback(scores);
                     } else {
                         let sorted = new Map([...scores].sort((a, b) => {
