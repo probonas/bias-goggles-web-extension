@@ -1,6 +1,6 @@
 import { utils } from "./utils";
 import {
-    OffOptions, Score, ContextBtnMsg,
+    OffOptions, Score, ContextBtnMsg, EXTENSION_DISABLED, UNCRAWLED_URL,
 } from "./types";
 import { userSettings } from "./usersettings";
 import { extension } from "./storage";
@@ -8,7 +8,7 @@ import { templates } from "./templates";
 
 import {
     ScoreCard, UncrawledDomainCard, ExtensionDisabledCard,
-    NotAWebpageCard, SpinnerCard, CompareCard, cards, GenericCard
+    NotAWebpageCard, SpinnerCard, CompareCard, cards
 } from "./infoCard";
 
 import "bootstrap"; //@types/bootstrap
@@ -33,6 +33,8 @@ let thisWindowID: number;
 
 let tabLabels = new Array();
 let tabIDs = new Array();
+
+let tempCards = new Array();
 
 function showBtn(on: boolean) {
 
@@ -132,7 +134,7 @@ function showSuccessAlert(msg: string) {
 }
 
 
-export function updateContent(url: string, cleanTab: boolean) {
+export function updateContent(url: string, cleanTab: boolean, temp?: boolean) {
 
     if (cleanTab)
         cards.clearAllCards();
@@ -149,17 +151,23 @@ export function updateContent(url: string, cleanTab: boolean) {
             new NotAWebpageCard(goggles).render();
 
         } else if (cards.exists(url, goggles)) {
+
             spinner.remove();
 
             //remove so as to redraw
             cards.getScoreCard(url, goggles).remove();
 
-            //domain's card already in memomy
+            //domain's card already in memory
             cards.getScoreCard(url, goggles).render();
         } else if (cards.existsInCache(url, goggles)) {
             spinner.remove();
 
-            cards.getScoreCard(url, goggles).render();
+            let card = cards.getScoreCard(url, goggles);
+            card.render();
+
+            if (temp)
+                tempCards.push(card);
+
         } else {
 
             utils.getBiasDataForGoggles(url, goggles, (scoreData, scoreIndex) => {
@@ -168,19 +176,26 @@ export function updateContent(url: string, cleanTab: boolean) {
 
                 spinner.remove();
 
-                if (scoreIndex === -1) {
-                    new ExtensionDisabledCard(goggles).render();
-                } else if (scoreIndex === -2) {
-                    new UncrawledDomainCard(goggles, url).render();
+                let card;
+
+                if (scoreIndex === EXTENSION_DISABLED) {
+                    card = new ExtensionDisabledCard(goggles);
+                    card.render();
+                } else if (scoreIndex === UNCRAWLED_URL) {
+                    card = new UncrawledDomainCard(goggles, url);
+                    card.render();
                 } else {
-                    let card = new ScoreCard(goggles, false, scoreData, url);
+                    card = new ScoreCard(goggles, false, scoreData, url);
                     card.setTitle(url);
                     card.render();
                 }
+
+                if (temp)
+                    tempCards.push(card);
+
             });
         }
     });
-
 }
 
 userSettings.load();
@@ -213,9 +228,22 @@ chrome.windows.getCurrent((windowInfo) => {
     });
 });
 
-chrome.runtime.onMessage.addListener((msg: ContextBtnMsg) => {
-    if (msg.windowID === thisWindowID)
-        updateContent(utils.getDomainFromURL(msg.url), false);
+chrome.runtime.onMessage.addListener((msg: ContextBtnMsg, sender: chrome.runtime.MessageSender) => {
+    if (sender.tab.windowId === thisWindowID) {
+        if (msg.url !== undefined)
+            updateContent(utils.getDomainFromURL(msg.url), false, true);
+        else if (msg.closeLast !== undefined) {
+
+            tempCards.forEach(card => {
+                card.remove();
+            });
+        
+            tempCards = new Array();
+        } else {
+            throw new Error('Message ' + msg + 'is not properly set!');
+        }
+
+    }
 });
 
 let sync = <HTMLSelectElement>document.getElementById('syncSelect');
@@ -572,72 +600,64 @@ extension.storage.getAllScoreData((scores) => {
 
     });
 
-    if (x.length >= 7) {
+    chart.drawTimeline(
+        {
+            //@ts-ignore
+            labels: x,
+            datasets: [
+                {
+                    data: y,
+                    borderWidth: 1,
+                    backgroundColor: 'lightgrey'
+                }
+            ]
+        },
+        {
+            display: true,
+            text: 'Extension Usage',
+            position: 'top'
+        },
+        300, 100, analyticsTab, analyticsCharts);
 
-        chart.drawTimeline(
-            {
-                //@ts-ignore
-                labels: x,
-                datasets: [
-                    {
-                        data: y,
-                        borderWidth: 1,
-                        backgroundColor: 'lightgrey'
-                    }
-                ]
-            },
-            {
-                display: true,
-                text: 'Extension Usage',
-                position: 'top'
-            },
-            300, 100, analyticsTab, analyticsCharts);
+    userSettings.get((settings) => {
 
-        userSettings.get((settings) => {
+        for (let i = 0; i < settings.gogglesList.length; i++) {
 
-            for (let i = 0; i < settings.gogglesList.length; i++) {
+            analyticsCharts.push(
+                chart.drawLineChartForTimeline({
+                    display: true,
+                    text: 'bias for ' + settings.gogglesList[i].name,
+                    position: 'bottom'
+                }, 400, 200, analyticsTab,
+                    'bias', settings.gogglesList[i].id, settings.method)
+            );
 
-                analyticsCharts.push(
-                    chart.drawLineChartForTimeline({
-                        display: true,
-                        text: 'bias for ' + settings.gogglesList[i].name,
-                        position: 'bottom'
-                    }, 400, 200, analyticsTab,
-                        'bias', settings.gogglesList[i].id, settings.method)
-                );
+            analyticsTab.insertAdjacentHTML('beforeend', '<br>');
 
-                analyticsTab.insertAdjacentHTML('beforeend', '<br>');
+            analyticsCharts.push(
+                chart.drawLineChartForTimeline({
+                    display: true,
+                    text: 'support for ' + settings.gogglesList[i].name,
+                    position: 'bottom'
+                }, 400, 200, analyticsTab,
+                    'support', settings.gogglesList[i].id, settings.method)
+            );
 
-                analyticsCharts.push(
-                    chart.drawLineChartForTimeline({
-                        display: true,
-                        text: 'support for ' + settings.gogglesList[i].name,
-                        position: 'bottom'
-                    }, 400, 200, analyticsTab,
-                        'support', settings.gogglesList[i].id, settings.method)
-                );
+            analyticsTab.insertAdjacentHTML('beforeend', '<br>');
 
-                analyticsTab.insertAdjacentHTML('beforeend', '<br>');
+            analyticsCharts.push(
+                chart.drawStackedBar({
+                    display: true,
+                    text: 'top biased domains for ' + settings.gogglesList[i].name,
+                    position: 'bottom'
+                }, 400, 200, analyticsTab,
+                    settings.gogglesList[i].id, settings.method)
+            );
 
-                analyticsCharts.push(
-                    chart.drawStackedBar({
-                        display: true,
-                        text: 'top 3 biased domains for ' + settings.gogglesList[i].name,
-                        position: 'bottom'
-                    }, 400, 200, analyticsTab,
-                        settings.gogglesList[i].id, settings.method)
-                );
+            analyticsTab.insertAdjacentHTML('beforeend', '<br>');
+        }
 
-                analyticsTab.insertAdjacentHTML('beforeend', '<br>');
-            }
-
-        });
-    } else {
-        let noDataAvailableCard = new GenericCard(analyticsTabID, false);
-        noDataAvailableCard.setTitle('No data available yet ...');
-        noDataAvailableCard.setStringContent('One must use the extension for more than a week before any analytics data is available.')
-        noDataAvailableCard.render();
-    }
+    });
 
 }, true);
 
