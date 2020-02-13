@@ -1,21 +1,16 @@
-import { PoliticalParties, SportsTeams } from "./types"
 import { userSettings } from "./usersettings";
 import { utils } from "./utils";
-import { popoverAnalytics } from "./analytics"
 import "./contextMenu";
 
 chrome.runtime.onInstalled.addListener((details) => {
-    userSettings.save('pr', PoliticalParties.id, 100, false, true, false, -1,
-        [PoliticalParties, SportsTeams]);
     console.log('initialized default user profile!');
-    utils.showCorrectBadge();
-    popoverAnalytics.initialize();
+    userSettings.initialize(utils.showCorrectBadge);
 });
 
 chrome.runtime.onStartup.addListener(() => {
     utils.showCorrectBadge();
 
-    userSettings.initScoreIndex(() => {
+    userSettings.load(() => {
 
         chrome.webRequest.onResponseStarted.addListener((details) => {
             userSettings.get((settings) => {

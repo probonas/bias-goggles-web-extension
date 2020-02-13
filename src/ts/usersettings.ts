@@ -1,32 +1,26 @@
-import { UserSettings, UserSettingsMap, Goggle } from "./types";
+import {
+    UserSettings, UserSettingsMap, Goggle,
+    PoliticalParties, SportsTeams
+} from "./types";
 
 export namespace userSettings {
 
-    export let settingsKey: string = 'settings';
+    export const INITIAL_SCORE_INDEX = 0;
+    export const settingsKey = 'settings';
 
-    export let scoreIndex: number = null;
-
-    export function initScoreIndex(callback?: () => void) {
-        get((settings) => {
-            scoreIndex = settings.scoreIndex;
-            if (callback)
-                callback();
-        });
-    }
+    let scoreIndex: number = null;
 
     /**
      * Updates and returns the new score index
      */
     export function updateScoreIndex(): number {
 
-        scoreIndex++;
-
         get((settings) => {
             settings.scoreIndex = scoreIndex;
             update(settings);
         });
 
-        return scoreIndex;
+        return scoreIndex++;
     }
 
     export function update(settings: UserSettings, callback?: () => void) {
@@ -35,9 +29,32 @@ export namespace userSettings {
             settings.scoreIndex, settings.gogglesList, callback);
     }
 
-    export function save(method: string, googlesToUse: string,
+    export function initialize(callback?: () => void) {
+        let defaultSettings = {
+            method: 'pr',
+            goggles: PoliticalParties.id,
+            gogglesList: [PoliticalParties, SportsTeams],
+            syncEnabled: false,
+            scoreIndex: INITIAL_SCORE_INDEX,
+            enabled: true,
+            forceOn: false,
+            pagePopoverEnabled: false
+        };
+
+        update(defaultSettings, callback);
+    }
+
+    export function load(callback?: () => void) {
+        userSettings.get((settings) => {
+            scoreIndex = settings.scoreIndex;
+            if (callback)
+                callback();
+        });
+    }
+
+    function save(method: string, googlesToUse: string,
         syncEnabled: boolean, enabled: boolean,
-        pagePopoverEnabled: boolean, scoreIndex: number,
+        pagePopoverEnabled: boolean, scoreIndex_: number,
         gogglesList: Goggle[], callback?: () => void) {
 
         let settings = {} as UserSettingsMap;
@@ -47,11 +64,13 @@ export namespace userSettings {
             goggles: googlesToUse,
             syncEnabled: syncEnabled,
             enabled: enabled,
-            scoreIndex: scoreIndex,
+            scoreIndex: scoreIndex_,
             forceOn: false,
             pagePopoverEnabled: pagePopoverEnabled,
             gogglesList: gogglesList
         };
+
+        scoreIndex = scoreIndex_;
 
         if (syncEnabled) {
             chrome.storage.sync.set(settings, callback);
