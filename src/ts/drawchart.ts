@@ -3,6 +3,9 @@ import { Dictionary, Score, PoliticalParties } from "./types";
 
 import "chartjs-plugin-annotation";
 import "chartjs-plugin-draggable";
+import "chartjs-plugin-watermark";
+import "chartjs-plugin-zoom";
+
 import { templates } from "./templates";
 import { extension } from "./storage";
 import { utils } from "./utils";
@@ -72,7 +75,7 @@ export namespace chart {
         }
 
         public next(): HSL {
-            if(this.last === this.colors.length)
+            if (this.last === this.colors.length)
                 this.last = 0;
             return this.colors[this.last++];
         }
@@ -575,6 +578,14 @@ export namespace chart {
             type: 'bar',
             data: {},
             options: {
+                //@ts-ignore
+                /*
+                watermark: {
+                    image: 'https://www.google.com/images/branding/googlelogo/1x/googlelogo_color_272x92dp.png',
+                    alignToChartArea: true,
+                    position: "front"
+                },
+                */
                 title: title,
                 tooltips: {
                     mode: 'single'
@@ -595,7 +606,11 @@ export namespace chart {
                     }],
                     yAxes: [{
                         stacked: true,
-                        position: "left"
+                        position: "left",
+                        ticks: {
+                            autoSkip: true,
+                            stepSize: 0.05
+                        }
                     }]
                 },
                 plugins: {
@@ -614,7 +629,7 @@ export namespace chart {
                         while (chart.data.datasets.length !== 0)
                             chart.data.datasets.pop();
 
-                        let top = utils.getTopSupportive(scores, goggle, method);
+                        let top = utils.getTopSupportive(scores, method);
 
                         scoresToDomains = new Map([...scoresToDomains].filter(value => goggle === value[1].split(' ')[0]));
 
@@ -672,6 +687,19 @@ export namespace chart {
                         });
 
                         chart.update();
+                    },
+                    zoom: {
+                        zoom: {
+                            rangeMin: {
+                                y: 0
+                            },
+                            rangeMax: {
+                                y: 1
+                            },
+                            enabled: true,
+                            mode: 'y',
+                            speed: 0.3
+                        }
                     }
                 }
             }

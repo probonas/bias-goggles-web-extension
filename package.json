@@ -19,6 +19,7 @@
     "bootstrap": "^4.4.1",
     "chart.js": "^2.7.0",
     "chartjs-plugin-annotation": "^0.5.7",
+    "chartjs-plugin-watermark": "^1.0.3",
     "chartjs-plugin-zoom": "^0.7.5",
     "jquery": "^3.4.1",
     "node": "^13.5.0",
