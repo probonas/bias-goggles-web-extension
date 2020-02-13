@@ -1,6 +1,7 @@
 import { get as httpGet } from "http";
 import { userSettings } from "./usersettings";
 import { AppData } from "./types";
+import { utils } from "./utils";
 
 export namespace service {
 
@@ -10,49 +11,43 @@ export namespace service {
         let scoreData = {} as AppData;
         let domainData = {} as AppData;
 
-        userSettings.get((settings) => {
+        let scoreIndex = userSettings.updateScoreIndex();
+       
+        //the following are as returned from service
+        //if anything changes in service
+        //the following should be updated as well
+        //rank data are omitted
+        
+        domainData[utils.makeKey(ret.doc.domain, goggles)] = {
+            scoreIndex: scoreIndex,
+            prevIndices: new Array<number>()
+        };
 
-            let scoreIndex = userSettings.updateScoreIndex();
-
-            //the following are as returned from service
-            //if anything changes in service
-            //the following should be updated as well
-
-            //@ts-ignore
-            domainData[goggles + ' ' + ret.doc.domain] = {
-                scoreIndex: scoreIndex,
-                prevIndices: new Array<number>()
-            };
-
-            scoreData[scoreIndex] = {
-                scores: {
-                    'ic': {
-                        //@ts-ignore
-                        bias_score: ret.doc.ic.bias_score,
-                        rank: ret.doc.ic.rank,
-                        support_score: ret.doc.ic.support_score,
-                        vector: ret.doc.ic.vector
-                    },
-                    'lt': {
-                        bias_score: ret.doc.lt.bias_score,
-                        rank: ret.doc.lt.rank,
-                        support_score: ret.doc.lt.support_score,
-                        vector: ret.doc.lt.vector
-                    },
-                    'pr': {
-                        bias_score: ret.doc.pr.bias_score,
-                        rank: ret.doc.pr.rank,
-                        support_score: ret.doc.pr.support_score,
-                        vector: ret.doc.pr.vector
-                    }
+        scoreData[scoreIndex] = {
+            scores: {
+                'ic': {
+                    //@ts-ignore
+                    bias_score: ret.doc.ic.bias_score,
+                    support_score: ret.doc.ic.support_score,
+                    vector: ret.doc.ic.vector
                 },
-                hits: 1,
-                date: new Date().getTime(),
-                goggle: settings.goggles
-            };
+                'lt': {
+                    bias_score: ret.doc.lt.bias_score,
+                    support_score: ret.doc.lt.support_score,
+                    vector: ret.doc.lt.vector
+                },
+                'pr': {
+                    bias_score: ret.doc.pr.bias_score,
+                    support_score: ret.doc.pr.support_score,
+                    vector: ret.doc.pr.vector
+                }
+            },
+            hits: 1,
+            date: new Date().valueOf(),
+            goggle: goggles
+        };
 
-            callback(domainData, scoreData);
-        });
+        callback(domainData, scoreData);
 
     };
 
@@ -65,13 +60,13 @@ export namespace service {
         return prefix + encodeURIComponent(domain) + suffix;
     }
 
-    export function query(activeTab: string, goggles: string, callback?: (domainData: AppData, scoreData: AppData) => void): void {
+    export function query(url: string, goggles: string, callback?: (domainData: AppData, scoreData: AppData) => void): void {
 
         let data: any = '';
 
-        console.log('requesting: ' + goggles + ' ' + activeTab);
+        console.log('requesting: ' + goggles + ' ' + url);
 
-        let targetURL = getRequestURL(activeTab, goggles);
+        let targetURL = getRequestURL(url, goggles);
 
         httpGet(targetURL, res => {
 
