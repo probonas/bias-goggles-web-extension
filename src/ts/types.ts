@@ -23,20 +23,14 @@ export enum OffOptions {
     PERMA
 };
 
+export const EXTENSION_DISABLED = -1;
+export const UNCRAWLED_URL = -2
+export const INVALID_URL = -3;
+
 export type ContextBtnMsg = {
     url: string;
-    windowID: number;
+    closeLast: boolean;
 }
-
-export const MethodsAndNames: { [index: string]: string } = {
-    'ic': 'Independent Cascade',
-    'lt': 'Linear Threshold',
-    'pr': 'Page Rank',
-
-    'Independent Cascade': 'ic',
-    'Linear Threshold': 'lt',
-    'Page Rank': 'pr'
-};
 
 export interface UserSettingsMap {
     [key: string]: UserSettings;
@@ -79,31 +73,9 @@ type Scores = {
 
 export type ScoreValue = {
     bias_score: number;
-    rank: number;
     support_score: number;
     vector: string[];
 };
-
-export type PopoverAnalytics = {
-    userFollowedLink: boolean;
-    userHoveredPopover: boolean;
-    sourceScoreIndex: number;
-    destScoreIndedx: number;
-    totalTimeShown: number; //ms
-    totalTimeUserHovered: number; //ms
-    goggles: string;
-}
-
-export type Analytics = {
-    [key: string]: AnalyticsData
-}
-
-export type AnalyticsData = {
-    total: number;
-    data: {
-        [key: number]: PopoverAnalytics
-    };
-}
 
 export type MinMaxAvgScores = {
     [key: number]: PerGoggle

@@ -36,13 +36,15 @@ browser.contextMenus.onClicked.addListener((info, tab) => {
             isOpen = browser.sidebarAction.isOpen({ windowId: tab.windowId });
             isOpen.then((sideBarOpen => {
                 if (sideBarOpen) {
-                    browser.runtime.sendMessage({ url: info.linkUrl, windowID: tab.windowId } as ContextBtnMsg);
+                    browser.runtime.sendMessage({ url: info.linkUrl } as ContextBtnMsg);
                 } else {
                     open().then(() => {
-                        browser.runtime.sendMessage({ url: info.linkUrl, windowID: tab.windowId } as ContextBtnMsg);
+                        browser.runtime.sendMessage({ url: info.linkUrl } as ContextBtnMsg);
                     });
                 }
             }));
             break;
+        default:
+            throw new Error('Nothind to do for context button with id ' + info.menuItemId);
     }
 });
