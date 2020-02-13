@@ -4,7 +4,8 @@
   "description": "A browser extension for the bias-goggles search engine",
   "scripts": {
     "test": "npx webpack --config ./webpack.dev.js --mode=\"development\"",
-    "build": "npx webpack --config ./webpack.prod.js --mode=\"production\""
+    "build": "npx webpack --config ./webpack.prod.js --mode=\"production\"",
+    "sign" : "npx web-ext sign --api-key=$WEB_EXT_API_KEY --api-secret=$WEB_EXT_API_SECRET"
   },
   "keywords": [
     "bias-goggles",
@@ -42,6 +43,7 @@
     "style-loader": "^1.1.2",
     "ts-loader": "^6.2.1",
     "typescript": "^3.7.4",
+    "web-ext": "^4.1.0",
     "web-ext-types": "^3.2.1",
     "webpack": "^4.41.4",
     "webpack-cli": "^3.3.10",

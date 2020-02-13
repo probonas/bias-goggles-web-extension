@@ -27,6 +27,14 @@ about:debugging
 
 Then click 'This firefox' and then 'Load temporary plugin'
 
+### How to sign the extension with web-ext (Firefox)
+
+[web-ext documentation](https://extensionworkshop.com/documentation/develop/web-ext-command-reference/)
+
+```bash
+npx web-ext sign --api-key=$WEB_EXT_API_KEY --api-secret=$WEB_EXT_API_SECRET
+```
+
 ## Notes
 The extension is located under dist folder. For now use the dist/firefox files regardless
 of the browser you are installing it.
