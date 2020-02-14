@@ -229,15 +229,16 @@ chrome.windows.getCurrent((windowInfo) => {
 });
 
 chrome.runtime.onMessage.addListener((msg: ContextBtnMsg, sender: chrome.runtime.MessageSender) => {
-    if (sender.tab.windowId === thisWindowID) {
-        if (msg.url !== undefined)
+    if (msg.senderWindowID === thisWindowID || sender.tab.windowId === thisWindowID) {
+        if (msg.url !== undefined) {
+            console.log(msg.url);
             updateContent(utils.getDomainFromURL(msg.url), false, true);
-        else if (msg.closeLast !== undefined) {
+        } else if (msg.closeLast !== undefined) {
 
             tempCards.forEach(card => {
                 card.remove();
             });
-        
+
             tempCards = new Array();
         } else {
             throw new Error('Message ' + msg + 'is not properly set!');

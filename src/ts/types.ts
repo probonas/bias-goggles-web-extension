@@ -30,6 +30,7 @@ export const INVALID_URL = -3;
 export type ContextBtnMsg = {
     url: string;
     closeLast: boolean;
+    senderWindowID: number;
 }
 
 export interface UserSettingsMap {

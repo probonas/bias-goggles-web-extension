@@ -31,20 +31,9 @@ browser.contextMenus.create(contextBtn);
 
 /* add on click handler for previous btn */
 browser.contextMenus.onClicked.addListener((info, tab) => {
-    switch (info.menuItemId) {
-        case contextBtn.id:
-            isOpen = browser.sidebarAction.isOpen({ windowId: tab.windowId });
-            isOpen.then((sideBarOpen => {
-                if (sideBarOpen) {
-                    browser.runtime.sendMessage({ url: info.linkUrl } as ContextBtnMsg);
-                } else {
-                    open().then(() => {
-                        browser.runtime.sendMessage({ url: info.linkUrl } as ContextBtnMsg);
-                    });
-                }
-            }));
-            break;
-        default:
-            throw new Error('Nothind to do for context button with id ' + info.menuItemId);
-    }
+
+    open().then(() => {
+        browser.runtime.sendMessage({ url: info.linkUrl, senderWindowID: tab.windowId } as ContextBtnMsg);
+    });
+
 });

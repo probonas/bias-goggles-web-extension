@@ -50,7 +50,7 @@
 		},
 		"default_title": "Bias Goggles",
 		"default_panel": "popup.html",
-		"open_at_install": false
+		"open_at_install": true
 	},
 	"web_accessible_resources": [
 		"icons/edit.svg",
