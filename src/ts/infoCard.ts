@@ -177,9 +177,6 @@ abstract class Card {
 
     public remove() {
 
-        console.log('--->', (<HTMLButtonElement>document.getElementById(this.cardID).
-            getElementsByClassName('_close')[0]));
-
         (<HTMLButtonElement>document.getElementById(this.cardID).
             getElementsByClassName('_close')[0]).click();
     }
