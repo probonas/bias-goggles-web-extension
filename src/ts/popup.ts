@@ -29,7 +29,7 @@ const onID = 'bg-on';
 const compareModal = 'compareModal';
 const compareDataBtn = 'compare-data-btn';
 
-let thisWindowID: number;
+let thisWindowID: number = null;
 
 let tabLabels = new Array();
 let tabIDs = new Array();
@@ -229,7 +229,7 @@ chrome.windows.getCurrent((windowInfo) => {
 });
 
 chrome.runtime.onMessage.addListener((msg: ContextBtnMsg, sender: chrome.runtime.MessageSender) => {
-    if (msg.senderWindowID === thisWindowID || sender.tab.windowId === thisWindowID) {
+    if (msg.senderWindowID === thisWindowID || (sender.tab && sender.tab.windowId === thisWindowID)) {
         if (msg.url !== undefined) {
             console.log(msg.url);
             updateContent(utils.getDomainFromURL(msg.url), false, true);
@@ -240,10 +240,9 @@ chrome.runtime.onMessage.addListener((msg: ContextBtnMsg, sender: chrome.runtime
             });
 
             tempCards = new Array();
-        } else {
-            throw new Error('Message ' + msg + 'is not properly set!');
         }
-
+    } else if (msg.updateWindowID !== undefined) {
+        thisWindowID = msg.updateWindowID;
     }
 });
 

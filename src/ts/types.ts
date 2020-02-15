@@ -31,6 +31,7 @@ export type ContextBtnMsg = {
     url: string;
     closeLast: boolean;
     senderWindowID: number;
+    updateWindowID: number;
 }
 
 export interface UserSettingsMap {
