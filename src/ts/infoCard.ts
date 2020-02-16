@@ -3,107 +3,75 @@ import { templates } from "./templates";
 import { Score, Dictionary } from "./types";
 import { chart } from "./drawchart";
 import { uncrawled } from "./uncrawled";
+import { utils } from "./utils";
+import { extension } from "./storage";
 
-let allGeneric: Array<Card> = new Array();
-let allScoreCards: Map<string, ScoreCard> = new Map();
-let allCompareCards: Array<CompareCard> = new Array();
+const pollingInterval = 10; //ms
 
-let scoreCardsCache: Map<string, ScoreCard> = new Map();
+let groups = new Set<string>();
+let id = 0;
 
 export namespace cards {
 
-    export function getScoreCard(domain: string, forgoggle: string) {
-        if (allScoreCards.has(domain + forgoggle))
-            return allScoreCards.get(domain + forgoggle);
-        else if (scoreCardsCache.has(domain + forgoggle))
-            return scoreCardsCache.get(domain + forgoggle);
-        else
-            throw new Error('card for ' + domain + ' ' + forgoggle + ' not found!');
-    }
-
-    export function exists(domain: string, forgoggle: string) {
-        return allScoreCards.has(domain + forgoggle);
-    }
-
-    export function existsInCache(domain: string, forgoggle: string) {
-        return scoreCardsCache.has(domain + forgoggle);
-    }
-
     export function clearAllCards() {
-        allGeneric.forEach(card => card.remove());
-        allGeneric = new Array();
+        console.log('clearing cards!');
 
-        allScoreCards.forEach(card => card.remove());
-        allScoreCards.clear();
+        groups.forEach(group => {
+            let cards = getAllCardForGroup(group);
 
-        allCompareCards.forEach(card => card.remove());
-        allCompareCards = new Array();
-    }
-
-    export function getCardWithID(cardID: string): ScoreCard | null {
-
-        let card = null;
-
-        allGeneric.forEach((value) => {
-            if (value.getCardID() === cardID)
-                card = value;
+            for (let i = 0; i < cards.length; i++)
+                cards[i].remove();
         });
 
-        allScoreCards.forEach((value, key) => {
-            if (value.getCardID() === cardID)
-                card = value;
-        });
-
-        scoreCardsCache.forEach((value, key) => {
-            if (value.getCardID() === cardID)
-                card = value;
-        });
-
-        allCompareCards.forEach((value) => {
-            if (value.getCardID() === cardID)
-                card = value;
-        });
-
-        return card;
-    }
-
-    export function getAllScoreCards(): Map<string, ScoreCard> {
-        let retMap = new Map<string, ScoreCard>();
-
-        allScoreCards.forEach((value, key) => {
-            retMap.set(key, value);
-        });
-
-        scoreCardsCache.forEach((value, key) => {
-            retMap.set(key, value);
-        });
-
-        return retMap;
+        groups.clear();
     }
 
     export function getUniqueID() {
         return (++id);
     }
 
+    export function getCardData(cardID: string): string {
+        if (document.getElementById(cardID)) {
+            return document.getElementById(cardID).dataset.group;
+        }
+        else
+            throw new Error('no card with id ' + cardID + ' was found');
+    }
+
+    export function getAllCardForGroup(group: string) {
+        return document.querySelectorAll('[data-group=\"' + group + '\"]');
+    }
 }
 
-let id = 0;
-
+/**
+ * An abstract class representing a card shown under Explore Tab
+ */
 abstract class Card {
+    //title show
     protected title: string;
+    //unique id of card in dom
     protected cardID: string;
+    //tab this card belongs to, usually the id of the goggle used
     protected tabID: string;
+    //if true, show X icon on the card
     protected dismissable: boolean;
+    //if true and if title is very long, it's trimmed so as so to fit in card and a tooltip with the full title is shown on hover
     protected tooltipOn: boolean;
+    //if true the compare icon is shown on card
     protected comparable: boolean;
 
+    //card groups are used to identify cards belonging to the same domain across tabs
+    protected group: string;
+
+    //A card can have either a string or html as its content
     protected stringContent: string;
     protected htmlContent: HTMLElement;
 
-    constructor(tabID: string, dismissable: boolean,
+    constructor(tabID: string, group: string, dismissable: boolean,
         comparable: boolean, tooltipOn: boolean) {
 
         this.cardID = (++id).toString();
+        this.group = group;
 
         this.tabID = tabID;
         this.dismissable = dismissable;
@@ -113,15 +81,6 @@ abstract class Card {
         this.title = null;
         this.stringContent = null;
         this.htmlContent = null;
-
-    }
-
-    public getCardID(): string {
-        return this.cardID;
-    }
-
-    public getTabID(): string {
-        return this.tabID;
     }
 
     public setStringContent(contents: string) {
@@ -132,9 +91,16 @@ abstract class Card {
         this.htmlContent = contents;
     }
 
-    public setTitle(title: string) {
+    protected setTitle(title: string) {
         this.title = title;
     }
+
+    /**
+     * Main rendering function.
+     * If no title is set an expection is thrown
+     * If no stringcontent of htmlContent is set an expection is thrown.
+     * All subclasses should call this before implementing their own logic.
+     */
 
     public render() {
         let pos = document.getElementById(this.tabID);
@@ -157,131 +123,143 @@ abstract class Card {
             document.getElementById(this.cardID).getElementsByClassName('card-text')[0].appendChild(this.htmlContent);
         }
 
+        //group is added as
+        document.getElementById(this.cardID).dataset.group = this.group;
+        groups.add(this.group);
+
         //fade in
         setTimeout(() => {
             document.getElementById(this.cardID).children[1].classList.add('show');
         }, 250);
 
-        (<HTMLButtonElement>document.getElementById(this.cardID).
-            getElementsByClassName('_close')[0]).addEventListener('click', () => {
+        //add listener on X button of card
+        (<HTMLButtonElement>document.getElementById(this.cardID).getElementsByClassName('_close')[0])
+            .addEventListener('click', () => {
                 document.getElementById(this.cardID).children[1].classList.remove('show');
                 document.getElementById(this.cardID).children[1].classList.add('hide');
 
-                //hide animation takes a while so we need to wait 
-                //before removing card from dom
                 setTimeout(() => {
+                    //dom remove
                     document.getElementById(this.cardID).remove();
+
+                    //retrieve all cards in the same group and remove them
+                    let siblings = cards.getAllCardForGroup(this.group);
+
+                    for (let i = 0; i < siblings.length; i++)
+                        siblings[i].remove();
+
+                    //remove this group from groups as all its cards have been removed
+                    groups.delete(this.group);
                 }, 200);
+
             });
     }
 
+    //simulate clicking so as to remove card gently
     public remove() {
-
         (<HTMLButtonElement>document.getElementById(this.cardID).
             getElementsByClassName('_close')[0]).click();
     }
 
 }
-export class GenericCard extends Card {
-    constructor(tabID: string, tooltipOn: boolean) {
-        super(tabID, true, false, tooltipOn);
 
-        allGeneric.push(this);
-    }
+/**
+ * All cards that don't show any score data are generic cards
+ */
+abstract class GenericCard extends Card {
 
-    public remove() {
-        super.remove();
-
-        allGeneric = allGeneric.filter(value => value.getCardID() !== this.cardID);
+    constructor(tabID: string, group: string, tooltipOn: boolean) {
+        super(tabID, group, true, false, tooltipOn);
     }
 
 }
 
+/**
+ * A score card for a domain.
+ * Admissible and comparable
+ */
 export class ScoreCard extends Card {
-
     private score: Score;
-    private domain: string;
+    private ready: boolean; //are score data ready to be rendered?
 
-    constructor(tabID: string, tooltipOn: boolean,
-        scoreData: Score, domain: string) {
-        super(tabID, true, true, tooltipOn);
+    constructor(goggles: string, tooltipOn: boolean, domain: string) {
+        super(goggles, domain, true, true, tooltipOn);
 
-        this.score = scoreData;
-        this.domain = domain;
+        this.ready = false;
+        this.title = domain;
+
+        extension.storage.getLatestScoreData(domain, goggles, (score) => {
+            this.score = score;
+            this.ready = true;
+        });
 
         this.setStringContent('');
     }
 
-    public setTitle(title: string) {
-        this.title = templates.get.TitleWithScores(title,
-            this.score.scores['pr'].bias_score,
-            this.score.scores['pr'].support_score);
+    protected setTitle(title: string) {
+        this.title = templates.get.TitleWithScores(title, this.score.scores['pr'].bias_score, this.score.scores['pr'].support_score);
     }
 
     private getScoreDataVector(): string[] {
         return this.score.scores['pr'].vector;
     }
 
-    public getDomain(): string {
-        return this.domain;
-    }
-
-    public getScore(): Score {
-        return this.score;
-    }
-
+    /**
+     * Render is run only when score data are retrieved from storage.
+     * Note that there is no error handling in case data doesn't exist.
+     * That is left up to the caller.
+     */
     public render() {
-        super.render();
-        this.setEditBtn();
+        let handle = setInterval(() => {
 
-        allScoreCards.set(this.domain + this.tabID, this);
+            if (this.ready) {
+                clearInterval(handle);
 
-        //canvas can only be rendered if element is already in the dom
-        chart.drawPolar(this.getScoreDataVector(), 440, 680,
-            document.getElementById(this.cardID).getElementsByClassName('card-text')[0] as HTMLElement,
-            'chart' + this.cardID, true);
+                super.render();
 
-    }
+                this.addCompareBtn();
 
-    public remove() {
-        super.remove();
+                //canvas can only be rendered if element is already in the dom
+                chart.drawPolar(this.getScoreDataVector(), 440, 680,
+                    document.getElementById(this.cardID).getElementsByClassName('card-text')[0] as HTMLElement,
+                    'chart' + this.cardID, true);
 
-        allScoreCards.delete(this.domain + this.tabID);
-        scoreCardsCache.set(this.domain + this.tabID, this);
-
-        allScoreCards.forEach((value, key) => {
-            if (value.getDomain() === this.domain) {
-                allScoreCards.delete(key);
-                value.remove();
+                this.score = null;
             }
-        });
-
-        console.log('removing...');
-        console.log(this.domain, this.tabID, this.cardID);
+        }, pollingInterval);
     }
 
-    private setEditBtn() {
+    private addCompareBtn() {
         document.getElementById(this.cardID).getElementsByClassName('compare')[0].addEventListener('click', () => {
-            let msg = new CustomEvent('compareCard', { detail: this.cardID });
+            //send message to signal the card that started comparison
+            let msg = new CustomEvent('compareCard', { detail: this.group });
             document.body.dispatchEvent(msg);
         });
     }
+
 }
 
+/**
+ * Card shown when domain is requested but extension is disabled
+ */
 export class ExtensionDisabledCard extends GenericCard {
 
     constructor(tabID: string) {
-        super(tabID, false);
+        super(tabID, 'extension-disabled', false);
         this.setTitle('Extension is disabled!');
         this.setStringContent('Enable it, and try again');
     }
 
 }
 
+/**
+ * Card shown when there are no data in service for a particular domain  
+ */
 export class UncrawledDomainCard extends GenericCard {
 
     constructor(tabID: string, domain: string) {
-        super(tabID, false);
+        domain = domain;
+        super(tabID, 'uncrawled-' + domain, false);
 
         this.setTitle('Too bad... :(');
         this.setHTMLContent(uncrawled.create404Msg(domain, ['text-info']));
@@ -289,10 +267,13 @@ export class UncrawledDomainCard extends GenericCard {
 
 }
 
+/**
+ * Card shown when requesting data for a non www page
+ */
 export class NotAWebpageCard extends GenericCard {
 
     constructor(tabID: string) {
-        super(tabID, false);
+        super(tabID, 'notawebpage', false);
 
         this.setTitle('This isn\'t a webpage!');
         this.setStringContent('');
@@ -300,64 +281,69 @@ export class NotAWebpageCard extends GenericCard {
 
 }
 
+/**
+ * Card showing a spinner when something is loading
+ */
 export class SpinnerCard extends GenericCard {
+
     constructor(tabID: string) {
-        super(tabID, false);
+        super(tabID, 'spinner', false);
 
         this.setTitle('Requesting data from service...');
         this.setStringContent(templates.get.Spinner());
     }
+
 }
 
+/**
+ * Card showing a radar for a list of specified domains.
+ * The only card other than ScoreCard that shows any score data
+ */
 export class CompareCard extends Card {
 
-    private data: Dictionary;
-    private comparedDomains: Array<string>;
+    private data: Dictionary; //used to package data send to drawRadar
+    private ready: boolean; //are score data ready to be rendered?
 
-    constructor(tabID: string, scoreData: Score[],
-        urlsForScoredata: Array<string>) {
-        super(tabID, true, false, false);
+    constructor(goggles: string, urlsForScoredata: Array<string>) {
+        super(goggles, urlsForScoredata.toString().replace(/,/g, '-'), true, false, false);
 
         this.data = {};
 
-        scoreData.forEach((score, index) => {
-            let url = urlsForScoredata[index];
+        this.title = 'Overview';
+        this.ready = false;
 
-            this.data[url] = score.scores['pr'].vector;
+        urlsForScoredata.forEach((domain, index) => {
+            extension.storage.getLatestScoreData(domain, goggles, (score) => {
+                this.data[domain] = score.scores['pr'].vector;
+
+                if (index === urlsForScoredata.length - 1)
+                    this.ready = true;
+            });
         });
-
-        this.comparedDomains = urlsForScoredata;
 
         this.setStringContent('');
     }
 
-    public getComparedDomains(): Array<string> {
-        return this.comparedDomains;
-    }
-
-    public remove() {
-        super.remove();
-
-        let siblings = allCompareCards.filter((value =>
-            value.getComparedDomains() === this.comparedDomains));
-
-        allCompareCards = allCompareCards.filter(value =>
-            value.getComparedDomains() !== this.comparedDomains)
-
-        if (siblings)
-            siblings.forEach(value => {
-                value.remove();
-            });
-    }
-
+    /**
+     * Render is run only when score data are retrieved from storage.
+     * Note that there is no error handling in case data doesn't exist.
+     * That is left up to the caller.
+     */
     public render() {
-        super.render();
 
-        allCompareCards.push(this);
+        let handle = setInterval(() => {
+            if (this.ready) {
+                clearInterval(handle);
 
-        chart.drawRadar(this.data, 440, 680,
-            document.getElementById(this.cardID).getElementsByClassName('card-text')[0] as HTMLElement,
-            'chart' + this.cardID, true);
+                super.render();
 
+                chart.drawRadar(this.data, 440, 680,
+                    document.getElementById(this.cardID).getElementsByClassName('card-text')[0] as HTMLElement,
+                    'chart' + this.cardID, true);
+
+                this.data = null;
+            }
+        }, pollingInterval);
     }
+
 }
