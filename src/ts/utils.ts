@@ -4,6 +4,16 @@ import { service } from './service';
 import { userSettings } from './usersettings';
 
 export namespace utils {
+    const MAX_SIZE = 10;
+    let recentDomains = new Array<string>();  //keeps track of last 10 domains
+
+    export function getRecentDomains() {
+        recentDomains.sort((a, b) => {
+            return a.localeCompare(b);
+        });
+
+        return recentDomains;
+    }
 
     export function getDomainFromURL(target: string): string {
 
@@ -87,11 +97,26 @@ export namespace utils {
     export function getBiasDataForGoggles(url: string, goggles: string, callback?: (data: Score, scoreIndex: number) => void) {
         userSettings.get(settings => {
             if (settings.enabled) {
+
                 if (url) {
+                    if (recentDomains.length > MAX_SIZE)
+                        recentDomains.shift();
+
+                    let contains = false;
+
+                    recentDomains.forEach((domain) => {
+                        if (domain === url)
+                            contains = true;
+                    });
+
+                    if (!contains)
+                        recentDomains.push(url);
+
                     extension.storage.getLatestScoreData(url, goggles, callback);
-                } else {
-                    callback(null, INVALID_URL);
                 }
+                else
+                    callback(null, INVALID_URL);
+
             } else {
                 callback(null, EXTENSION_DISABLED);
             }
@@ -295,7 +320,7 @@ export namespace utils {
         });
 
         splittedPerDay = splittedPerDay.map((perDayScoreMap) => {
-            return new Map([...perDayScoreMap].slice(0,5));
+            return new Map([...perDayScoreMap].slice(0, 5));
         });
 
         splittedPerDay = splittedPerDay.map((perDayScoreMap) => {
