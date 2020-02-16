@@ -287,11 +287,11 @@ export namespace templates {
             </div>`;
         }
 
-        export function CheckList(listTitle: string, labelsAndIds: Map<string, string>) {
+        export function CheckList(listTitle: string, labels: Array<string>) {
             let ret = `<p>${listTitle}</p>`;
 
-            labelsAndIds.forEach((value, key) => {
-                ret += checkWithLabel(key, value);
+            labels.forEach((value) => {
+                ret += checkWithLabel(value, value);
             });
 
             return ret;
