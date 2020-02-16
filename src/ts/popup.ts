@@ -170,7 +170,7 @@ export function updateContent(url: string, cleanTab: boolean, temp?: boolean) {
 
             if (temp)
                 tempCards.push(card);
-                
+
         });
 
     });
@@ -446,8 +446,9 @@ document.body.addEventListener('compareCard', (e) => {
     modalBody.insertAdjacentHTML('beforeend',
         templates.get.checkWithLabel(sourceCardDomain, sourceCardDomain, true, true));
 
-    modalBody.insertAdjacentHTML('beforeend',
-        templates.get.CheckList('<b><i>sites you visited recently:</i></b>', recent));
+    if (recent.length !== 0)
+        modalBody.insertAdjacentHTML('beforeend',
+            templates.get.CheckList('<b><i>sites you visited recently:</i></b>', recent));
 
     modalBody.insertAdjacentHTML('beforeend',
         templates.get.InputWithButon(inputID, searchID,

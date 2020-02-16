@@ -1,19 +1,22 @@
 import { Chart, PositionType, ChartTitleOptions, ChartData, ChartDataSets, ChartTooltipItem } from "chart.js";
-import { Dictionary, Score, PoliticalParties } from "./types";
+import { Dictionary, Score } from "./types";
 
 import "chartjs-plugin-annotation";
 import "chartjs-plugin-draggable";
 import "chartjs-plugin-watermark";
 import "chartjs-plugin-zoom";
+import "chartjs-plugin-datalabels";
 
 import { templates } from "./templates";
 import { extension } from "./storage";
 import { utils } from "./utils";
 
+import { Anchor, Font } from "chartjs-plugin-datalabels/types/options";
+
 export namespace chart {
 
-    const dataColorLightnes = 70;
-    const dataBorderLightness = 50;
+    const dataColorLightnes = 45;
+    const dataBorderLightness = 100;
 
     const green = 'rgb(0,100,0)';
     const red = 'rgb(139,0,0)';
@@ -82,38 +85,6 @@ export namespace chart {
 
     }
 
-    const commonOptionsWithoutLabels = {
-        legend: {
-            display: false
-        },
-        layout: {
-            padding: {
-                left: 5,
-                right: 5,
-                top: -60,
-                bottom: 0
-            }
-        }
-    };
-
-    const commonOptionsWithLabels = {
-        legend: {
-            position: <PositionType>'bottom',
-            labels: {
-                usePointStyle: true,
-                fontSize: 11
-            }
-        },
-        layout: {
-            padding: {
-                left: 5,
-                right: 5,
-                top: -60,
-                bottom: 0
-            }
-        }
-    };
-
     function createCanvas(id: string, width: number, height: number,
         positionElement: HTMLElement): HTMLCanvasElement {
         let canvas: HTMLCanvasElement;
@@ -121,8 +92,6 @@ export namespace chart {
         if (!document.getElementById(id)) {
             canvas = document.createElement('canvas');
             canvas.id = id;
-            canvas.width = width;
-            canvas.height = height;
 
             positionElement.appendChild(canvas);
         } else {
@@ -139,6 +108,9 @@ export namespace chart {
         let canvas = createCanvas(id, width, height, elem);
         let ctx = canvas.getContext('2d');
 
+        ctx.canvas.width = width;
+        ctx.canvas.height = height;
+
         let dataLabels = new Array;
         let data = new Array;
         let dataColors = new Array;
@@ -149,8 +121,8 @@ export namespace chart {
             dataLabels.push(i);
         }
 
-        let dataPainter = new DiscreteColorBuilder(dataLabels.length, 90, dataColorLightnes);
-        let borderPainter = new DiscreteColorBuilder(dataLabels.length, 100, dataBorderLightness);
+        let dataPainter = new DiscreteColorBuilder(dataLabels.length, 80, dataColorLightnes);
+        let borderPainter = new DiscreteColorBuilder(dataLabels.length, 80, dataBorderLightness);
 
         dataLabels.forEach((value) => {
             data.push(vector[value]);
@@ -168,11 +140,41 @@ export namespace chart {
                         data: data,
                         backgroundColor: dataColors,
                         borderColor: borderColors,
-                        borderWidth: 1
+                        borderWidth: 5
                     }],
                     labels: dataLabels
                 },
-                options: commonOptionsWithLabels
+                options: {
+                    legend: {
+                        display: false
+                    },
+                    layout: {
+                        padding: {
+                            left: 10,
+                            right: 10
+                        }
+                    },
+                    plugins: {
+                        datalabels: {
+                            anchor: <Anchor>'end',
+                            //@ts-ignore
+                            backgroundColor: function (context) {
+                                return context.dataset.backgroundColor;
+                            },
+                            borderColor: 'white',
+                            borderRadius: 25,
+                            borderWidth: 3,
+                            color: 'white',
+                            font: {
+                                weight: 'bold'
+                            } as Font,
+                            //@ts-ignore
+                            formatter: (value, context) => {
+                                return context.chart.data.labels[context.dataIndex];
+                            }
+                        }
+                    }
+                }
             });
         } else {
             new Chart(ctx, {
@@ -182,11 +184,15 @@ export namespace chart {
                         data: data,
                         backgroundColor: dataColors,
                         borderColor: borderColors,
-                        borderWidth: 1
+                        borderWidth: 5
                     }],
                     labels: dataLabels
                 },
-                options: commonOptionsWithoutLabels
+                options: {
+                    legend: {
+                        display: false
+                    }
+                }
             });
         }
     }
@@ -197,13 +203,16 @@ export namespace chart {
         let canvas = createCanvas(id, width, height, elem);
         let ctx = canvas.getContext('2d');
 
+        ctx.canvas.width = width;
+        ctx.canvas.height = height;
+
         let dataSeries = new Array;
 
         let dataSeriesLabels = Object.keys(dataVectors);
         let dataLabels = Object.keys(dataVectors[dataSeriesLabels[0]]);
 
         let dataPainter = new DiscreteColorBuilder(dataSeriesLabels.length, 80, dataColorLightnes);
-        let borderPainter = new DiscreteColorBuilder(dataSeriesLabels.length, 90, dataBorderLightness);
+        let borderPainter = new DiscreteColorBuilder(dataSeriesLabels.length, 80, dataBorderLightness);
 
         //console.log('---------------------------');
         //console.log(dataVectors);
@@ -216,6 +225,7 @@ export namespace chart {
                 data: Object.values(dataVectors[value]),
                 borderColor: borderPainter.next().toCssHSL(),
                 backgroundColor: dataPainter.next().toCssHSL(),
+                borderWidth: 5,
                 fill: true
             });
         });
@@ -229,7 +239,16 @@ export namespace chart {
                     datasets: dataSeries,
                     labels: dataLabels
                 },
-                options: commonOptionsWithLabels
+                options: {
+                    legend: {
+                        position: 'bottom',
+                    },
+                    plugins: {
+                        datalabels: {
+                            display: false,
+                        },
+                    }
+                }
             });
         } else {
             new Chart(ctx, {
@@ -238,7 +257,11 @@ export namespace chart {
                     datasets: dataSeries,
                     labels: dataLabels
                 },
-                options: commonOptionsWithoutLabels
+                options: {
+                    legend: {
+                        display: false
+                    }
+                }
             });
         }
     }
@@ -378,7 +401,7 @@ export namespace chart {
                         radius: 0
                     }
                 },
-                responsive: true,
+                responsive: false,
                 legend: {
                     display: false
                 },

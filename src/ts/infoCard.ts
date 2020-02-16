@@ -3,10 +3,12 @@ import { templates } from "./templates";
 import { Score, Dictionary } from "./types";
 import { chart } from "./drawchart";
 import { uncrawled } from "./uncrawled";
-import { utils } from "./utils";
 import { extension } from "./storage";
 
 const pollingInterval = 10; //ms
+
+const canvasWidth = 400;
+const canvasHeight = canvasWidth;
 
 let groups = new Set<string>();
 let id = 0;
@@ -220,7 +222,7 @@ export class ScoreCard extends Card {
                 this.addCompareBtn();
 
                 //canvas can only be rendered if element is already in the dom
-                chart.drawPolar(this.getScoreDataVector(), 440, 680,
+                chart.drawPolar(this.getScoreDataVector(), canvasWidth, canvasHeight,
                     document.getElementById(this.cardID).getElementsByClassName('card-text')[0] as HTMLElement,
                     'chart' + this.cardID, true);
 
@@ -337,7 +339,7 @@ export class CompareCard extends Card {
 
                 super.render();
 
-                chart.drawRadar(this.data, 440, 680,
+                chart.drawRadar(this.data, canvasWidth, canvasHeight,
                     document.getElementById(this.cardID).getElementsByClassName('card-text')[0] as HTMLElement,
                     'chart' + this.cardID, true);
 
