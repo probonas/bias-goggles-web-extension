@@ -1,6 +1,6 @@
 import { utils } from "./utils";
 import {
-    OffOptions, Score, ContextBtnMsg, EXTENSION_DISABLED, UNCRAWLED_URL, INVALID_URL,
+    OffOptions, ContextBtnMsg, EXTENSION_DISABLED, UNCRAWLED_URL, INVALID_URL,
 } from "./types";
 import { userSettings } from "./usersettings";
 import { extension } from "./storage";
@@ -8,7 +8,7 @@ import { templates } from "./templates";
 
 import {
     ScoreCard, UncrawledDomainCard, ExtensionDisabledCard,
-    NotAWebpageCard, SpinnerCard, CompareCard, cards
+    NotAWebpageCard, SpinnerCard, CompareCard, GoggleCard, cards
 } from "./infoCard";
 
 import "bootstrap"; //@types/bootstrap
@@ -225,10 +225,8 @@ chrome.runtime.onMessage.addListener((msg: ContextBtnMsg, sender: chrome.runtime
 });
 
 let sync = <HTMLSelectElement>document.getElementById('syncSelect');
-let goggle = <HTMLSelectElement>document.getElementById('goggleSelect');
-let popover = <HTMLSelectElement>document.getElementById('popoverSelect');
-
 let syncModal = <HTMLButtonElement>document.getElementById('syncModalBtn');
+const settingsTab = "gogglesList";
 
 sync.addEventListener('change', () => {
 
@@ -238,26 +236,27 @@ sync.addEventListener('change', () => {
 
 });
 
+setTimeout(() => {
+    userSettings.get((settings) => {
+
+        for (let i = 0; i < settings.gogglesList.length; i++) {
+            new GoggleCard(settingsTab, settings.gogglesList[i].id, settings.gogglesList[i].name, settings.gogglesList[i].description).render();
+        }
+
+    });
+}, 1000);
+
+
 let saveSettingsBtn = <HTMLButtonElement>document.getElementById('saveSettingsBtn');
 
 saveSettingsBtn.addEventListener('click', () => {
 
     userSettings.get((settings) => {
 
-        if (goggle.value !== 'Choose...') {
-            settings.goggles = goggle.value;
-        }
-
         if (sync.value !== 'Choose...' && sync.value === 'Yes') {
             settings.syncEnabled = true;
         } else if (sync.value !== 'Choose...' && sync.value === 'No') {
             settings.syncEnabled = false;
-        }
-
-        if (popover.value !== 'Choose...' && popover.value === 'Yes') {
-            settings.pagePopoverEnabled = true;
-        } else if (popover.value !== 'Choose...' && popover.value === 'No') {
-            settings.pagePopoverEnabled = false;
         }
 
         console.log(settings);
@@ -596,7 +595,3 @@ extension.storage.getAllScoreData((scores) => {
     });
 
 }, true);
-
-
-
-

@@ -5,7 +5,7 @@
   "scripts": {
     "test": "npx webpack --config ./webpack.dev.js --mode=\"development\"",
     "build": "npx webpack --config ./webpack.prod.js --mode=\"production\"",
-    "sign" : "npx web-ext sign --api-key=$WEB_EXT_API_KEY --api-secret=$WEB_EXT_API_SECRET"
+    "sign": "npx web-ext sign --api-key=$WEB_EXT_API_KEY --api-secret=$WEB_EXT_API_SECRET"
   },
   "keywords": [
     "bias-goggles",
@@ -20,6 +20,7 @@
     "bootstrap": "^4.4.1",
     "chart.js": "^2.7.0",
     "chartjs-plugin-annotation": "^0.5.7",
+    "chartjs-plugin-datalabels": "^0.7.0",
     "chartjs-plugin-watermark": "^1.0.3",
     "chartjs-plugin-zoom": "^0.7.5",
     "jquery": "^3.4.1",

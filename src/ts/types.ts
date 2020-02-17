@@ -1,19 +1,22 @@
 export let PoliticalParties: Goggle = {
     description: 'A goggle about political parties in Greece',
     name: 'Political Parties [GR]',
-    id: 'political-parties'
+    id: 'political-parties',
+    ready: true
 }
 
 export let SportsTeams: Goggle = {
     description: 'A goggle about sports teams in Greece',
     name: 'Sports Teams [GR]',
-    id: 'sport-teams'
+    id: 'sport-teams',
+    ready: true
 }
 
 export type Goggle = {
     description: string,
     name: string,
     id: string //tag as used by service
+    ready: boolean,
 };
 
 export enum OffOptions {

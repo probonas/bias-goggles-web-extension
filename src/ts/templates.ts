@@ -99,11 +99,7 @@ export namespace templates {
                 </button>
             </div>`;
         }
-        /*
-                <button type="button" class="btn btn-link compare" data-toggle="modal" data-target="#compareModal">
-                    <img src="icons/edit.svg" width="18" height="18" title="Compare" >
-                </button>`;
-        */
+
         export function OffButton(offBtnId: string, oneHourID: string, twoHoursID: string,
             sessionOnlyID: string, permaID: string): string {
             return `
@@ -316,6 +312,57 @@ export namespace templates {
             </div>`
         }
 
+        export function DeletableCardWithHeader(id: string, header: string, title: string, text: string, target: string) {
+
+            return `
+            <div class="card" id="${id}">
+                <h5 class="card-header">
+                        ${header}                        
+                        <div class="float-right">
+                            <button type="button" class="btn _delete" data-toggle="modal" data-target="#${target}">
+                                <img src="icons/trash.svg" width="18" height="18" title="Delete" >
+                            </button>
+                        </div>
+                </h5>
+            
+                <div class="card-body">
+                    <h5 class="card-title">${title}</h5>
+                    <p class="card-text">${text}</p>
+                </div>
+            </div>
+            <br>`
+        }
+
+        export function DeleteModal(id: string, title: string, body: string) {
+            return `
+            <div class="modal fade" id="${id}" tabindex="-1" role="dialog" aria-hidden="true">
+              <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                  
+                  <div class="modal-header">
+                    <h5 class="modal-title" id="modal-title">
+                       ${title}
+                    </h5>
+                  
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+
+                  </div>
+                  
+                  <div class="modal-body" id="modal-body">
+                    ${body}
+                  </div>
+
+                  <div class="modal-footer">
+                      <button type="button" class="btn btn-primary" data-dismiss="modal">Cancel</button>
+                      <button type="button" class="btn btn-outline-danger _delete">Delete</button>
+                  </div>
+
+                </div>
+              </div>
+            </div>`
+        }
     }
 
 }

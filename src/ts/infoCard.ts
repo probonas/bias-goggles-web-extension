@@ -4,6 +4,7 @@ import { Score, Dictionary } from "./types";
 import { chart } from "./drawchart";
 import { uncrawled } from "./uncrawled";
 import { extension } from "./storage";
+import { goggles } from "./goggles";
 
 const pollingInterval = 10; //ms
 
@@ -45,16 +46,27 @@ export namespace cards {
     }
 }
 
+abstract class Card {
+    //unique id of card in dom
+    protected cardID: string;
+    //tab this card belongs to
+    protected tabID: string;
+
+    constructor(tabID: string) {
+        this.tabID = tabID;
+        this.cardID = (++id).toString();
+    }
+
+    public abstract render(): void;
+}
+
 /**
  * An abstract class representing a card shown under Explore Tab
  */
-abstract class Card {
+abstract class ExploreCard extends Card {
     //title show
     protected title: string;
-    //unique id of card in dom
-    protected cardID: string;
-    //tab this card belongs to, usually the id of the goggle used
-    protected tabID: string;
+
     //if true, show X icon on the card
     protected dismissable: boolean;
     //if true and if title is very long, it's trimmed so as so to fit in card and a tooltip with the full title is shown on hover
@@ -71,11 +83,10 @@ abstract class Card {
 
     constructor(tabID: string, group: string, dismissable: boolean,
         comparable: boolean, tooltipOn: boolean) {
+        super(tabID);
 
-        this.cardID = (++id).toString();
         this.group = group;
 
-        this.tabID = tabID;
         this.dismissable = dismissable;
         this.comparable = comparable;
         this.tooltipOn = tooltipOn;
@@ -168,7 +179,7 @@ abstract class Card {
 /**
  * All cards that don't show any score data are generic cards
  */
-abstract class GenericCard extends Card {
+abstract class GenericCard extends ExploreCard {
 
     constructor(tabID: string, group: string, tooltipOn: boolean) {
         super(tabID, group, true, false, tooltipOn);
@@ -180,7 +191,7 @@ abstract class GenericCard extends Card {
  * A score card for a domain.
  * Admissible and comparable
  */
-export class ScoreCard extends Card {
+export class ScoreCard extends ExploreCard {
     private score: Score;
     private ready: boolean; //are score data ready to be rendered?
 
@@ -301,7 +312,7 @@ export class SpinnerCard extends GenericCard {
  * Card showing a radar for a list of specified domains.
  * The only card other than ScoreCard that shows any score data
  */
-export class CompareCard extends Card {
+export class CompareCard extends ExploreCard {
 
     private data: Dictionary; //used to package data send to drawRadar
     private ready: boolean; //are score data ready to be rendered?
@@ -348,4 +359,46 @@ export class CompareCard extends Card {
         }, pollingInterval);
     }
 
+}
+
+export class GoggleCard extends Card {
+    private goggleID: string;
+    private goggleName: string;
+    private goggleDescription: string;
+
+    constructor(tabID: string, goggleID: string, goggleName: string, goggleDescription: string) {
+        super(tabID)
+        this.goggleID = goggleID;
+        this.goggleName = goggleName;
+        this.goggleDescription = goggleDescription;
+    }
+
+    public render() {
+        let pos = document.getElementById(this.tabID);
+
+        let targetID = this.goggleID.replace(/ /g, '-') + this.cardID;
+
+        let card = templates.get.DeletableCardWithHeader(this.cardID, this.goggleName, '', this.goggleDescription, targetID);
+        let modal = templates.get.DeleteModal(targetID, 'Delete ' + this.goggleName + ' ?',
+            '<p>All data associated with this goggle will also be deleted.</p><b>You can re-install this goggle at any point.</b>');
+
+        pos.insertAdjacentHTML('beforeend', card);
+        pos.insertAdjacentHTML('beforeend', modal);
+
+        (<HTMLButtonElement>document.getElementById(targetID)).getElementsByClassName('_delete')[0].addEventListener('click', () => {
+            goggles.remove(this.goggleID);
+            (<HTMLButtonElement>document.getElementById(targetID).getElementsByClassName('close')[0]).click();
+            document.getElementById(this.cardID).classList.add('hide');
+
+            setTimeout(() => {
+                document.getElementById(this.cardID).remove();
+            }, 50);
+
+            pos.insertAdjacentHTML('afterbegin', templates.get.SuccessAlert('Successfully deleted goggle ' + this.goggleID));
+            
+            setTimeout(() => {
+                (<HTMLButtonElement>pos.getElementsByClassName('alert')[0].children[1]).click();
+            }, 4000);
+        });
+    }
 }

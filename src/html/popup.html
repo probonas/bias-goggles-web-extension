@@ -1,198 +1,200 @@
 <!DOCTYPE html>
 <html>
 
-  <head>
-    <meta charset="UTF-8">
-    <title>Bias-Goggles-Extension-Popup</title>
-  </head>
+<head>
+  <meta charset="UTF-8">
+  <title>Bias-Goggles-Extension-Popup</title>
+</head>
 
-  <body>
+<style>
+  #container {
+    max-width: 575.98px;
+  }
+</style>
 
-    <div class="container" id="container">
+<body>
 
-      <div class="card text-center">
-        <div class="card-header">
-          <div class="bg-light">
+  <div class="container" id="container">
 
-            <ul class="nav nav-pills nav-fill justify-content-md-center" id='nav-bar'>
+    <div class="card text-center">
+      <div class="card-header">
+        <div class="bg-light">
 
-              <li class="nav-item">
-                <a href="#live-info" id="live-info-tab" data-toggle='tab' role='tab' aria-controls="live-info"
-                  aria-selected="true" class="nav-link active">Inspect</a>
-              </li>
+          <ul class="nav nav-pills nav-fill justify-content-md-center" id='nav-bar'>
 
-              <li class="nav-item">
-                <a href="#search" id="search-tab" data-toggle='tab' role='tab' aria-controls="search"
-                  aria-selected="false" class="nav-link">Explore</a>
-              </li>
+            <li class="nav-item">
+              <a href="#live-info" id="live-info-tab" data-toggle='tab' role='tab' aria-controls="live-info"
+                aria-selected="true" class="nav-link active">Inspect</a>
+            </li>
+
+            <li class="nav-item">
+              <a href="#search" id="search-tab" data-toggle='tab' role='tab' aria-controls="search"
+                aria-selected="false" class="nav-link">Explore</a>
+            </li>
 
 
-              <li class="nav-item">
-                <a href="#analytics" id="settings-tab" data-toggle='tab' role='tab' aria-controls="analytics"
-                  aria-selected="false" class="nav-link">Analytics</a>
-              </li>
+            <li class="nav-item">
+              <a href="#analytics" id="settings-tab" data-toggle='tab' role='tab' aria-controls="analytics"
+                aria-selected="false" class="nav-link">Analytics</a>
+            </li>
 
-              <li class="nav-item">
-                <a href="#settings" id="settings-tab" data-toggle='tab' role='tab' aria-controls="settings"
-                  aria-selected="false" class="nav-link">Settings</a>
-              </li>
-              <!--
+            <li class="nav-item">
+              <a href="#settings" id="settings-tab" data-toggle='tab' role='tab' aria-controls="settings"
+                aria-selected="false" class="nav-link">Settings</a>
+            </li>
+            <!--
                 <li class="nav-item">
                 <a style="opacity: 0%; width: 50%;" role='tab' aria-selected="false" class="nav-link"></a>
               </li>
 -->
 
-            </ul>
-
-          </div>
-        </div>
-
-        <div class="card-body" id='main-card'>
-          <div class="tab-content" id="tabs-content">
-            <div class="tab-pane fade" id="search" role="tabpanel" aria-labelledby="search-tab"> Search Placeholder
-            </div>
-
-            <div class="tab-pane fade" id="analytics" role="tabpanel" aria-labelledby="analytics-tab">
-
-            </div>
-
-            <div class="tab-pane fade show active" id="live-info" role="tabpanel" aria-labelledby="live-info-tab">
-
-              <!-- Compare Modal -->
-              <div class="modal fade" id="compareModal" tabindex="-1" role="dialog" aria-labelledby="modelTitleId"
-                aria-hidden="true">
-                <div class="modal-dialog" role="document">
-                  <div class="modal-content">
-                    <div class="modal-header">
-                      <h5 class="modal-title" id="modal-title">
-                      </h5>
-                      <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                      </button>
-                    </div>
-                    <div class="modal-body" id="modal-body">
-                    </div>
-                    <div class="modal-footer">
-                      <button type="button" id="dismissCompareModel" class="btn btn-success"
-                        data-dismiss="modal">Cancel</button>
-                      <button type="button" class="btn btn-danger" data-dismiss="modal"
-                        id='compare-data-btn'>Show</button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-            </div>
-            <div class="tab-pane fade" id="settings" role="tabpanel" aria-labelledby="settings-tab">
-
-              <div>
-
-                <ul class="list-group">
-                  <li class="list-group-item">
-                    <label for="goggleSelect">Default bias goggle:</label>
-                    <select class="custom-select" id="goggleSelect">
-                      <option selected>Choose...</option>
-                      <option value="political-parties">Political Parties [gr]</option>
-                      <option value="sport-teams">Sport teams [gr]</option>
-                    </select>
-                  </li>
-                  <li class="list-group-item">
-                    <label for="goggleSelect">Allow extension to sync data accross devices:</label>
-                    <select class="custom-select" id="syncSelect">
-                      <option selected>Choose...</option>
-                      <option>Yes</option>
-                      <option>No</option>
-                    </select>
-                  </li>
-                  <li class="list-group-item">
-                    <label for="goggleSelect">Show popover in page:</label>
-                    <select class="custom-select" id="popoverSelect">
-                      <option selected>Choose...</option>
-                      <option>Yes</option>
-                      <option>No</option>
-                    </select>
-                  </li>
-                  <li class="list-group-item">
-                    <div class="col-auto">
-                      <button class="btn btn-primary mb-2" id='saveSettingsBtn'>Save</button>
-                    </div>
-                  </li>
-                </ul>
-
-              </div>
-
-              <br>
-
-              <div class="accordion" id="domainDataOverview">
-              </div>
-
-              <br>
-
-              <div class="accordion" id="analyticsDataOverview">
-              </div>
-
-              <br>
-
-              <button type="button" class="btn btn-outline-danger" id='deleteDataBtn' data-toggle="modal"
-                data-target="#deleteDataModal">Delete saved data</button>
-
-              <button style="display: none;" type="button" id='syncModalBtn' data-toggle="modal"
-                data-target="#syncModal"></button>
-
-              <!-- Sync Modal -->
-              <div class="modal fade" id="syncModal" tabindex="-1" role="dialog" aria-labelledby="modelTitleId"
-                aria-hidden="true">
-                <div class="modal-dialog" role="document">
-                  <div class="modal-content">
-                    <div class="modal-header">
-                      <h5 class="modal-title" id="modal-title">
-                        Note
-                      </h5>
-                      <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                      </button>
-                    </div>
-                    <div class="modal-body" id="modal-body">
-                      For this feature to work browser data sync must be enabled too!
-                    </div>
-                    <div class="modal-footer">
-                      <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Delete Confirmation Modal -->
-              <div class="modal fade" id="deleteDataModal" tabindex="-1" role="dialog" aria-labelledby="modelTitleId"
-                aria-hidden="true">
-                <div class="modal-dialog" role="document">
-                  <div class="modal-content">
-                    <div class="modal-header">
-                      <h5 class="modal-title">Warning!</h5>
-                      <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                      </button>
-                    </div>
-                    <div class="modal-body">
-                      This action is not reversible. Are you sure you want to proceed?
-                    </div>
-                    <div class="modal-footer">
-                      <button type="button" class="btn btn-success" data-dismiss="modal">No, leave data as is!</button>
-                      <button type="button" class="btn btn-danger" data-dismiss="modal" id='delete-data-btn'>Yes, delete
-                        all!</button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+          </ul>
 
         </div>
-
-        <script src="popup.js"></script>
       </div>
 
+      <div class="card-body" id='main-card'>
+        <div class="tab-content" id="tabs-content">
+          <div class="tab-pane fade" id="search" role="tabpanel" aria-labelledby="search-tab"> Search Placeholder
+          </div>
+
+          <div class="tab-pane fade" id="analytics" role="tabpanel" aria-labelledby="analytics-tab">
+
+          </div>
+
+          <div class="tab-pane fade show active" id="live-info" role="tabpanel" aria-labelledby="live-info-tab">
+
+            <!-- Compare Modal -->
+            <div class="modal fade" id="compareModal" tabindex="-1" role="dialog" aria-labelledby="modelTitleId"
+              aria-hidden="true">
+              <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h5 class="modal-title" id="modal-title">
+                    </h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                      <span aria-hidden="true">&times;</span>
+                    </button>
+                  </div>
+                  <div class="modal-body" id="modal-body">
+                  </div>
+                  <div class="modal-footer">
+                    <button type="button" id="dismissCompareModel" class="btn btn-success"
+                      data-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-danger" data-dismiss="modal"
+                      id='compare-data-btn'>Show</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+          <div class="tab-pane fade" id="settings" role="tabpanel" aria-labelledby="settings-tab">
+
+            <div>
+              <!-- 
+              <h3>Installed Goggles:</h3>
+              -->
+              <div id='gogglesList'>
+
+              </div>
+            </div>
+
+            <br>
+
+            <div>
+
+              <ul class="list-group">
+                <li class="list-group-item">
+                  <label for="syncSelect">Allow extension to sync data accross devices:</label>
+                  <select class="custom-select" id="syncSelect">
+                    <option selected>Choose...</option>
+                    <option>Yes</option>
+                    <option>No</option>
+                  </select>
+                </li>
+                <li class="list-group-item">
+                  <div class="col-auto">
+                    <button class="btn btn-primary mb-2" id='saveSettingsBtn'>Save</button>
+                  </div>
+                </li>
+              </ul>
+
+            </div>
+
+            <br>
+
+            <div class="accordion" id="domainDataOverview">
+            </div>
+
+            <br>
+
+            <div class="accordion" id="analyticsDataOverview">
+            </div>
+
+            <br>
+
+            <button type="button" class="btn btn-outline-danger" id='deleteDataBtn' data-toggle="modal"
+              data-target="#deleteDataModal">Delete saved data</button>
+
+            <button style="display: none;" type="button" id='syncModalBtn' data-toggle="modal"
+              data-target="#syncModal"></button>
+
+            <!-- Sync Modal -->
+            <div class="modal fade" id="syncModal" tabindex="-1" role="dialog" aria-labelledby="modelTitleId"
+              aria-hidden="true">
+              <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h5 class="modal-title" id="modal-title">
+                      Note
+                    </h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                      <span aria-hidden="true">&times;</span>
+                    </button>
+                  </div>
+                  <div class="modal-body" id="modal-body">
+                    For this feature to work browser data sync must be enabled too!
+                  </div>
+                  <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Delete Confirmation Modal -->
+            <div class="modal fade" id="deleteDataModal" tabindex="-1" role="dialog" aria-labelledby="modelTitleId"
+              aria-hidden="true">
+              <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h5 class="modal-title">Warning!</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                      <span aria-hidden="true">&times;</span>
+                    </button>
+                  </div>
+                  <div class="modal-body">
+                    This action is not reversible. Are you sure you want to proceed?
+                  </div>
+                  <div class="modal-footer">
+                    <button type="button" class="btn btn-success" data-dismiss="modal">No, leave data as is!</button>
+                    <button type="button" class="btn btn-danger" data-dismiss="modal" id='delete-data-btn'>Yes, delete
+                      all!</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <script src="popup.js"></script>
     </div>
-  </body>
+
+  </div>
+
+</body>
 
 </html>

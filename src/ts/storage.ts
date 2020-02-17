@@ -364,5 +364,25 @@ export namespace extension {
                 });
             });
         }
+
+        /**
+         * Retrieves all domain data whose key is a contains partial key
+         *  
+         * @param partialkey to retrieve data for
+         * @param callback callback with all the domainData that match this partial key, null otherwise
+         */
+        export function getAllDomainDataPartialKey(partialkey: string, callback: (domainData: Map<string, DomainData>) => void) {
+            getAllDomainData(domainData => {
+                domainData.forEach((value, key) => {
+                    if (!key.includes(partialkey))
+                        domainData.delete(key)
+                })
+
+                if (domainData.size === 0)
+                    callback(null);
+                else
+                    callback(domainData);
+            });
+        }
     }
 }

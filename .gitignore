@@ -4,3 +4,4 @@
 !tests/jasmine/*.js
 node_modules/*
 dist/*
+*Zone.Identifier
