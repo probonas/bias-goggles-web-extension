@@ -18,8 +18,8 @@ import { Anchor, Font } from "chartjs-plugin-datalabels/types/options";
 
 export namespace chart {
 
-    const dataColorLightnes = 45;
-    const dataBorderLightness = 100;
+    const lightness = 45;
+    const saturation = 80;
 
     const green = 'rgb(0,100,0)';
     const red = 'rgb(139,0,0)';
@@ -124,8 +124,8 @@ export namespace chart {
             dataLabels.push(i);
         }
 
-        let dataPainter = new DiscreteColorBuilder(dataLabels.length, 80, dataColorLightnes);
-        let borderPainter = new DiscreteColorBuilder(dataLabels.length, 80, dataBorderLightness);
+        let dataPainter = new DiscreteColorBuilder(dataLabels.length, saturation, lightness);
+        let borderPainter = new DiscreteColorBuilder(dataLabels.length, saturation, saturation);
 
         dataLabels.forEach((value) => {
             data.push(vector[value]);
@@ -216,8 +216,8 @@ export namespace chart {
         let dataSeriesLabels = Object.keys(dataVectors);
         let dataLabels = Object.keys(dataVectors[dataSeriesLabels[0]]);
 
-        let dataPainter = new DiscreteColorBuilder(dataSeriesLabels.length, 80, dataColorLightnes);
-        let borderPainter = new DiscreteColorBuilder(dataSeriesLabels.length, 80, dataBorderLightness);
+        let dataPainter = new DiscreteColorBuilder(dataSeriesLabels.length, saturation, lightness);
+        let borderPainter = new DiscreteColorBuilder(dataSeriesLabels.length, saturation, saturation);
 
         //console.log('---------------------------');
         //console.log(dataVectors);
@@ -606,8 +606,8 @@ export namespace chart {
             type: 'bar',
             data: {},
             options: {
-                //@ts-ignore
                 /*
+                //@ts-ignores
                 watermark: {
                     image: 'https://www.google.com/images/branding/googlelogo/1x/googlelogo_color_272x92dp.png',
                     alignToChartArea: true,
@@ -680,12 +680,10 @@ export namespace chart {
 
                         });
 
-
-                        let color = new DiscreteColorBuilder(domains.size / 2, dataColorLightnes, dataBorderLightness);
+                        let color = new DiscreteColorBuilder(domains.size / 2, saturation, lightness);
 
                         //for every domain returned from top
                         domains.forEach((domain) => {
-                            let dataFound = false;
                             let data = new Array<number>();
 
                             //for every day selected
@@ -717,16 +715,21 @@ export namespace chart {
                         chart.update();
                     },
                     zoom: {
+                        pan: {
+                            enabled: true,
+                            mode: 'y',
+                            rangeMin: {
+                                y: 0
+                            }
+                        },
                         zoom: {
                             rangeMin: {
                                 y: 0
                             },
-                            rangeMax: {
-                                y: 1
-                            },
                             enabled: true,
+                            drag: false,
                             mode: 'y',
-                            speed: 0.3
+                            speed: 0.1,
                         }
                     }
                 }
