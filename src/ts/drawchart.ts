@@ -1,11 +1,14 @@
-import { Chart, PositionType, ChartTitleOptions, ChartData, ChartDataSets, ChartTooltipItem } from "chart.js";
+import { Chart, ChartTitleOptions, ChartData, ChartDataSets, ChartTooltipItem } from "chart.js";
 import { Dictionary, Score } from "./types";
 
 import "chartjs-plugin-annotation";
 import "chartjs-plugin-draggable";
 import "chartjs-plugin-watermark";
 import "chartjs-plugin-zoom";
-import "chartjs-plugin-datalabels";
+
+import ChartDataLabelsPlugin from "chartjs-plugin-datalabels";
+//chartjs-plugin-datalabels installs itself globally by default
+Chart.plugins.unregister(ChartDataLabelsPlugin);
 
 import { templates } from "./templates";
 import { extension } from "./storage";
@@ -174,7 +177,8 @@ export namespace chart {
                             }
                         }
                     }
-                }
+                },
+                plugins: [ChartDataLabelsPlugin]
             });
         } else {
             new Chart(ctx, {
@@ -192,7 +196,8 @@ export namespace chart {
                     legend: {
                         display: false
                     }
-                }
+                },
+                plugins: [ChartDataLabelsPlugin]
             });
         }
     }
@@ -401,7 +406,7 @@ export namespace chart {
                         radius: 0
                     }
                 },
-                responsive: false,
+                responsive: true,
                 legend: {
                     display: false
                 },
