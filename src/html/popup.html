@@ -55,7 +55,27 @@
 
       <div class="card-body" id='main-card'>
         <div class="tab-content" id="tabs-content">
-          <div class="tab-pane fade" id="search" role="tabpanel" aria-labelledby="search-tab"> Search Placeholder
+          <div class="tab-pane fade" id="search" role="tabpanel" aria-labelledby="search-tab">
+
+            <div class="input-group">
+              <input type="text" class="form-control" id="searchbox" placeholder="enter goggle name,topic or keywords">
+              <button type="button" class="btn btn-primary" placement="right">
+                <i class="fa fa-search"></i>
+              </button>
+
+            </div>
+
+            <div class="dropdown-divider"></div>
+
+            <div class="input-group">
+              <button type="button" style="width: 100%;" class="btn btn-primary" data-toggle="collapse"
+                href="#goggle-creator" aria-expanded="false" aria-controls="goggle-creator">or create your own</button>
+            </div>
+
+
+            <div class="collapse" id="goggle-creator">
+            </div>
+            
           </div>
 
           <div class="tab-pane fade" id="analytics" role="tabpanel" aria-labelledby="analytics-tab">

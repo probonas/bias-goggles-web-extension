@@ -1,4 +1,3 @@
-
 export namespace templates {
 
     export namespace get {
@@ -320,7 +319,7 @@ export namespace templates {
                         ${header}                        
                         <div class="float-right">
                             <button type="button" class="btn _delete" data-toggle="modal" data-target="#${target}">
-                                <img src="icons/trash.svg" width="18" height="18" title="Delete" >
+                                <i class="fa fa-trash" data-toggle="tooltip" data-placement="top" title="Delete this Goggle"></i>
                             </button>
                         </div>
                 </h5>
@@ -363,6 +362,113 @@ export namespace templates {
               </div>
             </div>`
         }
+
+        export function GoggleCard(goggleName: string, goggleDescription: string, goggleID: string) {
+            return `
+            <div class="card">
+                <div class="card-header">
+                    ${goggleName}
+                </div>
+                
+                <div class="card-body">
+                    <p class="card-text">${goggleDescription}</p>
+                    <button type="button" class="btn btn-outline-primary" data-toggle="tooltip" data-placement="right" title="Install this Goggle">
+                        <i class="fa fa-plus"></i>
+                    </button>
+                </div>
+            </div>`;
+        }
+
+        export function AspectSeed() {
+            return `
+            <input type="text" class="form-control seed_" data-toggle="tooltip" data-placement="bottom" title="e.g. a political party's webpage, a brand's page or an affiliated page"
+                placeholder="enter supporting site...">
+            <br>`;
+
+        }
+
+        export function GoggleAspect() {            
+            return `
+                <div class="row aspect_">
+                    <div class="col justify-content-start">
+                        <input type="text" class="form-control aspect_name" placeholder="Enter aspect name" data-trigger="focus hover" 
+                            data-toggle="tooltip" data-placement="bottom" title="e.g. name of a political party or a brand">
+                    </div>
+
+                    <div class="col justify-content-end">
+                        
+                        <div class="row seedlist_">
+                            ${AspectSeed()}
+                        </div>
+                        
+                        <br>
+                        
+                        <div class="row">
+                            <button type="button" class="btn btn-outline-success add-site" data-toggle="tooltip"
+                                data-placement="right" title="add supporting site for this aspect">
+                                <i class="fa fa-plus"></i>
+                            </button>
+                            
+                            &nbsp;&nbsp;&nbsp;
+
+                            <button type="button" class="btn btn-outline-warning remove-site" data-toggle="tooltip"
+                                    data-placement="right" title="remove last supporting site">
+                                <i class="fa fa-minus"></i>
+                            </button>
+                        </div>
+                    </div>   
+            </div>
+            <br>`
+        };
+
+        export function GoggleCreator() {
+            return `
+            <br>
+            <div class="dropdown-divider"></div>
+
+            <form id="gogglecreation-form">
+              
+                <div class="form-group">
+                    <label for="new-goggle-name">Goggle Name:</label>
+                    <input type="text" class="form-control" id="new-goggle-name" placeholder="Enter name for this goggle">
+                    <small id="new-goggle-help" class="form-text text-muted">Should be descriptive of the goggle in order
+                        to help the community</small>
+                </div>
+              
+                <div class="form-group">
+                    <label for="goggle-description">Description:</label>
+                    <textarea class="form-control" id="goggle-description" rows="4"
+                        placeholder="Enter complete description of the goggle and try to be concise..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <div id="aspectslist">
+                        ${GoggleAspect()}
+                    </div>
+
+                    <div class="col-6">
+                        <div class="row">
+                            <button id="add-aspect" type="button" class="btn btn-outline-success" data-toggle="tooltip"
+                                data-placement="right" title="add new aspect">
+                                <i class="fa fa-plus"></i>
+                            </button>
+
+                            &nbsp;&nbsp;&nbsp;
+                            
+                            <button id="remove-aspect" type="button" class="btn btn-outline-warning" data-toggle="tooltip"
+                                    data-placement="right" title="remove last aspect">
+                                <i class="fa fa-minus"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                </div>
+
+            </form>
+            <div class="dropdown-divider"></div>
+            `
+        }
+
     }
 
 }

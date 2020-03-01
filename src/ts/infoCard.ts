@@ -142,7 +142,8 @@ abstract class ExploreCard extends Card {
 
         //fade in
         setTimeout(() => {
-            document.getElementById(this.cardID).children[1].classList.add('show');
+            if (document.getElementById(this.cardID) && document.getElementById(this.cardID).children[1])
+                document.getElementById(this.cardID).children[1].classList.add('show');
         }, 250);
 
         //add listener on X button of card
@@ -153,7 +154,8 @@ abstract class ExploreCard extends Card {
 
                 setTimeout(() => {
                     //dom remove
-                    document.getElementById(this.cardID).remove();
+                    if (document.getElementById(this.cardID))
+                        document.getElementById(this.cardID).remove();
 
                     //retrieve all cards in the same group and remove them
                     let siblings = cards.getAllCardForGroup(this.group);
@@ -395,7 +397,7 @@ export class GoggleCard extends Card {
             }, 50);
 
             pos.insertAdjacentHTML('afterbegin', templates.get.SuccessAlert('Successfully deleted goggle ' + this.goggleID));
-            
+
             setTimeout(() => {
                 (<HTMLButtonElement>pos.getElementsByClassName('alert')[0].children[1]).click();
             }, 4000);

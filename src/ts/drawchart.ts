@@ -20,6 +20,7 @@ export namespace chart {
 
     const lightness = 45;
     const saturation = 80;
+    const opaque = 100;
 
     const green = 'rgb(0,100,0)';
     const red = 'rgb(139,0,0)';
@@ -125,7 +126,7 @@ export namespace chart {
         }
 
         let dataPainter = new DiscreteColorBuilder(dataLabels.length, saturation, lightness);
-        let borderPainter = new DiscreteColorBuilder(dataLabels.length, saturation, saturation);
+        let borderPainter = new DiscreteColorBuilder(dataLabels.length, saturation, opaque);
 
         dataLabels.forEach((value) => {
             data.push(vector[value]);

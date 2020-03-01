@@ -335,5 +335,13 @@ export namespace utils {
     export function makeKey(domain: string, goggles: string): string {
         return goggles + ' ' + domain;
     }
+
+    export function getDomainFromKey(key: string) {
+        return key.split(' ')[1];
+    }
+
+    export function getGoggleIDFromKey(key: string) {
+        return key.split(' ')[0];
+    }
 }
 

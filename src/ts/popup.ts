@@ -1,6 +1,6 @@
 import { utils } from "./utils";
 import {
-    OffOptions, ContextBtnMsg, EXTENSION_DISABLED, UNCRAWLED_URL, INVALID_URL,
+    OffOptions, ContextBtnMsg, EXTENSION_DISABLED, UNCRAWLED_URL, INVALID_URL, Score,
 } from "./types";
 import { userSettings } from "./usersettings";
 import { extension } from "./storage";
@@ -13,9 +13,12 @@ import {
 
 import "bootstrap"; //@types/bootstrap
 import 'bootstrap/dist/css/bootstrap.min.css';
+import "@fortawesome/fontawesome-free/js/all.min.js";
 
 import { uncrawled } from "./uncrawled";
 import { chart } from "./drawchart";
+
+import * as $ from "jquery";
 
 const navId = 'nav-bar';
 const onBtnId = 'bg-onbtn';
@@ -35,6 +38,11 @@ let tabLabels = new Array();
 let tabIDs = new Array();
 
 let tempCards = new Array();
+
+//enable tooltips on dynamically created elements
+$('body').tooltip({
+    selector: '[data-toggle="tooltip"]'
+});
 
 function showBtn(on: boolean) {
 
@@ -270,90 +278,75 @@ saveSettingsBtn.addEventListener('click', () => {
 });
 
 function showDomainDataUnderSettings() {
-    /*
-     extension.storage.getAllDomainData((data) => {
-        let domainDataOverviewDiv = document.getElementById('domainDataOverview');
-         let domainCards: string = '';
- 
-         let innerTables = '';
- 
-         //console.log(data);
- 
-         let formattedData: { [key: string]: { [key: string]: any } } = {};
- 
-         for (let key in data) {
- 
-             if (!isNaN(parseInt(key)))
-                 continue;
- 
-             let goggle = key.split(' ')[0];
-             let domain = key.split(' ')[1];
- 
-             let domainData = <DomainData>data[key];
- 
-             //console.log(domainData.scoreIndex);
- 
-             let scores = (<Score>data[domainData.scoreIndex]).scores;
- 
-             if (typeof formattedData[domain] === 'undefined')
-                 formattedData[domain] = {};
- 
-             formattedData[domain][goggle] = {
-                 scores
-             };
-         }
- 
-         for (let key in Object.keys(formattedData)) {
-             let domain = Object.keys(formattedData)[key];
-             innerTables = '';
- 
-             for (let goggleKey in Object.keys(formattedData[domain])) {
-                 let goggleName = Object.keys(formattedData[domain])[goggleKey];
- 
-                 let biasData = formattedData[domain][goggleName];
- 
-                 //@ts-ignore
-                 let pr = biasData.scores['pr'];
-                 //@ts-ignore
-                 let lt = biasData.scores['lt'];
-                 //@ts-ignore
-                 let ic = biasData.scores['ic'];
- 
-                 let unrollscore = (scoreValue: any) => {
-                     let ret = '';
- 
-                     for (let property in Object.keys(scoreValue)) {
-                         let propertyName = Object.keys(scoreValue)[property];
- 
-                         if (propertyName === 'vector') {
-                             ret += templates.get.TableRow('Vectors', 'Support', true);
- 
-                             for (let vectorKey in Object.keys(scoreValue[propertyName])) {
-                                 let vectorName = Object.keys(scoreValue[propertyName])[vectorKey];
- 
-                                 ret += templates.get.TableRow(vectorName, scoreValue[propertyName][vectorName], false);
-                             }
- 
-                         } else {
-                             ret += templates.get.TableRow(propertyName, scoreValue[propertyName], false);
-                         }
-                     }
- 
-                     return ret;
-                 }
- 
-                 let rows = unrollscore(pr);
-                 //rows += unrollscore(lt);
-                 //rows += unrollscore(ic);
- 
-                 innerTables += templates.get.Table('Goggles:', goggleName, rows) + '<br>';
-             }
-             domainCards += templates.get.AccordionCard(domain, innerTables, cards.getUniqueID(), 'domainDataOverview');
-         }
- 
-         domainDataOverviewDiv.insertAdjacentHTML('afterbegin', domainCards);
-     });
-     */
+    extension.storage.getAllDomainData((domainData) => {
+        extension.storage.getAllScoreData(scores => {
+            let domainCards: string = '';
+
+            let domainDataOverviewDiv = document.getElementById('domainDataOverview');
+
+            let formatted = new Map<string, Score[]>();
+
+            if (domainData)
+
+                domainData.forEach((value, key) => {
+
+                    if (!formatted.has(utils.getDomainFromKey(key))) {
+                        let scoresArr = new Array<Score>();
+                        scoresArr.push(scores.get(value.scoreIndex));
+                        formatted.set(utils.getDomainFromKey(key), scoresArr);
+                    } else {
+                        formatted.get(utils.getDomainFromKey(key)).push(scores.get(value.scoreIndex));
+                    }
+
+                    //console.log(value, key, utils.getDomainFromKey(key), utils.getGoggleIDFromKey(key));
+                });
+
+            //console.log(formatted);
+
+            formatted.forEach((value, key) => {
+                let innerTables = '';
+
+                value.forEach((scoreValue) => {
+
+                    //@ts-ignore
+                    let pr = scoreValue.scores['pr'];
+                    //@ts-ignore
+                    let lt = scoreValue.scores['lt'];
+                    //@ts-ignore
+                    let ic = scoreValue.scores['ic'];
+
+                    let unrollscore = (scoreValue: any) => {
+                        let ret = '';
+
+                        for (let property in Object.keys(scoreValue)) {
+                            let propertyName = Object.keys(scoreValue)[property];
+
+                            if (propertyName === 'vector') {
+                                ret += templates.get.TableRow('Vectors', 'Support', true);
+
+                                for (let vectorKey in Object.keys(scoreValue[propertyName])) {
+                                    let vectorName = Object.keys(scoreValue[propertyName])[vectorKey];
+
+                                    ret += templates.get.TableRow(vectorName, scoreValue[propertyName][vectorName], false);
+                                }
+
+                            } else {
+                                ret += templates.get.TableRow(propertyName, scoreValue[propertyName], false);
+                            }
+                        }
+
+                        return ret;
+                    }
+
+                    let rows = unrollscore(pr);
+                    innerTables += templates.get.Table('Goggles:', scoreValue.goggle, rows) + '<br>';
+                });
+                domainCards += templates.get.AccordionCard(key, innerTables, cards.getUniqueID(), 'domainDataOverview');
+            });
+
+            domainDataOverviewDiv.insertAdjacentHTML('afterbegin', domainCards);
+        });
+    });
 }
 
 document.getElementById('delete-data-btn').addEventListener('click', () => {
@@ -595,3 +588,57 @@ extension.storage.getAllScoreData((scores) => {
     });
 
 }, true);
+
+//document.body.insertAdjacentHTML('beforeend',templates.get.GoggleCard('Testing card','Hmmmm ok','polikalo'));
+
+function aspectSupportingSitesAddListener(elem: Element) {
+    if (elem) {
+
+        (<HTMLButtonElement>(elem.getElementsByClassName('add-site')[0])).addEventListener('click', () => {
+            (elem.getElementsByClassName('seedlist_')[0]).insertAdjacentHTML('beforeend', templates.get.AspectSeed());
+        });
+
+        (<HTMLButtonElement>(elem.getElementsByClassName('remove-site')[0])).addEventListener('click', () => {
+            let seeds = (elem.getElementsByClassName('seedlist_')[0]).getElementsByClassName('seed_');
+
+            if (seeds.length > 1) {
+                (<HTMLInputElement>seeds[seeds.length - 1]).remove();
+            }
+        });
+    }
+}
+
+document.getElementById('goggle-creator').insertAdjacentHTML('afterbegin', templates.get.GoggleCreator());
+
+document.getElementById('add-aspect').addEventListener('click', () => {
+    let aspects = document.getElementsByClassName('aspect_');
+    let emptyFound = false;
+    let emptyIndex = -1;
+
+    for (let i = 0; i < aspects.length; i++) {
+        if (!(<HTMLInputElement>(aspects[i].getElementsByClassName('aspect_name')[0])).value) {
+            emptyFound = true;
+            emptyIndex = i;
+            break;
+        }
+    }
+
+    if (emptyFound) {
+        (<HTMLInputElement>(aspects[emptyIndex].getElementsByClassName('aspect_name')[0])).focus();
+    } else {
+        document.getElementById('aspectslist').insertAdjacentHTML('beforeend', templates.get.GoggleAspect());
+        let aspects = document.getElementById('aspectslist').getElementsByClassName('aspect_');
+        aspectSupportingSitesAddListener(aspects[aspects.length - 1]);
+    }
+});
+
+document.getElementById('remove-aspect').addEventListener('click', () => {
+    let aspects = document.getElementsByClassName('aspect_');
+
+    for (let i = aspects.length - 1; i > 0; i--) {
+        aspects[i].remove();
+    }
+
+});
+
+aspectSupportingSitesAddListener(document.body);
