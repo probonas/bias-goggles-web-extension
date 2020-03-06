@@ -144,7 +144,7 @@ export namespace chart {
                         data: data,
                         backgroundColor: dataColors,
                         borderColor: borderColors,
-                        borderWidth: 5
+                        borderWidth: 2
                     }],
                     labels: dataLabels
                 },
@@ -189,7 +189,7 @@ export namespace chart {
                         data: data,
                         backgroundColor: dataColors,
                         borderColor: borderColors,
-                        borderWidth: 5
+                        borderWidth: 2
                     }],
                     labels: dataLabels
                 },
