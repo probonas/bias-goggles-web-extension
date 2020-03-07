@@ -589,56 +589,61 @@ extension.storage.getAllScoreData((scores) => {
 
 }, true);
 
-//document.body.insertAdjacentHTML('beforeend',templates.get.GoggleCard('Testing card','Hmmmm ok','polikalo'));
+let aspectcounter = 0;
 
-function aspectSupportingSitesAddListener(elem: Element) {
-    if (elem) {
+function addDeleteSeedListener(elem: Element) {
+    setTimeout(() => {
 
-        (<HTMLButtonElement>(elem.getElementsByClassName('add-site')[0])).addEventListener('click', () => {
-            (elem.getElementsByClassName('seedlist_')[0]).insertAdjacentHTML('beforeend', templates.get.AspectSeed());
-        });
+        console.log(elem);
 
-        (<HTMLButtonElement>(elem.getElementsByClassName('remove-site')[0])).addEventListener('click', () => {
-            let seeds = (elem.getElementsByClassName('seedlist_')[0]).getElementsByClassName('seed_');
+        (elem.getElementsByClassName('removeicon')[0]).addEventListener('click', () => {
+            let tooltips = document.body.getElementsByClassName('tooltip');
 
-            if (seeds.length > 1) {
-                (<HTMLInputElement>seeds[seeds.length - 1]).remove();
+            //tooltips are not rendered as children of elements so we need to remove them manually
+            for (let i = 0; i < tooltips.length; i++)
+                tooltips[i].remove();
+
+            if (!(elem.getElementsByClassName('removeicon')[0]).parentElement.classList.contains('offset-3')) {
+                if ((elem.getElementsByClassName('removeicon')[0]).parentElement.nextElementSibling)
+                    (elem.getElementsByClassName('removeicon')[0]).parentElement.nextElementSibling.classList.remove('offset-3');
             }
+
+            (elem.getElementsByClassName('removeicon')[0]).parentElement.remove();
+        });
+    }, 50);
+}
+
+function addSeedListener(elem: Element) {
+    if (elem) {
+        let addSeedBtn = <HTMLButtonElement>(elem.getElementsByClassName('add-site')[0]);
+
+        addSeedBtn.addEventListener('click', () => {
+            let seedslist = elem.getElementsByClassName('seedlist')[0];
+
+            if (elem.getElementsByClassName('seed').length === 0)
+                seedslist.insertAdjacentHTML('beforeend', templates.get.AddSeed(false));
+            else
+                seedslist.insertAdjacentHTML('beforeend', templates.get.AddSeed(true));
+
+            addDeleteSeedListener(seedslist.lastElementChild);
         });
     }
 }
 
-document.getElementById('goggle-creator').insertAdjacentHTML('afterbegin', templates.get.GoggleCreator());
+function addAspect() {
+    let aspectsList = document.getElementById('aspectslist');
+    let label = '#' + (++aspectcounter);
+    let newAspectID = 'aspect-' + aspectcounter;
+
+    aspectsList.insertAdjacentHTML('beforeend', templates.get.AddAspect(label, newAspectID));
+    //register delete listener for the first one
+    addDeleteSeedListener(document.getElementById(newAspectID).getElementsByClassName('seedlist')[0].lastElementChild);
+    addSeedListener(document.getElementById(newAspectID));
+}
 
 document.getElementById('add-aspect').addEventListener('click', () => {
-    let aspects = document.getElementsByClassName('aspect_');
-    let emptyFound = false;
-    let emptyIndex = -1;
-
-    for (let i = 0; i < aspects.length; i++) {
-        if (!(<HTMLInputElement>(aspects[i].getElementsByClassName('aspect_name')[0])).value) {
-            emptyFound = true;
-            emptyIndex = i;
-            break;
-        }
-    }
-
-    if (emptyFound) {
-        (<HTMLInputElement>(aspects[emptyIndex].getElementsByClassName('aspect_name')[0])).focus();
-    } else {
-        document.getElementById('aspectslist').insertAdjacentHTML('beforeend', templates.get.GoggleAspect());
-        let aspects = document.getElementById('aspectslist').getElementsByClassName('aspect_');
-        aspectSupportingSitesAddListener(aspects[aspects.length - 1]);
-    }
+    addAspect();
 });
 
-document.getElementById('remove-aspect').addEventListener('click', () => {
-    let aspects = document.getElementsByClassName('aspect_');
-
-    for (let i = aspects.length - 1; i > 0; i--) {
-        aspects[i].remove();
-    }
-
-});
-
-aspectSupportingSitesAddListener(document.body);
+//initial aspect
+addAspect();
