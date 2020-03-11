@@ -38,7 +38,6 @@
     "@types/node": "^13.1.6",
     "@types/popper.js": "^1.11.0",
     "chartjs-plugin-draggable": "^0.1.6",
-    "create-web-ext": "^1.0.0",
     "css-loader": "^3.4.0",
     "expect.js": "^0.3.1",
     "filemanager-webpack-plugin": "^2.0.5",
