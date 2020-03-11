@@ -29,9 +29,6 @@
 			],
 			"js": [
 				"popover.js"
-			],
-			"css": [
-				"popover.css"
 			]
 		}
 	],
