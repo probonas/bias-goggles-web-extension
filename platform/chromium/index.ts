@@ -1,4 +1,3 @@
-import "./showNotification";
 import "../../src/ts/background";
 import { ContextBtnMsg } from "../../src/ts/types";
 
