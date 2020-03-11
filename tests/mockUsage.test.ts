@@ -1,7 +1,7 @@
 import { extension } from "../src/ts/storage";
 import { userSettings } from "../src/ts/usersettings";
 import { alexatop300gr } from "./domains";
-import { PoliticalParties } from "../src/ts/types";
+import { PoliticalParties, SportsTeams } from "../src/ts/types";
 import { utils } from "../src/ts/utils";
 
 describe('mockUsage', () => {
@@ -22,11 +22,11 @@ describe('mockUsage', () => {
         done();
     });
 
-    for (let i = 1; i < 15; i++) {
+    for (let i = 1; i < 30; i++) {
 
-        for (let domain = 0; domain < alexatop300gr.length / 6; domain++) {
+        for (let domain = 0; domain < alexatop300gr.length / 50; domain++) {
 
-            for (let total = 0; total < Math.floor(Math.random() * 10); total++) {
+            for (let total = 0; total < Math.floor(Math.random() * 20); total++) {
 
                 it('day ' + i, (done) => {
 
@@ -36,9 +36,16 @@ describe('mockUsage', () => {
 
                     extension.storage.getLatestScoreData(utils.getDomainFromURL(alexatop300gr[domain]),
                         PoliticalParties.id, (score, index) => {
-                            expect().nothing();
-                            done();
+                            
+                            extension.storage.getLatestScoreData(utils.getDomainFromURL(alexatop300gr[domain]),
+                                SportsTeams.id, (score, index) => {
+                                    expect().nothing();
+                                    done();
+                                });
+                                
                         });
+
+
                 });
             }
         }
