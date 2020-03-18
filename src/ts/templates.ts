@@ -185,37 +185,36 @@ export namespace templates {
             return card;
         }
 
-        function NavBar(body: string): string {
-            return `
-            <ul class="nav nav-tabs" role="tablist">
-                ${body}
-            </ul>`;
-        }
+        export function MutedButton(id: string, label: string): string {
+            let txt = label;
+            if(label.length > 12)
+                txt = label.slice(0,12) + '...';
 
-        function TabContents(contents: string): string {
             return `
-            <div class="tab-content">
-                ${contents}
+            <div class="col-4">
+                <button id="${id}" type="button" class="btn btn-primary disabled" data-toggle="tooltip" title="${label}">
+                    ${txt}
+                </button>
             </div>`;
         }
 
-        function Tab(title: string, tabID: string, active: boolean): string {
+        export function Tab(tabID: string, contentTabID: string, active: boolean): string {
             if (active) {
                 return `
-                <li class="nav-item" id="${title}">
-                    <a href="#${tabID}" class="nav-link active" data-toggle="tab" 
-                    role="tab" aria-controls="${tabID}" aria-selected="true">${title}</a>
+                <li class="nav-item" id="${tabID}">
+                    <a href="#${contentTabID}" class="nav-link active" data-toggle="tab" 
+                    role="tab" aria-controls="${contentTabID}" aria-selected="true">${tabID}</a>
                 </li>`;
             } else {
                 return `
-                <li class="nav-item" id="${title}">
-                    <a href="#${tabID}" class="nav-link" data-toggle="tab" role="tab" 
-                    aria-controls="${tabID}" aria-selected="false">${title}</a>
+                <li class="nav-item" id="${tabID}">
+                    <a href="#${contentTabID}" class="nav-link" data-toggle="tab" role="tab" 
+                    aria-controls="${contentTabID}" aria-selected="false">${tabID}</a>
                 </li>`;
             }
         }
 
-        function TabPane(paneID: string, labelledby: string, active: boolean): string {
+        export function TabPane(paneID: string, labelledby: string, active: boolean): string {
 
             if (active) {
                 return `
@@ -229,21 +228,6 @@ export namespace templates {
                 </div>`;
             }
 
-        }
-
-        export function CreateTabs(tabLabels: string[], tabIDs: string[]): string {
-            let tabs = '';
-            let panes = '';
-
-            for (let i = 0; i < tabLabels.length; i++) {
-                let title = tabLabels[i];
-                let tabID = tabIDs[i];
-
-                tabs += Tab(title, tabID, (i === 0));
-                panes += TabPane(tabID, title, (i === 0));
-            }
-
-            return NavBar(tabs) + TabContents(panes);
         }
 
         export function TitleWithScores(title: string, bias_score?: number, support_score?: number) {
@@ -395,7 +379,7 @@ export namespace templates {
             return `
             <div class="col-3 mb-2">
                 <input type="text" class="form-control aspectlabel" style="text-align:center;" placeholder="${aspectName}" data-toggle="tooltip" data-placement="bottom" title="aspect number" readonly>
-                <i class="fa fa-times removeicon" data-toggle="tooltip" data-placement="bottom" title="delete this aspect"></i>
+                <i class="fa fa-times removeicon removeaspect" data-toggle="tooltip" data-placement="bottom" title="delete this aspect"></i>
             </div>`
         }
 

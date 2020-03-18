@@ -1,6 +1,6 @@
 import { utils } from "./utils";
 import {
-    OffOptions, ContextBtnMsg, EXTENSION_DISABLED, UNCRAWLED_URL, INVALID_URL, Score,
+    OffOptions, ContextBtnMsg, EXTENSION_DISABLED, UNCRAWLED_URL, INVALID_URL, Score, Goggle,
 } from "./types";
 import { userSettings } from "./usersettings";
 import { extension } from "./storage";
@@ -19,6 +19,7 @@ import { uncrawled } from "./uncrawled";
 import { chart } from "./drawchart";
 
 import * as $ from "jquery";
+import { setTimeout } from "timers";
 
 const navId = 'nav-bar';
 const onBtnId = 'bg-onbtn';
@@ -31,6 +32,9 @@ const onID = 'bg-on';
 
 const compareModal = 'compareModal';
 const compareDataBtn = 'compare-data-btn';
+const liveInfoGoggles = "live-info-goggleslist";
+const tablist = 'tablist';
+const tabContent = 'tabcontent';
 
 let thisWindowID: number = null;
 
@@ -354,23 +358,60 @@ document.getElementById('delete-data-btn').addEventListener('click', () => {
     extension.storage.clear();
 });
 
+function newTab(goggle: Goggle) {
+    let tabs = document.getElementById(tablist);
+    let content = document.getElementById(tabContent);
+
+    tabs.insertAdjacentHTML('beforeend', templates.get.Tab(goggle.name, goggle.id, false));
+    content.insertAdjacentHTML('beforeend', templates.get.TabPane(goggle.id, goggle.name, false));
+
+    (<HTMLElement>document.getElementById(goggle.name).lastElementChild).click();
+}
+
+function removeTab(goggle: Goggle) {
+    let thisTab = <HTMLElement>document.getElementById(goggle.name);
+    let sibling = thisTab.nextElementSibling || thisTab.previousElementSibling;
+
+    document.getElementById(goggle.id).remove();
+    document.getElementById(goggle.name).remove();
+
+    if (sibling)
+        (<HTMLElement>document.getElementById(sibling.id).lastElementChild).click();
+}
+
 userSettings.get((settings) => {
 
     settings.gogglesList.forEach(value => {
         tabLabels.push(value.name);
         tabIDs.push(value.id);
+
+        let id = value.id + '-create-tab-btn';
+
+        document.getElementById(liveInfoGoggles).insertAdjacentHTML('beforeend', templates.get.MutedButton(id, value.name));
+
+        document.getElementById(id).addEventListener('click', (elem) => {
+            let btn = <HTMLButtonElement>elem.target;
+            if (btn.classList.contains('disabled')) {
+                btn.classList.remove('disabled');
+                newTab(value);
+            }
+            else {
+                btn.classList.add('disabled');
+                removeTab(value);
+            }
+        });
     });
 
-    let tabs = templates.get.CreateTabs(tabLabels, tabIDs);
+    //let tabs = templates.get.CreateTabs(tabLabels, tabIDs);
 
-    document.getElementById('live-info').insertAdjacentHTML('beforeend', tabs);
+    //document.getElementById('live-info').insertAdjacentHTML('beforeend', tabs);
 });
 
-//showDomainDataUnderSettings();
-//showAnalyticsDataUnderSettings();
+showDomainDataUnderSettings();
 
 //update data under settings without the need to reload popup/sidebar
 chrome.storage.onChanged.addListener((changes, areaName) => {
+    /*
     if (changes.oldValue !== undefined || changes.oldValue !== null) {
 
         while (document.getElementById('domainDataOverview').hasChildNodes())
@@ -381,6 +422,7 @@ chrome.storage.onChanged.addListener((changes, areaName) => {
 
         showDomainDataUnderSettings();
     }
+    */
 });
 
 let uncrawledMsgInModal = false;
@@ -593,9 +635,6 @@ let aspectcounter = 0;
 
 function addDeleteSeedListener(elem: Element) {
     setTimeout(() => {
-
-        console.log(elem);
-
         (elem.getElementsByClassName('removeicon')[0]).addEventListener('click', () => {
             let tooltips = document.body.getElementsByClassName('tooltip');
 
@@ -639,11 +678,18 @@ function addAspect() {
     //register delete listener for the first one
     addDeleteSeedListener(document.getElementById(newAspectID).getElementsByClassName('seedlist')[0].lastElementChild);
     addSeedListener(document.getElementById(newAspectID));
+
+    console.log((document.getElementById(newAspectID).getElementsByClassName('removeaspect')[0]));
+
+    setTimeout(() => {
+        (document.getElementById(newAspectID).getElementsByClassName('removeaspect')[0]).addEventListener('click', () => {
+            console.log('here');
+            document.getElementById(newAspectID).remove();
+        })
+    }, 50);
 }
 
-document.getElementById('add-aspect').addEventListener('click', () => {
-    addAspect();
-});
+document.getElementById('add-aspect').addEventListener('click', addAspect);
 
 //initial aspect
 addAspect();
