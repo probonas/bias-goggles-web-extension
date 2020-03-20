@@ -105,7 +105,7 @@ export namespace templates {
             <li class="nav-item dropdown" id="${offBtnId}">
                 <button id="on-off-dropdown" class="btn" data-toggle="dropdown" 
                     data-boundary="window" type="button" aria-haspopup="true" aria-expanded="false">
-                    <img src="icons/off.svg" width="18" height="18" title="OffButton" >
+                    <i class="fa fa-power-off" style="color:red" aria-hidden="true"></i>
                 </button>
                 <div class="dropdown-menu" aria-labelledby="on-off-dropdown">
                     <button class="dropdown-item" id="${oneHourID}">for 1 hour</button>
@@ -122,7 +122,7 @@ export namespace templates {
             return `
             <li class="nav-item" id="${onBtnId}">
                 <button class="btn" id="${onElementId}">
-                    <img src="icons/on.svg" width="18" height="18" title="OnButton" >
+                    <i class="fa fa-power-off" style="color:green" aria-hidden="true"></i>
                 </button>
             </li>`
         }

@@ -51,8 +51,6 @@
 	},
 	"web_accessible_resources": [
 		"icons/edit.svg",
-		"icons/x.svg",
-		"icons/on.svg",
-		"icons/off.svg"
+		"icons/x.svg"
 	]
 }
