@@ -1,6 +1,6 @@
 {
   "name": "bias-goggles-browser-ext",
-  "version": "0.0.1",
+  "version": "0.9.0",
   "description": "A browser extension for the bias-goggles search engine",
   "scripts": {
     "test": "npx webpack --config ./webpack.dev.js --mode=\"development\"",
