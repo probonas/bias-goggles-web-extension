@@ -3,7 +3,7 @@
   "version": "0.9.0",
   "description": "A browser extension for the bias-goggles search engine",
   "scripts": {
-    "test": "npx webpack --config ./webpack.dev.js --mode=\"development\"",
+    "dev": "npx webpack --config ./webpack.dev.js --mode=\"development\"",
     "build": "npx webpack --config ./webpack.prod.js --mode=\"production\"",
     "sign": "npx web-ext sign --api-key=$WEB_EXT_API_KEY --api-secret=$WEB_EXT_API_SECRET"
   },
