@@ -1,6 +1,8 @@
 export namespace templates {
 
     export namespace get {
+        let aspectcounter = 0;
+        let aspectLabelPrefix = '#';
 
         export function InnerCard(title: string, body: string, id: string, tooltipOn: boolean, dismissable: boolean, comparable: boolean): string {
             let close = '';
@@ -187,8 +189,8 @@ export namespace templates {
 
         export function MutedButton(id: string, label: string): string {
             let txt = label;
-            if(label.length > 12)
-                txt = label.slice(0,12) + '...';
+            if (label.length > 12)
+                txt = label.slice(0, 12) + '...';
 
             return `
             <div class="col-4">
@@ -363,39 +365,108 @@ export namespace templates {
             </div>`;
         }
 
-        export function AddSeed(offset: boolean) {
-            let space = '';
-            if (offset)
-                space = 'offset-3';
+        function removeTooltips() {
+            //delete tooltip gently
+            let tooltips = document.body.getElementsByClassName('tooltip');
 
-            return `
-            <div class="${space} col-9 mb-2">
+            for (let i = 0; i < tooltips.length; i++) {
+                if (tooltips[i].classList.contains('show'))
+                    tooltips[i].classList.remove('show');
+                tooltips[i].remove();
+            }
+        }
+
+        function AddSeed(offset: boolean): HTMLElement {
+            let seedHTML = `
                 <input type="text" class="form-control seed" data-toggle="tooltip" data-placement="bottom" title="e.g. a political party's webpage, a brand's page or an affiliated page" placeholder="enter supporting site...">
-                <i class="fa fa-times removeicon" data-toggle="tooltip" data-placement="bottom" title="delete this site"></i>
-            </div>`;
+                <i class="fa fa-times removeicon removeseed" data-toggle="tooltip" data-placement="bottom" title="delete this site"></i>`;
+
+            let ret = document.createElement('div');
+
+            if (offset)
+                ret.classList.add('offset-3', 'col-9', 'mb-2');
+            else
+                ret.classList.add('col-9', 'mb-2');
+
+            ret.insertAdjacentHTML('afterbegin', seedHTML);
+
+            setTimeout(() => {
+                //add delete seed button listener
+                let deleteSeedBtn = ret.getElementsByClassName('removeseed')[0];
+
+                deleteSeedBtn.addEventListener('click', () => {
+                    if (!deleteSeedBtn.parentElement.classList.contains('offset-3'))
+                        if (deleteSeedBtn.parentElement.nextElementSibling)
+                            deleteSeedBtn.parentElement.nextElementSibling.classList.remove('offset-3');
+                    deleteSeedBtn.parentElement.remove();
+
+                    removeTooltips();
+                });
+            }, 50)
+
+            return ret;
         }
 
-        function AspectLabel(aspectName: string) {
-            return `
-            <div class="col-3 mb-2">
+        function AspectLabel(aspectName: string): HTMLElement {
+            let aspectHTML = `
                 <input type="text" class="form-control aspectlabel" style="text-align:center;" placeholder="${aspectName}" data-toggle="tooltip" data-placement="bottom" title="aspect number" readonly>
-                <i class="fa fa-times removeicon removeaspect" data-toggle="tooltip" data-placement="bottom" title="delete this aspect"></i>
-            </div>`
+                <i class="fa fa-times removeicon removeaspect" data-toggle="tooltip" data-placement="bottom" title="delete this aspect"></i>`;
+
+            let div = document.createElement('div');
+            div.classList.add('col-3', 'mb-2');
+
+            div.insertAdjacentHTML('afterbegin', aspectHTML);
+
+            return div;
         }
 
-        export function AddAspect(aspectName: string, aspectID: string) {
-            return `
-            <div id="${aspectID}">
+        export function AddAspect(): HTMLElement {
+            const aspectHTML = `
                 <div class="row seedlist">
-                        ${AspectLabel(aspectName)}
-                        ${AddSeed(false)}
+
                 </div>
                 <div class="d-flex flex-row-reverse mt-2 mb-4">
                     <button type="button" class="btn btn-outline-success add-site" data-toggle="tooltip" data-placement="right" title="add supporting site for this aspect">
                         <i class="fa fa-plus"></i>
                     </button>
-                </div>
-            </div>`
+                </div>`
+
+            let ret = document.createElement('div');
+            ret.classList.add('aspect')
+
+            ret.insertAdjacentHTML('afterbegin', aspectHTML);
+
+            ret.getElementsByClassName('seedlist')[0].appendChild(AspectLabel(aspectLabelPrefix + (++aspectcounter)));
+            ret.getElementsByClassName('seedlist')[0].appendChild(AddSeed(false));
+
+            let addSeedBtn = ret.getElementsByClassName('add-site')[0];
+
+            addSeedBtn.addEventListener('click', () => {
+                let seedslist = ret.getElementsByClassName('seedlist')[0];
+
+                if (ret.getElementsByClassName('seed').length === 0)
+                    seedslist.appendChild(AddSeed(false));
+                else
+                    seedslist.appendChild(AddSeed(true));
+            });
+
+            setTimeout(() => {
+                ret.getElementsByClassName('removeaspect')[0].addEventListener('click', () => {
+                    ret.remove();
+                    removeTooltips();
+
+                    let aspects = document.getElementsByClassName('aspect');
+
+                    for (let i = 0; i < aspects.length; i++) {
+                        let label = aspectLabelPrefix + (i + 1);
+                        (<HTMLInputElement>aspects[i].getElementsByClassName('aspectlabel')[0]).placeholder = label;
+                        aspectcounter = i + 1;
+                    }
+
+                });
+            }, 50);
+
+            return ret;
         };
 
     }

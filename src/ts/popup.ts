@@ -631,65 +631,9 @@ extension.storage.getAllScoreData((scores) => {
 
 }, true);
 
-let aspectcounter = 0;
-
-function addDeleteSeedListener(elem: Element) {
-    setTimeout(() => {
-        (elem.getElementsByClassName('removeicon')[0]).addEventListener('click', () => {
-            let tooltips = document.body.getElementsByClassName('tooltip');
-
-            //tooltips are not rendered as children of elements so we need to remove them manually
-            for (let i = 0; i < tooltips.length; i++)
-                tooltips[i].remove();
-
-            if (!(elem.getElementsByClassName('removeicon')[0]).parentElement.classList.contains('offset-3')) {
-                if ((elem.getElementsByClassName('removeicon')[0]).parentElement.nextElementSibling)
-                    (elem.getElementsByClassName('removeicon')[0]).parentElement.nextElementSibling.classList.remove('offset-3');
-            }
-
-            (elem.getElementsByClassName('removeicon')[0]).parentElement.remove();
-        });
-    }, 50);
-}
-
-function addSeedListener(elem: Element) {
-    if (elem) {
-        let addSeedBtn = <HTMLButtonElement>(elem.getElementsByClassName('add-site')[0]);
-
-        addSeedBtn.addEventListener('click', () => {
-            let seedslist = elem.getElementsByClassName('seedlist')[0];
-
-            if (elem.getElementsByClassName('seed').length === 0)
-                seedslist.insertAdjacentHTML('beforeend', templates.get.AddSeed(false));
-            else
-                seedslist.insertAdjacentHTML('beforeend', templates.get.AddSeed(true));
-
-            addDeleteSeedListener(seedslist.lastElementChild);
-        });
-    }
-}
-
-function addAspect() {
-    let aspectsList = document.getElementById('aspectslist');
-    let label = '#' + (++aspectcounter);
-    let newAspectID = 'aspect-' + aspectcounter;
-
-    aspectsList.insertAdjacentHTML('beforeend', templates.get.AddAspect(label, newAspectID));
-    //register delete listener for the first one
-    addDeleteSeedListener(document.getElementById(newAspectID).getElementsByClassName('seedlist')[0].lastElementChild);
-    addSeedListener(document.getElementById(newAspectID));
-
-    console.log((document.getElementById(newAspectID).getElementsByClassName('removeaspect')[0]));
-
-    setTimeout(() => {
-        (document.getElementById(newAspectID).getElementsByClassName('removeaspect')[0]).addEventListener('click', () => {
-            console.log('here');
-            document.getElementById(newAspectID).remove();
-        })
-    }, 50);
-}
-
-document.getElementById('add-aspect').addEventListener('click', addAspect);
+document.getElementById('add-aspect').addEventListener('click', () => {
+    document.getElementById('aspectslist').insertAdjacentElement('beforeend', templates.get.AddAspect());
+});
 
 //initial aspect
-addAspect();
+document.getElementById('add-aspect').click();
