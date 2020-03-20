@@ -11,15 +11,14 @@ import {
     NotAWebpageCard, SpinnerCard, CompareCard, GoggleCard, cards
 } from "./infoCard";
 
-import "bootstrap"; //@types/bootstrap
-import 'bootstrap/dist/css/bootstrap.min.css';
+import "bootstrap"; //all bootstrap functions along their requirements
+import 'bootstrap/dist/css/bootstrap.min.css'; //boostrap's css *only*
 import "@fortawesome/fontawesome-free/js/all.min.js";
 
 import { uncrawled } from "./uncrawled";
 import { chart } from "./drawchart";
 
 import * as $ from "jquery";
-import { setTimeout } from "timers";
 
 const navId = 'nav-bar';
 const onBtnId = 'bg-onbtn';
