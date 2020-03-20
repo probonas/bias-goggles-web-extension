@@ -1,34 +1,33 @@
 export namespace templates {
 
-    export namespace get {
-        let aspectcounter = 0;
-        let aspectLabelPrefix = '#';
+    let aspectcounter = 0;
+    let aspectLabelPrefix = '#';
 
-        export function InnerCard(title: string, body: string, id: string, tooltipOn: boolean, dismissable: boolean, comparable: boolean): string {
-            let close = '';
-            let compare = '';
+    export function InnerCard(title: string, body: string, id: string, tooltipOn: boolean, dismissable: boolean, comparable: boolean): string {
+        let close = '';
+        let compare = '';
 
-            if (dismissable) {
-                close = `
+        if (dismissable) {
+            close = `
                 <button type="button" class="btn btn-link _close">
                     <img src="icons/x.svg" width="18" height="18" title="Close" >
                 </button>`;
-            };
+        };
 
-            if (comparable) {
-                compare = `
+        if (comparable) {
+            compare = `
                 <button type="button" class="btn btn-link compare" data-toggle="modal" data-target="#compareModal">
                     <img src="icons/edit.svg" width="18" height="18" title="Compare" >
                 </button>`;
+        }
+
+        if (tooltipOn) {
+            let tooltipText = title;
+            if (title.length > 28) {
+                title = title.substr(0, 28) + '...';
             }
 
-            if (tooltipOn) {
-                let tooltipText = title;
-                if (title.length > 28) {
-                    title = title.substr(0, 28) + '...';
-                }
-
-                return `
+            return `
                 <div id="${id}">
                     <br>
                     <div class="card fade">
@@ -54,8 +53,8 @@ export namespace templates {
                     <div class="pt-2"></div>
                 </div>`;
 
-            } else {
-                return `
+        } else {
+            return `
                 <div id="${id}">
                     <br>
                     <div class="card fade">
@@ -79,31 +78,31 @@ export namespace templates {
                     </div>
                     <div class="pt-2"></div>
                 </div>`;
-            }
         }
+    }
 
-        export function Spinner(): string {
-            return `
+    export function Spinner(): string {
+        return `
             <div class="d-flex justify-content-center">
                 <div class="spinner-border" role="status">
                     <span class="sr-only">Loading...</span>
                 </div>
             </div>`;
-        }
+    }
 
-        export function SuccessAlert(msg: string): string {
-            return `
+    export function SuccessAlert(msg: string): string {
+        return `
             <div class="alert alert-success alert-dismissible fade show" role="alert">
                 <strong>${msg}</strong>
                 <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>`;
-        }
+    }
 
-        export function OffButton(offBtnId: string, oneHourID: string, twoHoursID: string,
-            sessionOnlyID: string, permaID: string): string {
-            return `
+    export function OffButton(offBtnId: string, oneHourID: string, twoHoursID: string,
+        sessionOnlyID: string, permaID: string): string {
+        return `
             <li class="nav-item dropdown" id="${offBtnId}">
                 <button id="on-off-dropdown" class="btn" data-toggle="dropdown" 
                     data-boundary="window" type="button" aria-haspopup="true" aria-expanded="false">
@@ -117,20 +116,20 @@ export namespace templates {
                     <button class="dropdown-item" id="${permaID}">until I re-enable it</button>
                 </div>
             </li>`;
-        }
+    }
 
-        export function OnButton(onBtnId: string, onElementId: string): string {
+    export function OnButton(onBtnId: string, onElementId: string): string {
 
-            return `
+        return `
             <li class="nav-item" id="${onBtnId}">
                 <button class="btn" id="${onElementId}">
                     <i class="fa fa-power-off" style="color:green" aria-hidden="true"></i>
                 </button>
             </li>`
-        }
+    }
 
-        export function Table(firstColLabel: string, secondColLabel: string, rowsData: string): string {
-            const table = `
+    export function Table(firstColLabel: string, secondColLabel: string, rowsData: string): string {
+        const table = `
             <table class="table table-hover">
                 <thead>
                     <tr>
@@ -143,31 +142,31 @@ export namespace templates {
                 </tbody>
             </table>`;
 
-            return table;
-        }
+        return table;
+    }
 
-        export function TableRow(firstColValue: string, secondColValue: string, strong: boolean): string {
-            const body_strong = `
+    export function TableRow(firstColValue: string, secondColValue: string, strong: boolean): string {
+        const body_strong = `
             <tr>
                 <th scope="row">${firstColValue}</th>
                 <td>${secondColValue}</td>
             </tr>`;
 
-            const body = `
+        const body = `
             <tr>
                 <td>${firstColValue}</td>
                 <td>${secondColValue}</td>
             </tr>`;
 
-            if (strong)
-                return body_strong;
-            else
-                return body;
-        }
+        if (strong)
+            return body_strong;
+        else
+            return body;
+    }
 
-        export function AccordionCard(title: string, body: string, ascendingCardNum: number, dataparent: string): string {
+    export function AccordionCard(title: string, body: string, ascendingCardNum: number, dataparent: string): string {
 
-            const card = `
+        const card = `
             <div class="card">
                 <div class="card-header" id="header${ascendingCardNum}">
                 <h2 class="mb-0">
@@ -184,109 +183,109 @@ export namespace templates {
                 </div>
             </div>`;
 
-            return card;
-        }
+        return card;
+    }
 
-        export function MutedButton(id: string, label: string): string {
-            let txt = label;
-            if (label.length > 12)
-                txt = label.slice(0, 12) + '...';
+    export function MutedButton(id: string, label: string): string {
+        let txt = label;
+        if (label.length > 12)
+            txt = label.slice(0, 12) + '...';
 
-            return `
+        return `
             <div class="col-4">
                 <button id="${id}" type="button" class="btn btn-primary disabled" data-toggle="tooltip" title="${label}">
                     ${txt}
                 </button>
             </div>`;
-        }
+    }
 
-        export function Tab(tabID: string, contentTabID: string, active: boolean): string {
-            if (active) {
-                return `
+    export function Tab(tabID: string, contentTabID: string, active: boolean): string {
+        if (active) {
+            return `
                 <li class="nav-item" id="${tabID}">
                     <a href="#${contentTabID}" class="nav-link active" data-toggle="tab" 
                     role="tab" aria-controls="${contentTabID}" aria-selected="true">${tabID}</a>
                 </li>`;
-            } else {
-                return `
+        } else {
+            return `
                 <li class="nav-item" id="${tabID}">
                     <a href="#${contentTabID}" class="nav-link" data-toggle="tab" role="tab" 
                     aria-controls="${contentTabID}" aria-selected="false">${tabID}</a>
                 </li>`;
-            }
         }
+    }
 
-        export function TabPane(paneID: string, labelledby: string, active: boolean): string {
+    export function TabPane(paneID: string, labelledby: string, active: boolean): string {
 
-            if (active) {
-                return `
+        if (active) {
+            return `
                 <div class="tab-pane fade show active" id="${paneID}" 
                     role="tabpanel" aria-labelledby="${labelledby}">
                 </div>`;
-            } else {
-                return `
+        } else {
+            return `
                 <div class="tab-pane fade" id="${paneID}" role="tabpanel" 
                     aria-labelledby="${labelledby}">
                 </div>`;
-            }
-
         }
 
-        export function TitleWithScores(title: string, bias_score?: number, support_score?: number) {
-            if (bias_score === undefined) {
-                return `
+    }
+
+    export function TitleWithScores(title: string, bias_score?: number, support_score?: number) {
+        if (bias_score === undefined) {
+            return `
                 <ul class="list-unstyled">
                     <li> ${title} </li>
                     <hr />
                 </ul>`;
-            } else {
-                return `
+        } else {
+            return `
                 <ul class="list-unstyled">
                     <li> ${title} </li>
                     <hr />
                     <li><h4 class="text-info">Bias Score: ${Math.fround(bias_score * 100).toFixed(2)} %</h4></li>
                     <li><h4 class="text-info">Support Score: ${Math.fround(support_score * 100).toFixed(2)} %</h4></li>
                 </ul>`
-            }
-            ;
         }
+        ;
+    }
 
-        export function checkWithLabel(label: string, id: string, preChecked?: boolean, isHidden?: boolean) {
-            let checked = '';
-            let hidden = '';
+    export function checkWithLabel(label: string, id: string, preChecked?: boolean, isHidden?: boolean) {
+        let checked = '';
+        let hidden = '';
 
-            if (preChecked)
-                checked = 'checked';
+        if (preChecked)
+            checked = 'checked';
 
-            if (isHidden)
-                hidden = 'display: none;';
+        if (isHidden)
+            hidden = 'display: none;';
 
-            return `
+        return `
             <div class="form-check" style="${hidden}">
                 <input class="form-check-input" type="checkbox" id="${id}" value="${label}" ${checked}>
                 <label class="form-check-label" for="${id}" > ${label} </label>
             </div>`;
-        }
+    }
 
-        export function CheckList(listTitle: string, labels: Array<string>) {
-            let ret = `<p>${listTitle}</p>`;
+    export function CheckList(listTitle: string, labels: Array<string>) {
+        let ret = `<p>${listTitle}</p>`;
 
-            labels.forEach((value) => {
-                ret += checkWithLabel(value, value);
-            });
+        labels.forEach((value) => {
+            ret += checkWithLabel(value, value);
+        });
 
-            return ret;
-        }
+        return ret;
+    }
 
-        export function InputWithButon(inputID: string, btnID: string,
-            inputPlaceHolder: string, btnLabel: string, title?: string, contentID?: string) {
+    export function InputWithButon(inputID: string, btnID: string,
+        inputPlaceHolder: string, btnLabel: string, title?: string, contentID?: string) {
 
-            if (!title)
-                title = '';
-            if (!contentID)
-                contentID = '';
+        if (!title)
+            title = '';
+        if (!contentID)
+            contentID = '';
 
-            return `
+        return `
             <div class="dropdown-divider"></div>
             <p id="${contentID}">${title}</p>
             <div class="input-group mb-3">
@@ -295,11 +294,11 @@ export namespace templates {
                     <button id="${btnID}" class="btn btn-outline-secondary" type="button">${btnLabel}</button>
                 </div>
             </div>`
-        }
+    }
 
-        export function DeletableCardWithHeader(id: string, header: string, title: string, text: string, target: string) {
+    export function DeletableCardWithHeader(id: string, header: string, title: string, text: string, target: string) {
 
-            return `
+        return `
             <div class="card" id="${id}">
                 <h5 class="card-header">
                         ${header}                        
@@ -316,10 +315,10 @@ export namespace templates {
                 </div>
             </div>
             <br>`
-        }
+    }
 
-        export function DeleteModal(id: string, title: string, body: string) {
-            return `
+    export function DeleteModal(id: string, title: string, body: string) {
+        return `
             <div class="modal fade" id="${id}" tabindex="-1" role="dialog" aria-hidden="true">
               <div class="modal-dialog" role="document">
                 <div class="modal-content">
@@ -347,10 +346,10 @@ export namespace templates {
                 </div>
               </div>
             </div>`
-        }
+    }
 
-        export function GoggleCard(goggleName: string, goggleDescription: string, goggleID: string) {
-            return `
+    export function GoggleCard(goggleName: string, goggleDescription: string, goggleID: string) {
+        return `
             <div class="card">
                 <div class="card-header">
                     ${goggleName}
@@ -363,65 +362,65 @@ export namespace templates {
                     </button>
                 </div>
             </div>`;
+    }
+
+    function removeTooltips() {
+        //delete tooltip gently
+        let tooltips = document.body.getElementsByClassName('tooltip');
+
+        for (let i = 0; i < tooltips.length; i++) {
+            if (tooltips[i].classList.contains('show'))
+                tooltips[i].classList.remove('show');
+            tooltips[i].remove();
         }
+    }
 
-        function removeTooltips() {
-            //delete tooltip gently
-            let tooltips = document.body.getElementsByClassName('tooltip');
-
-            for (let i = 0; i < tooltips.length; i++) {
-                if (tooltips[i].classList.contains('show'))
-                    tooltips[i].classList.remove('show');
-                tooltips[i].remove();
-            }
-        }
-
-        function AddSeed(offset: boolean): HTMLElement {
-            let seedHTML = `
+    function AddSeed(offset: boolean): HTMLElement {
+        let seedHTML = `
                 <input type="text" class="form-control seed" data-toggle="tooltip" data-placement="bottom" title="e.g. a political party's webpage, a brand's page or an affiliated page" placeholder="enter supporting site...">
                 <i class="fa fa-times removeicon removeseed" data-toggle="tooltip" data-placement="bottom" title="delete this site"></i>`;
 
-            let ret = document.createElement('div');
+        let ret = document.createElement('div');
 
-            if (offset)
-                ret.classList.add('offset-3', 'col-9', 'mb-2');
-            else
-                ret.classList.add('col-9', 'mb-2');
+        if (offset)
+            ret.classList.add('offset-3', 'col-9', 'mb-2');
+        else
+            ret.classList.add('col-9', 'mb-2');
 
-            ret.insertAdjacentHTML('afterbegin', seedHTML);
+        ret.insertAdjacentHTML('afterbegin', seedHTML);
 
-            setTimeout(() => {
-                //add delete seed button listener
-                let deleteSeedBtn = ret.getElementsByClassName('removeseed')[0];
+        setTimeout(() => {
+            //add delete seed button listener
+            let deleteSeedBtn = ret.getElementsByClassName('removeseed')[0];
 
-                deleteSeedBtn.addEventListener('click', () => {
-                    if (!deleteSeedBtn.parentElement.classList.contains('offset-3'))
-                        if (deleteSeedBtn.parentElement.nextElementSibling)
-                            deleteSeedBtn.parentElement.nextElementSibling.classList.remove('offset-3');
-                    deleteSeedBtn.parentElement.remove();
+            deleteSeedBtn.addEventListener('click', () => {
+                if (!deleteSeedBtn.parentElement.classList.contains('offset-3'))
+                    if (deleteSeedBtn.parentElement.nextElementSibling)
+                        deleteSeedBtn.parentElement.nextElementSibling.classList.remove('offset-3');
+                deleteSeedBtn.parentElement.remove();
 
-                    removeTooltips();
-                });
-            }, 50)
+                removeTooltips();
+            });
+        }, 50)
 
-            return ret;
-        }
+        return ret;
+    }
 
-        function AspectLabel(aspectName: string): HTMLElement {
-            let aspectHTML = `
+    function AspectLabel(aspectName: string): HTMLElement {
+        let aspectHTML = `
                 <input type="text" class="form-control aspectlabel" style="text-align:center;" placeholder="${aspectName}" data-toggle="tooltip" data-placement="bottom" title="aspect number" readonly>
                 <i class="fa fa-times removeicon removeaspect" data-toggle="tooltip" data-placement="bottom" title="delete this aspect"></i>`;
 
-            let div = document.createElement('div');
-            div.classList.add('col-3', 'mb-2');
+        let div = document.createElement('div');
+        div.classList.add('col-3', 'mb-2');
 
-            div.insertAdjacentHTML('afterbegin', aspectHTML);
+        div.insertAdjacentHTML('afterbegin', aspectHTML);
 
-            return div;
-        }
+        return div;
+    }
 
-        export function AddAspect(): HTMLElement {
-            const aspectHTML = `
+    export function AddAspect(): HTMLElement {
+        const aspectHTML = `
                 <div class="row seedlist">
 
                 </div>
@@ -431,44 +430,42 @@ export namespace templates {
                     </button>
                 </div>`
 
-            let ret = document.createElement('div');
-            ret.classList.add('aspect')
+        let ret = document.createElement('div');
+        ret.classList.add('aspect')
 
-            ret.insertAdjacentHTML('afterbegin', aspectHTML);
+        ret.insertAdjacentHTML('afterbegin', aspectHTML);
 
-            ret.getElementsByClassName('seedlist')[0].appendChild(AspectLabel(aspectLabelPrefix + (++aspectcounter)));
-            ret.getElementsByClassName('seedlist')[0].appendChild(AddSeed(false));
+        ret.getElementsByClassName('seedlist')[0].appendChild(AspectLabel(aspectLabelPrefix + (++aspectcounter)));
+        ret.getElementsByClassName('seedlist')[0].appendChild(AddSeed(false));
 
-            let addSeedBtn = ret.getElementsByClassName('add-site')[0];
+        let addSeedBtn = ret.getElementsByClassName('add-site')[0];
 
-            addSeedBtn.addEventListener('click', () => {
-                let seedslist = ret.getElementsByClassName('seedlist')[0];
+        addSeedBtn.addEventListener('click', () => {
+            let seedslist = ret.getElementsByClassName('seedlist')[0];
 
-                if (ret.getElementsByClassName('seed').length === 0)
-                    seedslist.appendChild(AddSeed(false));
-                else
-                    seedslist.appendChild(AddSeed(true));
+            if (ret.getElementsByClassName('seed').length === 0)
+                seedslist.appendChild(AddSeed(false));
+            else
+                seedslist.appendChild(AddSeed(true));
+        });
+
+        setTimeout(() => {
+            ret.getElementsByClassName('removeaspect')[0].addEventListener('click', () => {
+                ret.remove();
+                removeTooltips();
+
+                let aspects = document.getElementsByClassName('aspect');
+
+                for (let i = 0; i < aspects.length; i++) {
+                    let label = aspectLabelPrefix + (i + 1);
+                    (<HTMLInputElement>aspects[i].getElementsByClassName('aspectlabel')[0]).placeholder = label;
+                    aspectcounter = i + 1;
+                }
+
             });
+        }, 50);
 
-            setTimeout(() => {
-                ret.getElementsByClassName('removeaspect')[0].addEventListener('click', () => {
-                    ret.remove();
-                    removeTooltips();
-
-                    let aspects = document.getElementsByClassName('aspect');
-
-                    for (let i = 0; i < aspects.length; i++) {
-                        let label = aspectLabelPrefix + (i + 1);
-                        (<HTMLInputElement>aspects[i].getElementsByClassName('aspectlabel')[0]).placeholder = label;
-                        aspectcounter = i + 1;
-                    }
-
-                });
-            }, 50);
-
-            return ret;
-        };
-
-    }
+        return ret;
+    };
 
 }

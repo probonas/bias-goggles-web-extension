@@ -294,11 +294,11 @@ export namespace chart {
         let selectedChartData = newSelectionDataObj();
 
         const updateDateInfo = (data: SelectionData) => {
-            let row = templates.get.TableRow(
+            let row = templates.TableRow(
                 data.a.toLocaleDateString('en-GB', dateOptions),
                 data.b.toLocaleDateString('en-GB', dateOptions),
                 false);
-            let table = templates.get.Table('From Date:', 'To Date:', row);
+            let table = templates.Table('From Date:', 'To Date:', row);
 
             while (dateInfoDiv.hasChildNodes())
                 dateInfoDiv.firstChild.remove();

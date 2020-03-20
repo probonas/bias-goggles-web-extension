@@ -128,10 +128,10 @@ abstract class ExploreCard extends Card {
             throw new Error('No contents set for card with id:' + this.cardID);
 
         if (this.stringContent !== null) {
-            let card = templates.get.InnerCard(this.title, this.stringContent, this.cardID, this.tooltipOn, this.dismissable, this.comparable);
+            let card = templates.InnerCard(this.title, this.stringContent, this.cardID, this.tooltipOn, this.dismissable, this.comparable);
             pos.insertAdjacentHTML('afterbegin', card);
         } else {
-            let card = templates.get.InnerCard(this.title, '', this.cardID, this.tooltipOn, this.dismissable, this.comparable);
+            let card = templates.InnerCard(this.title, '', this.cardID, this.tooltipOn, this.dismissable, this.comparable);
             pos.insertAdjacentHTML('afterbegin', card);
             document.getElementById(this.cardID).getElementsByClassName('card-text')[0].appendChild(this.htmlContent);
         }
@@ -212,7 +212,7 @@ export class ScoreCard extends ExploreCard {
     }
 
     protected setTitle(title: string) {
-        this.title = templates.get.TitleWithScores(title, this.score.scores['pr'].bias_score, this.score.scores['pr'].support_score);
+        this.title = templates.TitleWithScores(title, this.score.scores['pr'].bias_score, this.score.scores['pr'].support_score);
     }
 
     private getScoreDataVector(): string[] {
@@ -305,7 +305,7 @@ export class SpinnerCard extends GenericCard {
         super(tabID, 'spinner', false);
 
         this.setTitle('Requesting data from service...');
-        this.setStringContent(templates.get.Spinner());
+        this.setStringContent(templates.Spinner());
     }
 
 }
@@ -380,8 +380,8 @@ export class GoggleCard extends Card {
 
         let targetID = this.goggleID.replace(/ /g, '-') + this.cardID;
 
-        let card = templates.get.DeletableCardWithHeader(this.cardID, this.goggleName, '', this.goggleDescription, targetID);
-        let modal = templates.get.DeleteModal(targetID, 'Delete ' + this.goggleName + ' ?',
+        let card = templates.DeletableCardWithHeader(this.cardID, this.goggleName, '', this.goggleDescription, targetID);
+        let modal = templates.DeleteModal(targetID, 'Delete ' + this.goggleName + ' ?',
             '<p>All data associated with this goggle will also be deleted.</p><b>You can re-install this goggle at any point.</b>');
 
         pos.insertAdjacentHTML('beforeend', card);
@@ -396,7 +396,7 @@ export class GoggleCard extends Card {
                 document.getElementById(this.cardID).remove();
             }, 50);
 
-            pos.insertAdjacentHTML('afterbegin', templates.get.SuccessAlert('Successfully deleted goggle ' + this.goggleID));
+            pos.insertAdjacentHTML('afterbegin', templates.SuccessAlert('Successfully deleted goggle ' + this.goggleID));
 
             setTimeout(() => {
                 (<HTMLButtonElement>pos.getElementsByClassName('alert')[0].children[1]).click();

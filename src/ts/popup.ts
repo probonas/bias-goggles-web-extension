@@ -49,9 +49,9 @@ $('body').tooltip({
 
 function showBtn(on: boolean) {
 
-    const offButtonHTML = templates.get.OffButton(offBtnId, oneHourID, twoHoursID, sessionOnlyID, permaID);
+    const offButtonHTML = templates.OffButton(offBtnId, oneHourID, twoHoursID, sessionOnlyID, permaID);
 
-    const onBtnHTML = templates.get.OnButton(onBtnId, onID);
+    const onBtnHTML = templates.OnButton(onBtnId, onID);
 
     function removeOffBtn() {
         if (document.getElementById(offBtnId))
@@ -135,7 +135,7 @@ function createToggleBtn() {
 }
 
 function showSuccessAlert(msg: string) {
-    const successAlert = templates.get.SuccessAlert(msg);
+    const successAlert = templates.SuccessAlert(msg);
 
     document.getElementById('main-card').insertAdjacentHTML('afterbegin', successAlert);
 
@@ -325,16 +325,16 @@ function showDomainDataUnderSettings() {
                             let propertyName = Object.keys(scoreValue)[property];
 
                             if (propertyName === 'vector') {
-                                ret += templates.get.TableRow('Vectors', 'Support', true);
+                                ret += templates.TableRow('Vectors', 'Support', true);
 
                                 for (let vectorKey in Object.keys(scoreValue[propertyName])) {
                                     let vectorName = Object.keys(scoreValue[propertyName])[vectorKey];
 
-                                    ret += templates.get.TableRow(vectorName, scoreValue[propertyName][vectorName], false);
+                                    ret += templates.TableRow(vectorName, scoreValue[propertyName][vectorName], false);
                                 }
 
                             } else {
-                                ret += templates.get.TableRow(propertyName, scoreValue[propertyName], false);
+                                ret += templates.TableRow(propertyName, scoreValue[propertyName], false);
                             }
                         }
 
@@ -342,9 +342,9 @@ function showDomainDataUnderSettings() {
                     }
 
                     let rows = unrollscore(pr);
-                    innerTables += templates.get.Table('Goggles:', scoreValue.goggle, rows) + '<br>';
+                    innerTables += templates.Table('Goggles:', scoreValue.goggle, rows) + '<br>';
                 });
-                domainCards += templates.get.AccordionCard(key, innerTables, cards.getUniqueID(), 'domainDataOverview');
+                domainCards += templates.AccordionCard(key, innerTables, cards.getUniqueID(), 'domainDataOverview');
             });
 
             domainDataOverviewDiv.insertAdjacentHTML('afterbegin', domainCards);
@@ -361,8 +361,8 @@ function newTab(goggle: Goggle) {
     let tabs = document.getElementById(tablist);
     let content = document.getElementById(tabContent);
 
-    tabs.insertAdjacentHTML('beforeend', templates.get.Tab(goggle.name, goggle.id, false));
-    content.insertAdjacentHTML('beforeend', templates.get.TabPane(goggle.id, goggle.name, false));
+    tabs.insertAdjacentHTML('beforeend', templates.Tab(goggle.name, goggle.id, false));
+    content.insertAdjacentHTML('beforeend', templates.TabPane(goggle.id, goggle.name, false));
 
     (<HTMLElement>document.getElementById(goggle.name).lastElementChild).click();
 }
@@ -386,7 +386,7 @@ userSettings.get((settings) => {
 
         let id = value.id + '-create-tab-btn';
 
-        document.getElementById(liveInfoGoggles).insertAdjacentHTML('beforeend', templates.get.MutedButton(id, value.name));
+        document.getElementById(liveInfoGoggles).insertAdjacentHTML('beforeend', templates.MutedButton(id, value.name));
 
         document.getElementById(id).addEventListener('click', (elem) => {
             let btn = <HTMLButtonElement>elem.target;
@@ -401,7 +401,7 @@ userSettings.get((settings) => {
         });
     });
 
-    //let tabs = templates.get.CreateTabs(tabLabels, tabIDs);
+    //let tabs = templates.CreateTabs(tabLabels, tabIDs);
 
     //document.getElementById('live-info').insertAdjacentHTML('beforeend', tabs);
 });
@@ -477,14 +477,14 @@ document.body.addEventListener('compareCard', (e) => {
         'Compare <b><i>' + sourceCardDomain + '</b></i> with...');
 
     modalBody.insertAdjacentHTML('beforeend',
-        templates.get.checkWithLabel(sourceCardDomain, sourceCardDomain, true, true));
+        templates.checkWithLabel(sourceCardDomain, sourceCardDomain, true, true));
 
     if (recent.length !== 0)
         modalBody.insertAdjacentHTML('beforeend',
-            templates.get.CheckList('<b><i>sites you visited recently:</i></b>', recent));
+            templates.CheckList('<b><i>sites you visited recently:</i></b>', recent));
 
     modalBody.insertAdjacentHTML('beforeend',
-        templates.get.InputWithButon(inputID, searchID,
+        templates.InputWithButon(inputID, searchID,
             'e.g. kathimerini.gr', 'Search', '<b><i>enter site:</i></b>',
             msgBoxID));
 
@@ -522,7 +522,7 @@ document.body.addEventListener('compareCard', (e) => {
                                 uncrawledMsgInModal = true;
                             }
                         } else {
-                            let newEntry = templates.get.checkWithLabel(domain, domain + goggles, true);
+                            let newEntry = templates.checkWithLabel(domain, domain + goggles, true);
                             msgBox.insertAdjacentHTML('beforeend', newEntry);
                         }
 
@@ -631,7 +631,7 @@ extension.storage.getAllScoreData((scores) => {
 }, true);
 
 document.getElementById('add-aspect').addEventListener('click', () => {
-    document.getElementById('aspectslist').insertAdjacentElement('beforeend', templates.get.AddAspect());
+    document.getElementById('aspectslist').insertAdjacentElement('beforeend', templates.AddAspect());
 });
 
 //initial aspect
