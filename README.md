@@ -7,7 +7,6 @@ from the [bias goggle homepage](http://pangaia.ics.forth.gr/bias-goggles/about.h
 This project implements a browser plugin for firefox and chromium which enables users to interact with the Bias Goggles engine.
 
 ## Getting Started
-
 ------
 
 ### Prerequisites
@@ -54,7 +53,9 @@ Navigate to `about:debugging` . Then click `This firefox` , then `Load temporary
 
 ### Load the extension on Chromium/Chrome ![chromium-logo](https://raw.githubusercontent.com/alrra/browser-logos/master/src/chromium/chromium_24x24.png)
 
-Navigate to `about:debugging` . Then click `This firefox` , then `Load temporary plugin` and load the contents of the `dist/firefox` folder. Keep in mind that you have to repeat this process everytime you reopen the browser.
+Navigate to `chrome://extensions` . Then click `Developer Mode` , then `Load upacked` and load the contents of the `dist/chromium` folder.
+
+![load-to-chrome-step-by-step-gif](https://kzev3q.am.files.1drv.com/y4msNelP_M1hBuk3PoI3ILBiRsXX0FmiXiP501s0n2WuCulM2qDZK8HfVzbUND1O3sK48LkkQi6tor5E-pvFsDoeagK4HMMgtIoDO6MQaisH5pmTeJQMbf5gQMJIyTfJq7ct1DXWsqY1l6a2jufNeMTwdddesrKG9h2unADn56IB_Vb0OpScCONlc_nBlfewct4GM7aiAlO9jGDnEoV6AB0Sg/chrome-load.gif?psid=1)
 
 ### How to sign the extension with web-ext (Firefox)
 
