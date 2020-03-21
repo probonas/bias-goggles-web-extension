@@ -5,11 +5,11 @@ from the [bias goggle homepage](http://pangaia.ics.forth.gr/bias-goggles/about.h
 > _Bias Goggles is a rapidly evolving prototype system that enables users to explore the bias characteristics of web domains for a specific user-defined concept._
 
 This project implements a browser plugin for firefox and chromium which enables users to interact with the Bias Goggles system.
-## Download & Install Extension
+## Quick Install Extension ⚡
 ------
 
-* [Firefox-Addon]()
-* [Chrome/Chromium Addon]()
+* [Firefox-Addon](https://jped3q.am.files.1drv.com/y4mtk65XtbE0efPuJ9lGnHXk74L0d1UyxAt6WgY9dynUkCNoNV8CDSQnUjCa0YEbD36KykEx6ffGSGS2S_4ZpWXcUiEnVr1VURcgIorBDiApbmdNkiLnuvN_QypQxickdvThXTCJS_Rx0gh7aGRqP-qGJBCKVZv-1K8PPXkx3xecVlZ_2uTyiPGI0qPdUu0DSKJSay4nkXBC-7jalrYBoWyOA)
+* Chrome/Chromium Addon: download this [zip](https://1drv.ms/u/s!AoICqO06GNF0gswuYjHkOLMKJWGMuA?e=YAln1A) ,unzip it and follow [these](http://www.adambarth.com/experimental/crx/docs/packaging.html) instructions. 
 
 ## Getting Started
 ------
