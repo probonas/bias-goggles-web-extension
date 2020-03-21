@@ -4,7 +4,12 @@ from the [bias goggle homepage](http://pangaia.ics.forth.gr/bias-goggles/about.h
 
 > _Bias Goggles is a rapidly evolving prototype system that enables users to explore the bias characteristics of web domains for a specific user-defined concept._
 
-This project implements a browser plugin for firefox and chromium which enables users to interact with the Bias Goggles engine.
+This project implements a browser plugin for firefox and chromium which enables users to interact with the Bias Goggles system.
+## Download & Install Extension
+------
+
+* [Firefox-Addon]()
+* [Chrome/Chromium Addon]()
 
 ## Getting Started
 ------
@@ -25,7 +30,8 @@ npm install
 
 in order to download all dependecies needed to develop and build the extension.
 
-### Build development version ![size: ~9.5MB](https://img.shields.io/badge/size-~%209.5%20MB-informational)
+## Development  ![size: ~9.5MB](https://img.shields.io/badge/size-~%209.5%20MB-informational)
+------
 
 Run:
 
@@ -34,16 +40,6 @@ npm run dev
 ```
 
 A newly created folder named `dist` should be present under project's root. The `dist` folder contains two subfolders named chromium and firefox where the created extensions are stored respectively. Use the files under these folders to load the extension in your browser during development. Unit tests are also bundled with this version and are located under `dist/firefox/tests` and `dist/chromium/tests` .
-
-### Production ![size: ~1.9 MB](https://img.shields.io/badge/size-~%201.9%20MB-informational)
-
-Run:
-
-``` bash
-npm run build
-```
-
-to build the minified production ready version of the extension. This version doesn't contain any unit tests and is found under `dist` , just like the development one.
 
 ### Load the extension on Firefox ![firefox-logo](https://raw.githubusercontent.com/alrra/browser-logos/master/src/firefox/firefox_24x24.png)
 
@@ -57,11 +53,34 @@ Navigate to `chrome://extensions` . Then click `Developer Mode` , then `Load upa
 
 ![load-to-chrome-step-by-step-gif](https://kzev3q.am.files.1drv.com/y4msNelP_M1hBuk3PoI3ILBiRsXX0FmiXiP501s0n2WuCulM2qDZK8HfVzbUND1O3sK48LkkQi6tor5E-pvFsDoeagK4HMMgtIoDO6MQaisH5pmTeJQMbf5gQMJIyTfJq7ct1DXWsqY1l6a2jufNeMTwdddesrKG9h2unADn56IB_Vb0OpScCONlc_nBlfewct4GM7aiAlO9jGDnEoV6AB0Sg/chrome-load.gif?psid=1)
 
-### How to sign the extension with web-ext (Firefox)
+## Production ![size: ~1.9 MB](https://img.shields.io/badge/size-~%201.9%20MB-informational)
+------
 
-[web-ext documentation](https://extensionworkshop.com/documentation/develop/web-ext-command-reference/)
-
+Run:
 ``` bash
+npm run build
+```
+
+to build the minified production ready version of the extension. This version doesn't contain any unit tests and is found under `dist` , just like the development one.
+
+### Create .xpi for Firefox ![firefox-logo](https://raw.githubusercontent.com/alrra/browser-logos/master/src/firefox/firefox_24x24.png)
+
+Follow these [instructions](https://extensionworkshop.com/documentation/develop/web-ext-command-reference#web-ext-sign) in order to obtain API access credentials. 
+
+Then run the following replacing `your-key` and `your-secret` with the ones you have obtained: 
+``` bash
+WEB_EXT_API_KEY="your-key"
+WEB_EXT_API_SECRET="your-secret"
+cd dist/firefox
 npx web-ext sign --api-key=$WEB_EXT_API_KEY --api-secret=$WEB_EXT_API_SECRET
 ```
+
+The .xpi file should now be located under the newly created folder `web-ext-artifacts` in the current working directory and is also uploaded to your personal Firefox Developer Account, where you can proceed with publishing it.
+This file can be installed manually just like any other extension not in the Firefox Addons store.
+
+### Create .crx for chromium ![chromium-logo](https://raw.githubusercontent.com/alrra/browser-logos/master/src/chromium/chromium_24x24.png)
+
+To create .crx file follow [these instructions](http://www.adambarth.com/experimental/crx/docs/packaging.html).
+The files needed are located under `dist/chromium`.
+To publish the extension to Chrome Web Store follow [these](https://developer.chrome.com/webstore/get_started_simple#step5).
 
