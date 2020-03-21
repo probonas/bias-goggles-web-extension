@@ -1,8 +1,8 @@
 # Bias Goggles - Browser Extension [![License: ISC](https://img.shields.io/badge/License-ISC-blue.svg)](https://opensource.org/licenses/ISC) ![version: 0.9.0](https://img.shields.io/badge/version-0.9.0-success) ![platforms: firefox|chromium](https://img.shields.io/badge/platform-firefox%20%7C%20chromium-lightgrey) 
 
-> <i><b>Bias Goggles</b> is a rapidly evolving prototype system that enables users to explore the bias characteristics of web domains for a specific user-defined concept.</i> 
+from the [bias goggle homepage](http://pangaia.ics.forth.gr/bias-goggles/about.html)
 
-from <a href="http://pangaia.ics.forth.gr/bias-goggles/about.html"> bias goggle homepage</a>
+> _Bias Goggles is a rapidly evolving prototype system that enables users to explore the bias characteristics of web domains for a specific user-defined concept._
 
 This project implements a browser plugin for firefox and chromium which enables users to interact with the Bias Goggles engine.
 
