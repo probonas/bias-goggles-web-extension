@@ -1,3 +1,5 @@
+import { service } from "./service";
+
 export namespace templates {
 
     let aspectcounter = 0;
@@ -468,4 +470,25 @@ export namespace templates {
         return ret;
     };
 
+    export function GoggleSearch(): HTMLElement {
+        const searchHTML = `
+        <div class="input-group">
+            <input type="text" class="form-control" id="searchbox" placeholder="enter goggle name,topic or keywords">
+            <button type="button" class="btn btn-primary" placement="right">
+                <i class="fa fa-search"></i>
+            </button>
+        </div>`;
+
+        let ret = document.createElement("div");
+        ret.insertAdjacentHTML("afterbegin", searchHTML);
+
+        ret.getElementsByClassName("btn")[0].addEventListener("click", () => {
+            let input = <HTMLInputElement>(ret.getElementsByClassName("form-control")[0]);
+            service.search(input.value.trim(), () => {
+                //
+            });
+        });
+
+        return ret;
+    }
 }

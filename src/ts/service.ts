@@ -1,9 +1,43 @@
-import { get as httpGet } from "http";
+import { get as httpGet, IncomingMessage } from "http";
 import { userSettings } from "./usersettings";
-import { AppData } from "./types";
+import { AppData, Goggle } from "./types";
 import { utils } from "./utils";
+import { RequestOptions } from "https";
 
 export namespace service {
+
+    const enum ROUTES {
+        "USERS" = "/bias-goggles-api/users/",
+        "ALGORITHMS" = "/bias-goggles-api/algs/",
+        "DOMAINS" = "/bias-goggles-api/domains/",
+        "ASPECT_OF_BIAS" = "/bias-goggles-api/abs/",
+        "BIAS_CONCEPT" = "/bias-goggles-api/bsc/",
+        "BIAS" = "/bias-goggles-api/bias/", //dummy, keep out!
+        "SEARCH" = "/bias-goggles-api/search/"
+    }
+
+    function getRequestOptions(route: ROUTES, slug: string): RequestOptions {
+        return {
+            host: "pangaia.ics.forth.gr",
+            port: 4567,
+            path: route + slug,
+            headers: {
+                'Accept': 'application/json'
+            }
+        };
+    }
+
+    export function search(key: string, callback: (data: Array<Goggle>) => void) {
+        let reqOptions = getRequestOptions(ROUTES.SEARCH, key);
+        requestFromService(reqOptions, (data, res) => {
+            data = new Array<Goggle>(JSON.parse(data));
+
+            //console.log(data);
+            //console.log(res.statusCode);
+
+            callback(data);
+        });
+    }
 
     function parseDataFromService(data: string, goggles: string, callback: (domainData: AppData, scoreData: AppData) => void) {
         let ret = JSON.parse(data);
@@ -12,12 +46,12 @@ export namespace service {
         let domainData = {} as AppData;
 
         let scoreIndex = userSettings.updateScoreIndex();
-       
+
         //the following are as returned from service
         //if anything changes in service
         //the following should be updated as well
         //rank data are omitted
-        
+
         domainData[utils.makeKey(ret.doc.domain, goggles)] = {
             scoreIndex: scoreIndex,
             prevIndices: new Array<number>()
@@ -60,13 +94,10 @@ export namespace service {
         return prefix + encodeURIComponent(domain) + suffix;
     }
 
-    export function query(url: string, goggles: string, callback?: (domainData: AppData, scoreData: AppData) => void): void {
-
+    function requestFromService(targetURL: string | RequestOptions, callback: (data: any, res: IncomingMessage) => void) {
         let data: any = '';
 
-        console.log('requesting: ' + goggles + ' ' + url);
-
-        let targetURL = getRequestURL(url, goggles);
+        console.log('requesting : ' + targetURL);
 
         httpGet(targetURL, res => {
 
@@ -75,16 +106,25 @@ export namespace service {
             });
 
             res.on('close', () => {
-                if (res.statusCode === 200 || res.statusCode === 304) {
-                    parseDataFromService(data, goggles, (domainData, scoreData) => {
-                        callback(domainData, scoreData);
-                    });
-                }
-                else {
-                    callback(null, null);
-                }
+                callback(data, res);
             });
         });
+    }
 
+    export function query(url: string, goggles: string, callback?: (domainData: AppData, scoreData: AppData) => void): void {
+        //console.log('requesting: ' + goggles + ' ' + url);
+
+        let targetURL = getRequestURL(url, goggles);
+
+        requestFromService(targetURL, (data, res) => {
+            if (res.statusCode === 200 || res.statusCode === 304) {
+                parseDataFromService(data, goggles, (domainData, scoreData) => {
+                    callback(domainData, scoreData);
+                });
+            }
+            else {
+                callback(null, null);
+            }
+        });
     }
 }

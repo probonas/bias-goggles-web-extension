@@ -52,7 +52,7 @@ export namespace goggles {
         userSettings.get(settings => {
             settings.gogglesList.forEach(value => {
                 if (value.id === goggles.id)
-                    value.ready = true;
+                    value.active = true;
             });
 
             userSettings.update(settings, callback);

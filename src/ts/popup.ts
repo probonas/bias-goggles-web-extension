@@ -630,6 +630,8 @@ extension.storage.getAllScoreData((scores) => {
 
 }, true);
 
+document.getElementById("search").insertAdjacentElement("afterbegin",templates.GoggleSearch());
+
 document.getElementById('add-aspect').addEventListener('click', () => {
     document.getElementById('aspectslist').insertAdjacentElement('beforeend', templates.AddAspect());
 });
