@@ -1,4 +1,5 @@
 import { service } from "./service";
+import { SpinnerCard, GenericMessageCard, InstallGoggleCard, } from "./infoCard";
 
 export namespace templates {
 
@@ -350,18 +351,26 @@ export namespace templates {
             </div>`
     }
 
-    export function GoggleCard(goggleName: string, goggleDescription: string, goggleID: string) {
+    export function GoggleCard(goggleName: string, goggleDescription: string, active: boolean) {
+        let title = '';
+        if (active) {
+            title = goggleName;
+        } else {
+            title = `
+                ${goggleName}
+                <i class="fa fa-exclamation-triangle" data-toggle="tooltip" data-placement="right" 
+                    title="You can add it, but you will not be able to use it immediately!"></i>`;
+        }
+
         return `
             <div class="card">
                 <div class="card-header">
-                    ${goggleName}
+                    ${title}
                 </div>
                 
                 <div class="card-body">
                     <p class="card-text">${goggleDescription}</p>
-                    <button type="button" class="btn btn-outline-primary" data-toggle="tooltip" data-placement="right" title="Install this Goggle">
-                        <i class="fa fa-plus"></i>
-                    </button>
+                    ${AddBtn()}
                 </div>
             </div>`;
     }
@@ -470,6 +479,23 @@ export namespace templates {
         return ret;
     };
 
+    export function TickBtn(): string {
+        removeTooltips();
+        return `
+            <button type="button" class="btn btn btn-success" placement="right" data-toggle="tooltip" data-placement="right" title="Remove this Goggle!">
+                <i class="fa fa-check"></i>
+            </button>
+        `;
+    }
+
+    export function AddBtn(): string {
+        removeTooltips();
+        return `
+            <button type="button" class="btn btn-outline-primary" data-toggle="tooltip" data-placement="right" title="Add this Goggle">
+                <i class="fa fa-plus"></i>
+            </button>`;
+    }
+
     export function GoggleSearch(): HTMLElement {
         const searchHTML = `
         <div class="input-group">
@@ -482,11 +508,39 @@ export namespace templates {
         let ret = document.createElement("div");
         ret.insertAdjacentHTML("afterbegin", searchHTML);
 
-        ret.getElementsByClassName("btn")[0].addEventListener("click", () => {
-            let input = <HTMLInputElement>(ret.getElementsByClassName("form-control")[0]);
-            service.search(input.value.trim(), () => {
-                //
+        let input = <HTMLInputElement>ret.getElementsByClassName('form-control')[0];
+        let searchBtn = <HTMLButtonElement>ret.getElementsByClassName('btn')[0];
+
+        searchBtn.addEventListener("click", () => {
+            let collapseCreator = document.getElementById("goggle-creator-collapse-btn");
+            
+            if(collapseCreator.getAttribute("aria-expanded") === "true" )
+                collapseCreator.click();
+            
+            while (document.getElementById('goggles-retrieved').hasChildNodes())
+                document.getElementById('goggles-retrieved').lastChild.remove();
+
+            let spinner = new SpinnerCard('goggles-retrieved');
+            spinner.render();
+
+            service.search(input.value.trim(), (data) => {
+                spinner.remove();
+                if (data === null)
+                    new GenericMessageCard('goggles-retrieved', 'Search failed', 'Please try again later.').render();
+                else if (data.length === 0)
+                    new GenericMessageCard('goggles-retrieved', 'Nothing found!', 'Search for ' + input.value.trim() + ' returned no results.').render();
+                else
+                    data.forEach(goggle => {
+                        new InstallGoggleCard('goggles-retrieved', goggle).render();
+                    });
             });
+
+        });
+
+        input.addEventListener("keyup", (event) => {
+            //enter key is pressed
+            if (event.keyCode === 13)
+                searchBtn.click();
         });
 
         return ret;

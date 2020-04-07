@@ -38,6 +38,15 @@ export namespace utils {
         return null;
     }
 
+    export function toTitleCase(str: string) {
+        return str.replace(
+            /\w\S*/g,
+            function (txt) {
+                return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
+            }
+        );
+    }
+
     export function unwrapAppDataObject(obj: AppData): null | any {
         if (obj === null)
             return null;

@@ -5,6 +5,7 @@ import { utils } from "./utils";
 import { RequestOptions } from "https";
 
 export namespace service {
+    const REQUEST_TIMEOUT = 3000; //ms
 
     const enum ROUTES {
         "USERS" = "/bias-goggles-api/users/",
@@ -13,7 +14,9 @@ export namespace service {
         "ASPECT_OF_BIAS" = "/bias-goggles-api/abs/",
         "BIAS_CONCEPT" = "/bias-goggles-api/bsc/",
         "BIAS" = "/bias-goggles-api/bias/", //dummy, keep out!
-        "SEARCH" = "/bias-goggles-api/search/"
+        "SEARCH" = "/bias-goggles-api/search/",
+        "SEARCH_WITH_URL" = "/bias-goggles-api/search/bcs/",
+        "LIST_ALL_BCS" = "/bias-goggles-api/bcs/"
     }
 
     function getRequestOptions(route: ROUTES, slug: string): RequestOptions {
@@ -23,19 +26,39 @@ export namespace service {
             path: route + slug,
             headers: {
                 'Accept': 'application/json'
-            }
+            },
         };
     }
 
     export function search(key: string, callback: (data: Array<Goggle>) => void) {
-        let reqOptions = getRequestOptions(ROUTES.SEARCH, key);
+        let reqOptions;
+        let expression = /[-a-zA-Z0-9@:%_\+.~#?&//=]{2,256}\.[a-z]{2,4}\b(\/[-a-zA-Z0-9@:%_\+.~#?&//=]*)?/gi
+        let regexp = new RegExp(expression);
+
+        if (key === '')
+            reqOptions = getRequestOptions(ROUTES.LIST_ALL_BCS, key);
+        else if (regexp.test(key))
+            reqOptions = getRequestOptions(ROUTES.SEARCH_WITH_URL, key);
+        else
+            reqOptions = getRequestOptions(ROUTES.SEARCH, key);
+
         requestFromService(reqOptions, (data, res) => {
-            data = new Array<Goggle>(JSON.parse(data));
+            if (res.statusCode === 200) {
+                let json = JSON.parse(data);
+                data = new Array<Goggle>();
 
-            //console.log(data);
-            //console.log(res.statusCode);
+                for (let i = 0; i < json.length; i++) {
+                    let parsed = json[i] as Goggle;
+                    parsed.id = json[i].BC;
+                    //@ts-ignore
+                    delete parsed.BC;
+                    data.push(parsed);
+                }
 
-            callback(data);
+                callback(data);
+            } else {
+                callback(null);
+            }
         });
     }
 
@@ -99,7 +122,7 @@ export namespace service {
 
         console.log('requesting : ' + targetURL);
 
-        httpGet(targetURL, res => {
+        let request = httpGet(targetURL, res => {
 
             res.on('data', chunk => {
                 data += chunk;
@@ -108,6 +131,15 @@ export namespace service {
             res.on('close', () => {
                 callback(data, res);
             });
+
+        });
+
+        request.setTimeout(REQUEST_TIMEOUT, () => {
+            callback(null, { statusCode: 500 } as IncomingMessage);
+        });
+
+        request.on('error', () => {
+            callback(null, { statusCode: 500 } as IncomingMessage);
         });
     }
 

@@ -5,6 +5,9 @@ import { chart } from "./drawchart";
 import { uncrawled } from "./uncrawled";
 import { extension } from "./storage";
 import { goggles } from "./goggles";
+import { utils } from "./utils";
+import { Goggle } from "./types";
+import { userSettings } from "./usersettings";
 
 const pollingInterval = 10; //ms
 
@@ -273,13 +276,24 @@ export class ExtensionDisabledCard extends GenericCard {
 export class UncrawledDomainCard extends GenericCard {
 
     constructor(tabID: string, domain: string) {
-        domain = domain;
         super(tabID, 'uncrawled-' + domain, false);
 
         this.setTitle('Too bad... :(');
         this.setHTMLContent(uncrawled.create404Msg(domain, ['text-info']));
     }
 
+}
+
+/**
+ * Card with a generic message
+ */
+export class GenericMessageCard extends GenericCard {
+
+    constructor(tabID: string, cardTitle: string, cardMsg: string) {
+        super(tabID, 'generic-card' + cards.getUniqueID(), false);
+        this.setTitle(cardTitle);
+        this.setStringContent(cardMsg);
+    }
 }
 
 /**
@@ -401,6 +415,51 @@ export class GoggleCard extends Card {
             setTimeout(() => {
                 (<HTMLButtonElement>pos.getElementsByClassName('alert')[0].children[1]).click();
             }, 4000);
+        });
+    }
+}
+
+/**
+ * Card one can use to install a goggle,as retrieved, from service
+ */
+export class InstallGoggleCard extends Card {
+    private goggle: Goggle;
+
+    constructor(tabID: string, goggle: Goggle) {
+        super(tabID);
+        this.goggle = goggle;
+    }
+
+    private add(card: HTMLElement) {
+        goggles.add(this.goggle);
+        card.getElementsByClassName('btn')[0].remove();
+        card.insertAdjacentHTML('beforeend',templates.TickBtn());
+        (<HTMLButtonElement>card.getElementsByClassName('btn')[0]).addEventListener('click', () => {
+            this.remove(card);
+        });
+    }
+
+    private remove(card: HTMLElement) {
+        goggles.remove(this.goggle.id);
+
+        card.getElementsByClassName('btn')[0].remove();
+        card.insertAdjacentHTML('beforeend',templates.AddBtn());
+
+        (<HTMLButtonElement>card.getElementsByClassName('btn')[0]).addEventListener('click', ()=>{
+            this.add(card);
+        });
+    }
+
+    public render() {
+        let pos = document.getElementById(this.tabID);
+        pos.insertAdjacentHTML('beforeend', '<br>');
+        let capitalizedName = utils.toTitleCase(this.goggle.name.replace(/-/g, ' '));
+
+        pos.insertAdjacentHTML('beforeend', templates.GoggleCard(capitalizedName, this.goggle.description, this.goggle.active));
+
+        let card = <HTMLElement>(<HTMLElement>pos.lastChild).getElementsByClassName('card-body')[0];
+        card.getElementsByClassName('btn')[0].addEventListener('click', () => {
+            this.add(card);
         });
     }
 }
