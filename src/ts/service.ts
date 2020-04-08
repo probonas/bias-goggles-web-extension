@@ -1,6 +1,6 @@
-import { get as httpGet, IncomingMessage } from "http";
+import * as http from "http";
 import { userSettings } from "./usersettings";
-import { AppData, Goggle } from "./types";
+import { AppData, Goggle, AB } from "./types";
 import { utils } from "./utils";
 import { RequestOptions } from "https";
 
@@ -16,11 +16,13 @@ export namespace service {
         "BIAS" = "/bias-goggles-api/bias/", //dummy, keep out!
         "SEARCH" = "/bias-goggles-api/search/",
         "SEARCH_WITH_URL" = "/bias-goggles-api/search/bcs/",
-        "LIST_ALL_BCS" = "/bias-goggles-api/bcs/"
+        "LIST_ALL_BCS" = "/bias-goggles-api/bcs/",
+        "CRAWL_CHECK" = "/bias-goggles-api/domains/"
     }
 
     function getRequestOptions(route: ROUTES, slug: string): RequestOptions {
         return {
+            method: 'GET',
             host: "pangaia.ics.forth.gr",
             port: 4567,
             path: route + slug,
@@ -30,9 +32,41 @@ export namespace service {
         };
     }
 
+    function postRequestOptions(route: ROUTES, postData: string): RequestOptions {
+        return {
+            method: 'POST',
+            host: "pangaia.ics.forth.gr",
+            port: 4567,
+            path: route,
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+                'Content-Length': Buffer.byteLength(postData)
+            },
+        };
+    }
+    export function checkIfCrawled(domain: string, callback: (crawled: boolean) => void) {
+        requestFromService(
+            getRequestOptions(ROUTES.CRAWL_CHECK, encodeURI(domain)),
+            (data, res) => {
+                callback((res.statusCode === 200 && data.crawled) ? true : false);
+            }
+        );
+    }
+
+    export function postAB(seeds: AB, callback: (AbId: string) => void) {
+        let postData = JSON.stringify(seeds);
+
+        postToService(
+            postRequestOptions(ROUTES.ASPECT_OF_BIAS, postData), postData,
+            (data, res) => {
+                callback((res.statusCode === 200 || res.statusCode === 201) ? JSON.parse(data).id : null);
+            }
+        );
+    }
+
     export function search(key: string, callback: (data: Array<Goggle>) => void) {
         let reqOptions;
-
 
         if (key === '')
             reqOptions = getRequestOptions(ROUTES.LIST_ALL_BCS, key);
@@ -111,12 +145,11 @@ export namespace service {
         return prefix + encodeURIComponent(domain) + suffix;
     }
 
-    function requestFromService(targetURL: string | RequestOptions, callback: (data: any, res: IncomingMessage) => void) {
+    function postToService(targetURL: string | http.RequestOptions, postData: string, callback: (data: any, res: http.IncomingMessage) => void) {
         let data: any = '';
 
         console.log('requesting : ' + targetURL);
-
-        let request = httpGet(targetURL, res => {
+        let request = http.request(targetURL, res => {
 
             res.on('data', chunk => {
                 data += chunk;
@@ -129,11 +162,39 @@ export namespace service {
         });
 
         request.setTimeout(REQUEST_TIMEOUT, () => {
-            callback(null, { statusCode: 500 } as IncomingMessage);
+            callback(null, { statusCode: 500 } as http.IncomingMessage);
         });
 
         request.on('error', () => {
-            callback(null, { statusCode: 500 } as IncomingMessage);
+            callback(null, { statusCode: 500 } as http.IncomingMessage);
+        });
+
+        request.write(postData);
+        request.end();
+    }
+
+    function requestFromService(targetURL: string | http.RequestOptions, callback: (data: any, res: http.IncomingMessage) => void) {
+        let data: any = '';
+
+        console.log('requesting : ' + targetURL);
+        let request = http.get(targetURL, res => {
+
+            res.on('data', chunk => {
+                data += chunk;
+            });
+
+            res.on('close', () => {
+                callback(data, res);
+            });
+
+        });
+
+        request.setTimeout(REQUEST_TIMEOUT, () => {
+            callback(null, { statusCode: 500 } as http.IncomingMessage);
+        });
+
+        request.on('error', () => {
+            callback(null, { statusCode: 500 } as http.IncomingMessage);
         });
     }
 

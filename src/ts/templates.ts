@@ -1,5 +1,7 @@
 import { service } from "./service";
 import { SpinnerCard, GenericMessageCard, InstallGoggleCard, } from "./infoCard";
+import { utils } from "./utils";
+import { AB } from "./types";
 
 export namespace templates {
 
@@ -388,8 +390,17 @@ export namespace templates {
 
     function AddSeed(offset: boolean): HTMLElement {
         let seedHTML = `
-                <input type="text" class="form-control seed" data-toggle="tooltip" data-placement="bottom" title="e.g. a political party's webpage, a brand's page or an affiliated page" placeholder="enter supporting site...">
-                <i class="fa fa-times removeicon greyicon removeseed" data-toggle="tooltip" data-placement="bottom" title="delete this site"></i>`;
+        <div class="input-group">
+            <input type="text" class="form-control seed" data-toggle="tooltip" data-placement="bottom" title="e.g. a political party's webpage, a brand's page or an affiliated page" placeholder="enter supporting site...">
+            <div class="input-group-append">
+                <button type="button" class="btn greyicon removeseed" data-toggle="tooltip" data-placement="bottom" title="delete this site">
+                    <i class="fa fa-times"></i>
+                </button>
+            </div>
+        </div>
+        <div class="input-group">
+            <p class="info"></p>
+        </div>`;
 
         let ret = document.createElement('div');
 
@@ -403,15 +414,54 @@ export namespace templates {
         setTimeout(() => {
             //add delete seed button listener
             let deleteSeedBtn = ret.getElementsByClassName('removeseed')[0];
+            let info = <HTMLSpanElement>ret.getElementsByClassName('info')[0];
 
             deleteSeedBtn.addEventListener('click', () => {
-                if (!deleteSeedBtn.parentElement.classList.contains('offset-3'))
-                    if (deleteSeedBtn.parentElement.nextElementSibling)
-                        deleteSeedBtn.parentElement.nextElementSibling.classList.remove('offset-3');
-                deleteSeedBtn.parentElement.remove();
+                if (!ret.classList.contains('offset-3'))
+                    if (ret.nextElementSibling)
+                        ret.nextElementSibling.classList.remove('offset-3');
+                ret.remove();
 
                 removeTooltips();
             });
+
+            let input = <HTMLInputElement>ret.getElementsByClassName('seed')[0];
+            let commonClasses = ['is-valid', 'is-invalid', 'text-warning', 'text-danger'];
+
+            input.addEventListener('keyup', () => {
+                let userInput = input.value;
+
+                if (utils.isUrl(userInput)) {
+                    service.checkIfCrawled(userInput, (crawled) => {
+                        if (crawled) {
+                            input.classList.remove(...commonClasses);
+                            input.classList.add('is-valid');
+                            info.innerText = '';
+                        } else {
+                            input.classList.remove(...commonClasses);
+                            input.classList.add('is-valid');
+
+                            info.classList.remove(...commonClasses);
+                            info.classList.add('text-warning');
+                            info.innerText = "Domain has not been crawled yet!";
+                        }
+                    });
+                } else {
+                    if (userInput.length !== 0) {
+                        input.classList.remove(...commonClasses);
+                        input.classList.add('is-invalid');
+
+                        info.classList.remove(...commonClasses);
+                        info.classList.add('text-danger');
+                        info.innerText = 'Invalid domain!';
+                    } else {
+                        input.classList.remove(...commonClasses);
+                        info.classList.remove(...commonClasses);
+                        info.innerText = '';
+                    }
+                }
+            });
+
         }, 50)
 
         return ret;
@@ -419,8 +469,14 @@ export namespace templates {
 
     function AspectLabel(aspectName: string): HTMLElement {
         let aspectHTML = `
+        <div class="input-group">
                 <input type="text" class="form-control aspectlabel" style="text-align:center;" placeholder="${aspectName}" data-toggle="tooltip" data-placement="bottom" title="aspect number" readonly>
-                <i class="fa fa-times removeicon greyicon removeaspect" data-toggle="tooltip" data-placement="bottom" title="delete this aspect"></i>`;
+                <div class="input-group-inline">
+                <button type="button" class="btn greyicon removeaspect" data-toggle="tooltip" data-placement="bottom" title="delete this aspect">
+                    <i class="fa fa-times" ></i>
+                </button>
+            <div>
+        </div>`;
 
         let div = document.createElement('div');
         div.classList.add('col-3', 'mb-2');
@@ -522,7 +578,7 @@ export namespace templates {
         }
 
         let deleteBtn = <HTMLButtonElement>ret.getElementsByClassName('deleteretrieved')[0];
-        deleteBtn.addEventListener('click',() => {
+        deleteBtn.addEventListener('click', () => {
             input.value = '';
             deleteRetrievedGoggles();
         });
@@ -560,4 +616,96 @@ export namespace templates {
 
         return ret;
     }
+
+    export function GoggleCreator(): HTMLElement {
+        let formHTML = `    
+        <div class="dropdown-divider"></div>
+        <div>
+            <div class="form-row">
+                <label for="new-goggle-name">Goggle Name:</label>
+                <input type="text" class="form-control new-goggle-name" id="new-goggle-name" placeholder="Enter name for this goggle">
+                <small id="new-goggle-help" class="form-text text-muted">Should be descriptive of the goggle in order
+                    to help the community
+                </small>
+            </div>
+
+            <div class="form-row">
+                <label for="goggle-description">Description:</label>
+                <textarea class="form-control goggle-description" id="goggle-description" rows="4"
+                    placeholder="Enter complete description of the goggle and try to be concise..."></textarea>
+            </div>
+
+            <div class="form-group" id="aspectslist">
+                <label class="aspectslist" for="aspectslist">Add aspects:</label>
+            </div>
+
+            <div class="form-row">
+                <div class="col-3">
+                    <button id="add-aspect" type="button" class="btn btn-outline-success mt-3 add-aspect" data-toggle="tooltip"
+                        data-placement="right" title="insert aspect">
+                        <i class="fa fa-plus"></i>
+                    </button>
+                </div>
+            </div>
+
+            <button type="button" class="btn btn-primary mt-3 submitform">Create Goggle</button>
+        </div>
+        <div class="dropdown-divider"></div>`;
+
+        let ret = document.createElement("div");
+        ret.insertAdjacentHTML("afterbegin", formHTML);
+
+        ret.getElementsByClassName('add-aspect')[0].addEventListener('click', () => {
+            ret.getElementsByClassName('aspectslist')[0].insertAdjacentElement('beforeend', templates.AddAspect());
+        });
+
+        //initial aspect
+        (<HTMLButtonElement>ret.getElementsByClassName('add-aspect')[0]).click();
+
+        ret.getElementsByClassName('submitform')[0].addEventListener('click', () => {
+            let goggleName = <HTMLInputElement>ret.getElementsByClassName('new-goggle-name')[0];
+            let goggleDescription = <HTMLTextAreaElement>ret.getElementsByClassName('goggle-description')[0];
+
+            if (goggleName.value.trim() === '') {
+                goggleName.focus();
+                return;
+            }
+
+            if (goggleDescription.value.trim() === '') {
+                goggleDescription.focus();
+                return;
+            }
+
+            let aspects = ret.getElementsByClassName('aspect');
+
+            for (let i = 0; i < aspects.length; i++) {
+                let invalid = aspects[i].getElementsByClassName('is-invalid');
+
+                //focus on the first invalid found
+                if (invalid.length > 0) {
+                    (<HTMLInputElement>invalid[0]).focus();
+                    return;
+                } else {
+                    let valid = aspects[i].getElementsByClassName('is-valid');
+                    let seeds = new Array<String>();
+
+                    for (let j = 0; j < valid.length; j++)
+                        seeds.push((<HTMLInputElement>valid[j]).value);
+
+                    service.postAB({seeds: seeds} as AB, () => {
+                        //collect all ab is
+                        //ad a use id and send it!
+                    });
+                }
+
+            }
+
+
+            //abs
+            //domain
+        });
+
+        return ret;
+    }
 }
+

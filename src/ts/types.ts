@@ -31,6 +31,10 @@ export type Goggle = {
     active: boolean,
 };
 
+export type AB = {
+    seeds: Array<string>
+}
+
 export enum OffOptions {
     ONE_HOUR,
     TWO_HOURS,
