@@ -38,6 +38,11 @@ export namespace utils {
         return null;
     }
 
+    export function isUrl(str: string): boolean {
+        let expression = /[-a-zA-Z0-9@:%_\+.~#?&//=]{2,256}\.[a-z]{2,4}\b(\/[-a-zA-Z0-9@:%_\+.~#?&//=]*)?/gi
+        return new RegExp(expression).test(str);
+    }
+
     export function toTitleCase(str: string) {
         return str.replace(
             /\w\S*/g,

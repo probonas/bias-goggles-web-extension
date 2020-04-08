@@ -11,6 +11,17 @@
     max-width: 575.98px;
   }
 
+  .greyicon {
+    color: lightslategray !important;
+  }
+
+  .input-group-inline {
+    position: absolute;
+    right: 4px;
+    z-index: 9;
+    margin: auto;
+  }
+
   .removeicon {
     position: absolute;
     right: 25px;
@@ -20,7 +31,6 @@
     margin: auto;
     font-size: 14px;
     cursor: pointer;
-    color: lightslategray;
   }
 
   .removeicon:hover {
@@ -72,11 +82,14 @@
         <div class="tab-content" id="tabs-content">
           <div class="tab-pane fade" id="search" role="tabpanel" aria-labelledby="search-tab">
 
+            <div id="goggles-retrieved"></div>
+
             <div class="dropdown-divider"></div>
 
             <div class="input-group">
-              <button type="button" id="goggle-creator-collapse-btn" class="btn btn-primary btn-block" data-toggle="collapse" href="#goggle-creator"
-                aria-expanded="false" aria-controls="goggle-creator">or create your
+              <button type="button" id="goggle-creator-collapse-btn" class="btn btn-primary btn-block"
+                data-toggle="collapse" href="#goggle-creator" aria-expanded="false" aria-controls="goggle-creator">or
+                create your
                 own</button>
             </div>
 
@@ -117,7 +130,6 @@
               </form>
               <div class="dropdown-divider"></div>
             </div>
-            <div id="goggles-retrieved"></div>
           </div>
 
           <div class="tab-pane fade" id="analytics" role="tabpanel" aria-labelledby="analytics-tab">

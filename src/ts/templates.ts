@@ -389,7 +389,7 @@ export namespace templates {
     function AddSeed(offset: boolean): HTMLElement {
         let seedHTML = `
                 <input type="text" class="form-control seed" data-toggle="tooltip" data-placement="bottom" title="e.g. a political party's webpage, a brand's page or an affiliated page" placeholder="enter supporting site...">
-                <i class="fa fa-times removeicon removeseed" data-toggle="tooltip" data-placement="bottom" title="delete this site"></i>`;
+                <i class="fa fa-times removeicon greyicon removeseed" data-toggle="tooltip" data-placement="bottom" title="delete this site"></i>`;
 
         let ret = document.createElement('div');
 
@@ -420,7 +420,7 @@ export namespace templates {
     function AspectLabel(aspectName: string): HTMLElement {
         let aspectHTML = `
                 <input type="text" class="form-control aspectlabel" style="text-align:center;" placeholder="${aspectName}" data-toggle="tooltip" data-placement="bottom" title="aspect number" readonly>
-                <i class="fa fa-times removeicon removeaspect" data-toggle="tooltip" data-placement="bottom" title="delete this aspect"></i>`;
+                <i class="fa fa-times removeicon greyicon removeaspect" data-toggle="tooltip" data-placement="bottom" title="delete this aspect"></i>`;
 
         let div = document.createElement('div');
         div.classList.add('col-3', 'mb-2');
@@ -500,25 +500,40 @@ export namespace templates {
         const searchHTML = `
         <div class="input-group">
             <input type="text" class="form-control" id="searchbox" placeholder="enter goggle name,topic or keywords">
-            <button type="button" class="btn btn-primary" placement="right">
-                <i class="fa fa-search"></i>
-            </button>
+            <div class="input-group-inline">
+                <button type="button" class="btn greyicon deleteretrieved" placement="right" data-toggle="tooltip" data-placement="bottom" title="Discard search results">
+                    <i class="fa fa-times"></i>
+                </button>
+                <button type="button" class="btn greyicon searchgoggles" placement="right">
+                    <i class="fa fa-search"></i>
+                </button>
+            </div>
         </div>`;
 
         let ret = document.createElement("div");
         ret.insertAdjacentHTML("afterbegin", searchHTML);
 
         let input = <HTMLInputElement>ret.getElementsByClassName('form-control')[0];
-        let searchBtn = <HTMLButtonElement>ret.getElementsByClassName('btn')[0];
+        let searchBtn = <HTMLButtonElement>ret.getElementsByClassName('searchgoggles')[0];
+
+        function deleteRetrievedGoggles() {
+            while (document.getElementById('goggles-retrieved').hasChildNodes())
+                document.getElementById('goggles-retrieved').lastChild.remove();
+        }
+
+        let deleteBtn = <HTMLButtonElement>ret.getElementsByClassName('deleteretrieved')[0];
+        deleteBtn.addEventListener('click',() => {
+            input.value = '';
+            deleteRetrievedGoggles();
+        });
 
         searchBtn.addEventListener("click", () => {
             let collapseCreator = document.getElementById("goggle-creator-collapse-btn");
-            
-            if(collapseCreator.getAttribute("aria-expanded") === "true" )
+
+            if (collapseCreator.getAttribute("aria-expanded") === "true")
                 collapseCreator.click();
-            
-            while (document.getElementById('goggles-retrieved').hasChildNodes())
-                document.getElementById('goggles-retrieved').lastChild.remove();
+
+            deleteRetrievedGoggles();
 
             let spinner = new SpinnerCard('goggles-retrieved');
             spinner.render();

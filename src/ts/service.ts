@@ -32,12 +32,11 @@ export namespace service {
 
     export function search(key: string, callback: (data: Array<Goggle>) => void) {
         let reqOptions;
-        let expression = /[-a-zA-Z0-9@:%_\+.~#?&//=]{2,256}\.[a-z]{2,4}\b(\/[-a-zA-Z0-9@:%_\+.~#?&//=]*)?/gi
-        let regexp = new RegExp(expression);
+
 
         if (key === '')
             reqOptions = getRequestOptions(ROUTES.LIST_ALL_BCS, key);
-        else if (regexp.test(key))
+        else if (utils.isUrl(key))
             reqOptions = getRequestOptions(ROUTES.SEARCH_WITH_URL, key);
         else
             reqOptions = getRequestOptions(ROUTES.SEARCH, key);
@@ -47,13 +46,8 @@ export namespace service {
                 let json = JSON.parse(data);
                 data = new Array<Goggle>();
 
-                for (let i = 0; i < json.length; i++) {
-                    let parsed = json[i] as Goggle;
-                    parsed.id = json[i].BC;
-                    //@ts-ignore
-                    delete parsed.BC;
-                    data.push(parsed);
-                }
+                for (let i = 0; i < json.length; i++)
+                    data.push(json[i] as Goggle);
 
                 callback(data);
             } else {
