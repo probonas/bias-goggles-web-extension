@@ -433,6 +433,7 @@ export namespace templates {
 
                 if (utils.isUrl(userInput)) {
                     service.checkIfCrawled(userInput, (crawled) => {
+                        console.log('cr',crawled);
                         if (crawled) {
                             input.classList.remove(...commonClasses);
                             input.classList.add('is-valid');
@@ -489,7 +490,6 @@ export namespace templates {
     export function AddAspect(): HTMLElement {
         const aspectHTML = `
                 <div class="row seedlist">
-
                 </div>
                 <div class="d-flex flex-row-reverse mt-2 mb-4">
                     <button type="button" class="btn btn-outline-success add-site" data-toggle="tooltip" data-placement="right" title="add supporting site for this aspect">
@@ -620,8 +620,8 @@ export namespace templates {
     export function GoggleCreator(): HTMLElement {
         let formHTML = `    
         <div class="dropdown-divider"></div>
-        <div>
-            <div class="form-row">
+        <div class="container-fluid">
+            <div class="row">
                 <label for="new-goggle-name">Goggle Name:</label>
                 <input type="text" class="form-control new-goggle-name" id="new-goggle-name" placeholder="Enter name for this goggle">
                 <small id="new-goggle-help" class="form-text text-muted">Should be descriptive of the goggle in order
@@ -629,17 +629,17 @@ export namespace templates {
                 </small>
             </div>
 
-            <div class="form-row">
+            <div class="row">
                 <label for="goggle-description">Description:</label>
                 <textarea class="form-control goggle-description" id="goggle-description" rows="4"
                     placeholder="Enter complete description of the goggle and try to be concise..."></textarea>
             </div>
 
-            <div class="form-group" id="aspectslist">
-                <label class="aspectslist" for="aspectslist">Add aspects:</label>
+            <div class="row" id="aspectslist">
+                <label class="aspectslist col-12" for="aspectslist">Add aspects:</label>
             </div>
 
-            <div class="form-row">
+            <div class="row">
                 <div class="col-3">
                     <button id="add-aspect" type="button" class="btn btn-outline-success mt-3 add-aspect" data-toggle="tooltip"
                         data-placement="right" title="insert aspect">
@@ -682,6 +682,7 @@ export namespace templates {
                 let invalid = aspects[i].getElementsByClassName('is-invalid');
 
                 //focus on the first invalid found
+                //when there are no invalid, we proceed
                 if (invalid.length > 0) {
                     (<HTMLInputElement>invalid[0]).focus();
                     return;
