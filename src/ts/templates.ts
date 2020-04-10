@@ -695,6 +695,8 @@ export namespace templates {
 
         <div class="row" id="aspectslist">
             <label class="aspectslist" for="aspectslist">Add aspects:</label>
+            <small id="new-goggle-help" class="form-text text-muted">At least two aspects should be added
+        </small>
         </div>
 
         <div class="row">
@@ -721,6 +723,7 @@ export namespace templates {
         }, 250);
 
         ret.getElementsByClassName('add-aspect')[0].addEventListener('click', () => {
+            ret.getElementsByClassName('aspectslist')[0].insertAdjacentElement('beforeend', templates.AddAspect());
             ret.getElementsByClassName('aspectslist')[0].insertAdjacentElement('beforeend', templates.AddAspect());
         });
 
@@ -765,7 +768,7 @@ export namespace templates {
 
             let aspects = ret.getElementsByClassName('aspect');
 
-            if (aspects.length === 0) {
+            if (aspects.length <= 1) {
                 document.getElementById('add-aspect').focus();
                 return;
             }
@@ -836,7 +839,7 @@ export namespace templates {
                                                 document.getElementById('creation-progress').remove();
                                                 document.getElementById('goggle-creator').insertAdjacentElement('beforeend', GoggleCreator());
                                             }, 250)
-                                        }, 2000);
+                                        }, 3000);
                                     }, 250);
                                 });
                             });
