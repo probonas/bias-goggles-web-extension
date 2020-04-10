@@ -1,8 +1,7 @@
 import {
-    UserSettings, UserSettingsMap, Goggle,
-    PoliticalParties, SportsTeams
+    UserSettings, UserSettingsMap, Goggle
 } from "./types";
-
+import { service } from "./service"
 export namespace userSettings {
 
     export const INITIAL_SCORE_INDEX = 0;
@@ -24,24 +23,25 @@ export namespace userSettings {
     }
 
     export function update(settings: UserSettings, callback?: () => void) {
-        save(settings.method, settings.goggles, settings.syncEnabled,
-            settings.enabled, settings.pagePopoverEnabled,
-            settings.scoreIndex, settings.gogglesList, callback);
+        save(settings.userID, settings.method, settings.goggles, settings.syncEnabled,
+            settings.enabled, settings.scoreIndex, settings.gogglesList, callback);
     }
 
     export function initialize(callback?: () => void) {
-        let defaultSettings = {
-            method: 'pr',
-            goggles: PoliticalParties.id,
-            gogglesList: [PoliticalParties, SportsTeams],
-            syncEnabled: false,
-            scoreIndex: INITIAL_SCORE_INDEX,
-            enabled: true,
-            forceOn: false,
-            pagePopoverEnabled: false
-        };
-
-        update(defaultSettings, callback);
+        service.getUserID((userID) => {
+            service.getDefaultGoggles((goggles) => {
+                update({
+                    userID: userID,
+                    method: 'pr',
+                    goggles: goggles[0].id,
+                    gogglesList: goggles,
+                    syncEnabled: false,
+                    scoreIndex: INITIAL_SCORE_INDEX,
+                    enabled: true,
+                    forceOn: false
+                }, callback);
+            })
+        });
     }
 
     export function load(callback?: () => void) {
@@ -52,21 +52,20 @@ export namespace userSettings {
         });
     }
 
-    function save(method: string, googlesToUse: string,
-        syncEnabled: boolean, enabled: boolean,
-        pagePopoverEnabled: boolean, scoreIndex_: number,
+    function save(userID: string, method: string, googlesToUse: string,
+        syncEnabled: boolean, enabled: boolean, scoreIndex_: number,
         gogglesList: Goggle[], callback?: () => void) {
 
         let settings = {} as UserSettingsMap;
 
         settings[settingsKey] = {
+            userID: userID,
             method: method,
             goggles: googlesToUse,
             syncEnabled: syncEnabled,
             enabled: enabled,
             scoreIndex: scoreIndex_,
             forceOn: false,
-            pagePopoverEnabled: pagePopoverEnabled,
             gogglesList: gogglesList
         };
 

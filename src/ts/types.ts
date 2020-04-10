@@ -1,25 +1,3 @@
-export let PoliticalParties: Goggle = {
-    id: 'political-parties',
-    abs: [],
-    description: 'A goggle about political parties in Greece',
-    domain: null,
-    name: 'Political Parties [GR]',
-    creator: null,
-    timestamp: null,
-    active: true
-}
-
-export let SportsTeams: Goggle = {
-    id: 'sport-teams',
-    abs: [],
-    description: 'A goggle about sports teams in Greece',
-    domain: null,
-    name: 'Sports Teams [GR]',
-    creator: null,
-    timestamp: null,
-    active: true
-}
-
 export type Goggle = {
     id: string //tag as used by service
     abs: string[],
@@ -58,6 +36,7 @@ export interface UserSettingsMap {
 }
 
 export interface UserSettings {
+    userID: string,
     method: string;
     goggles: string;
     gogglesList: Goggle[];
@@ -65,7 +44,6 @@ export interface UserSettings {
     enabled: boolean;
     scoreIndex: number;
     forceOn: boolean;
-    pagePopoverEnabled: boolean;
 }
 
 export type AppData = {

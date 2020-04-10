@@ -2,9 +2,11 @@ import { userSettings } from "./usersettings";
 import { utils } from "./utils";
 import "./contextMenu";
 
-chrome.runtime.onInstalled.addListener((details) => {
-    console.log('initialized default user profile!');
-    userSettings.initialize(utils.showCorrectBadge);
+chrome.runtime.onInstalled.addListener(() => {
+    userSettings.initialize(() => {
+        utils.showCorrectBadge();
+        console.log('initialized user profile!');
+    });
 });
 
 chrome.runtime.onStartup.addListener(() => {

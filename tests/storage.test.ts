@@ -1,7 +1,7 @@
 import { extension } from "../src/ts/storage";
 import { userSettings } from "../src/ts/usersettings";
 import { alexatop300gr } from "./domains";
-import { PoliticalParties, SportsTeams, DomainData, Score, AppData } from "../src/ts/types";
+import { DomainData, Score, AppData, Goggle } from "../src/ts/types";
 import { utils } from "../src/ts/utils";
 
 const VERY_LONG_TIMEOUT = 1000 * 1000;
@@ -13,10 +13,10 @@ let totalDomains = 10;
 let totalMonths = 2;
 let totalDays = 28;
 
-let goggles = [PoliticalParties, SportsTeams];
 
 let singleDomain = 'kathimerini.gr';
-let singleGoggle = PoliticalParties;
+let singleGoggle: Goggle;
+let goggles: Goggle[];
 
 let domains = [
     'kathimerini.gr',
@@ -35,6 +35,10 @@ let year: number;
 function resetEnvironment(callback: () => void) {
     chrome.storage.local.clear(() => {
         userSettings.initialize(callback);
+        userSettings.get((items) => {
+            goggles = items.gogglesList;
+            singleGoggle = items.gogglesList[0];
+        })
     });
 }
 

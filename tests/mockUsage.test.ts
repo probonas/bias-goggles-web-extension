@@ -1,14 +1,21 @@
 import { extension } from "../src/ts/storage";
 import { userSettings } from "../src/ts/usersettings";
 import { alexatop300gr } from "./domains";
-import { PoliticalParties, SportsTeams } from "../src/ts/types";
 import { utils } from "../src/ts/utils";
+import { Goggle } from "../src/ts/types";
+
+let defaultGoggles: Goggle[];
 
 describe('mockUsage', () => {
 
     beforeAll((done) => {
         chrome.storage.local.clear(() => {
-            userSettings.initialize(done);
+            userSettings.initialize(() => {
+                userSettings.get((items) => {
+                    defaultGoggles = items.gogglesList;
+                    done();
+                });
+            });
         });
     });
 
@@ -33,18 +40,17 @@ describe('mockUsage', () => {
                     console.error('day ' + i);
 
                     jasmine.clock().mockDate(new Date(2020, 1, i));
+                    let completed = new Array<String>();
 
-                    extension.storage.getLatestScoreData(utils.getDomainFromURL(alexatop300gr[domain]),
-                        PoliticalParties.id, (score, index) => {
-                            
-                            extension.storage.getLatestScoreData(utils.getDomainFromURL(alexatop300gr[domain]),
-                                SportsTeams.id, (score, index) => {
-                                    expect().nothing();
+                    for (let g = 0; g < defaultGoggles.length; g++) {
+                        extension.storage.getLatestScoreData(utils.getDomainFromURL(alexatop300gr[domain]),
+                            defaultGoggles[g].id, (score, index) => {
+                                expect().nothing();
+                                completed.push(defaultGoggles[g].id);
+                                if (completed.length === defaultGoggles.length)
                                     done();
-                                });
-                                
-                        });
-
+                            });
+                    }
 
                 });
             }
