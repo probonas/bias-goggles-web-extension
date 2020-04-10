@@ -1,6 +1,6 @@
 import * as http from "http";
 import { userSettings } from "./usersettings";
-import { AppData, Goggle, AB, UserCreatedGoggle } from "./types";
+import { AppData, Goggle, AB, UserCreatedGoggle, Algorithm } from "./types";
 import { utils } from "./utils";
 import { RequestOptions } from "https";
 
@@ -71,7 +71,7 @@ export namespace service {
         postToService(
             postRequestOptions(ROUTES.BIAS_CONCEPT, postData), postData,
             (data, res) => {
-                console.log(data); 
+                console.log(data);
                 callback((res.statusCode === 200 || res.statusCode === 201) ? <Goggle>data : null);
             }
         )
@@ -97,6 +97,25 @@ export namespace service {
                 callback((res.statusCode === 201) ? data.userID : null);
             }
         );
+    }
+
+    export function getAvailablesAlgorithms(callback: (algs: Array<Algorithm>) => void) {
+        requestFromService(
+            getRequestOptions(ROUTES.ALGORITHMS),
+            (data, res) => {
+                let algs = new Array<Algorithm>();
+
+                for (let i = 0; i < data.length; i++) {
+                    algs.push({
+                        id: data[i].ID,
+                        name: data[i].NAME,
+                        description: data[i].DESCRIPTION
+                    });
+                }
+
+                callback((res.statusCode === 200) ? algs : null);
+            }
+        )
     }
 
     export function getDefaultGoggles(callback: (goggles: Array<Goggle> | null) => void) {

@@ -1,5 +1,5 @@
 import {
-    UserSettings, UserSettingsMap, Goggle
+    UserSettings, UserSettingsMap, Goggle, Algorithm
 } from "./types";
 import { service } from "./service"
 export namespace userSettings {
@@ -24,37 +24,47 @@ export namespace userSettings {
 
     export function update(settings: UserSettings, callback?: () => void) {
         save(settings.userID, settings.method, settings.goggles, settings.syncEnabled,
-            settings.enabled, settings.scoreIndex, settings.gogglesList, callback);
+            settings.enabled, settings.scoreIndex, settings.gogglesList, settings.algs, callback);
     }
 
     export function initialize(callback?: () => void) {
         service.getUserID((userID) => {
             service.getDefaultGoggles((goggles) => {
-                update({
-                    userID: userID,
-                    method: 'pr',
-                    goggles: goggles[0].id,
-                    gogglesList: goggles,
-                    syncEnabled: false,
-                    scoreIndex: INITIAL_SCORE_INDEX,
-                    enabled: true,
-                    forceOn: false
-                }, callback);
-            })
+                service.getAvailablesAlgorithms((algs) => {
+                    update({
+                        userID: userID,
+                        method: 'pr',
+                        goggles: goggles[0].id,
+                        gogglesList: goggles,
+                        algs: algs,
+                        syncEnabled: false,
+                        scoreIndex: INITIAL_SCORE_INDEX,
+                        enabled: true,
+                        forceOn: false
+                    }, callback);
+                })
+            });
         });
     }
 
     export function load(callback?: () => void) {
-        userSettings.get((settings) => {
-            scoreIndex = settings.scoreIndex;
-            if (callback)
-                callback();
+        service.getAvailablesAlgorithms((algs) => {
+            userSettings.get((settings) => {
+                if(algs)
+                    settings.algs = algs;
+                    
+                userSettings.update(settings, () => {
+                    scoreIndex = settings.scoreIndex;
+                    if (callback)
+                        callback();
+                });
+            });
         });
     }
 
     function save(userID: string, method: string, googlesToUse: string,
         syncEnabled: boolean, enabled: boolean, scoreIndex_: number,
-        gogglesList: Goggle[], callback?: () => void) {
+        gogglesList: Goggle[], algs: Algorithm[], callback?: () => void) {
 
         let settings = {} as UserSettingsMap;
 
@@ -66,7 +76,8 @@ export namespace userSettings {
             enabled: enabled,
             scoreIndex: scoreIndex_,
             forceOn: false,
-            gogglesList: gogglesList
+            gogglesList: gogglesList,
+            algs: algs
         };
 
         scoreIndex = scoreIndex_;

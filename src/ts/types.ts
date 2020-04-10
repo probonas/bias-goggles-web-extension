@@ -17,6 +17,12 @@ export type UserCreatedGoggle = {
     creator: string
 }
 
+export type Algorithm = {
+    id: string,
+    name: string,
+    description: string
+}
+
 export type AB = {
     seeds: Array<string>
 }
@@ -48,6 +54,7 @@ export interface UserSettings {
     method: string;
     goggles: string;
     gogglesList: Goggle[];
+    algs: Algorithm[];
     syncEnabled: boolean;
     enabled: boolean;
     scoreIndex: number;
