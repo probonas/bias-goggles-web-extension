@@ -9,6 +9,14 @@ export type Goggle = {
     active: boolean,
 };
 
+export type UserCreatedGoggle = {
+    abs: string[],
+    description: string,
+    domain: string,
+    name: string,
+    creator: string
+}
+
 export type AB = {
     seeds: Array<string>
 }

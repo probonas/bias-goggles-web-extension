@@ -1,6 +1,6 @@
 import * as http from "http";
 import { userSettings } from "./usersettings";
-import { AppData, Goggle, AB } from "./types";
+import { AppData, Goggle, AB, UserCreatedGoggle } from "./types";
 import { utils } from "./utils";
 import { RequestOptions } from "https";
 
@@ -12,27 +12,28 @@ export namespace service {
         "ALGORITHMS" = "/bias-goggles-api/algs/",
         "DOMAINS" = "/bias-goggles-api/domains/",
         "ASPECT_OF_BIAS" = "/bias-goggles-api/abs/",
-        "BIAS_CONCEPT" = "/bias-goggles-api/bsc/",
+        "BIAS_CONCEPT" = "/bias-goggles-api/bcs/",
         "BIAS" = "/bias-goggles-api/bias/", //dummy, keep out!
         "SEARCH" = "/bias-goggles-api/search/",
         "SEARCH_WITH_URL" = "/bias-goggles-api/search/bcs/",
-        "LIST_ALL_BCS" = "/bias-goggles-api/bcs/",
-        "CRAWL_CHECK" = "/bias-goggles-api/domains/"
+        "CRAWL_CHECK" = "/bias-goggles-api/domains/",
+        "DEFAULT_GOGGLES" = "/bias-goggles-api/bcs/defaults/",
+        "DOMAIN_TYPES" = "/bias-goggles-api/bcs/domainTypes/"
     }
 
-    function getRequestOptions(route: ROUTES, slug: string): RequestOptions {
+    function getRequestOptions(route: ROUTES, slug?: string): RequestOptions {
         return {
             method: 'GET',
             host: "pangaia.ics.forth.gr",
             port: 4567,
-            path: route + slug,
+            path: (slug === undefined) ? route : route + slug,
             headers: {
                 'Accept': 'application/json'
             },
         };
     }
 
-    function postRequestOptions(route: ROUTES, postData: string): RequestOptions {
+    function postRequestOptions(route: ROUTES, postData?: string): RequestOptions {
         return {
             method: 'POST',
             host: "pangaia.ics.forth.gr",
@@ -41,7 +42,7 @@ export namespace service {
             headers: {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json',
-                'Content-Length': Buffer.byteLength(postData)
+                'Content-Length': Buffer.byteLength(postData || null)
             },
         };
     }
@@ -54,22 +55,69 @@ export namespace service {
         );
     }
 
-    export function postAB(seeds: AB, callback: (AbId: string) => void) {
+    export function postAB(seeds: AB, callback: (AbId: string | null) => void) {
         let postData = JSON.stringify(seeds);
 
         postToService(
             postRequestOptions(ROUTES.ASPECT_OF_BIAS, postData), postData,
             (data, res) => {
-                callback((res.statusCode === 200 || res.statusCode === 201) ? JSON.parse(data).id : null);
+                callback((res.statusCode === 200 || res.statusCode === 201) ? data.id : null);
             }
         );
+    }
+
+    export function postCreatedGoggle(goggle: UserCreatedGoggle, callback: (goggle: Goggle) => void) {
+        let postData = JSON.stringify(goggle);
+        postToService(
+            postRequestOptions(ROUTES.BIAS_CONCEPT, postData), postData,
+            (data, res) => {
+                console.log(data); 
+                callback((res.statusCode === 200 || res.statusCode === 201) ? <Goggle>data : null);
+            }
+        )
+    }
+
+    export function getDomainTypes(callback: (domainTypes: Array<string>) => void) {
+        requestFromService(
+            getRequestOptions(ROUTES.DOMAIN_TYPES),
+            (data, res) => {
+                let types = new Array<string>();
+                for (let i = 0; i < data.types.length; i++)
+                    types.push(data.types[i]);
+
+                callback((res.statusCode === 200 || res.statusCode === 201) ? types : null);
+            }
+        )
+    }
+
+    export function getUserID(callback: (userID: string | null) => void) {
+        postToService(
+            postRequestOptions(ROUTES.USERS), null,
+            (data, res) => {
+                callback((res.statusCode === 201) ? data.userID : null);
+            }
+        );
+    }
+
+    export function getDefaultGoggles(callback: (goggles: Array<Goggle> | null) => void) {
+        requestFromService(
+            getRequestOptions(ROUTES.DEFAULT_GOGGLES),
+            (data, res) => {
+                let goggles = new Array<Goggle>();
+
+                for (let i = 0; i < data.length; i++)
+                    goggles.push(data[i] as Goggle);
+
+                callback((res.statusCode === 200) ? goggles : null);
+            }
+        )
     }
 
     export function search(key: string, callback: (data: Array<Goggle>) => void) {
         let reqOptions;
 
         if (key === '')
-            reqOptions = getRequestOptions(ROUTES.LIST_ALL_BCS, key);
+            reqOptions = getRequestOptions(ROUTES.BIAS_CONCEPT, key);
         else if (utils.isUrl(key))
             reqOptions = getRequestOptions(ROUTES.SEARCH_WITH_URL, key);
         else
@@ -77,13 +125,12 @@ export namespace service {
 
         requestFromService(reqOptions, (data, res) => {
             if (res.statusCode === 200) {
-                let json = JSON.parse(data);
-                data = new Array<Goggle>();
+                let arr = new Array<Goggle>();
 
-                for (let i = 0; i < json.length; i++)
-                    data.push(json[i] as Goggle);
+                for (let i = 0; i < data.length; i++)
+                    arr.push(data[i] as Goggle);
 
-                callback(data);
+                callback(arr);
             } else {
                 callback(null);
             }
@@ -156,7 +203,7 @@ export namespace service {
             });
 
             res.on('close', () => {
-                callback(data, res);
+                callback(JSON.parse(data), res);
             });
 
         });
@@ -184,7 +231,7 @@ export namespace service {
             });
 
             res.on('close', () => {
-                callback(data, res);
+                callback(JSON.parse(data), res);
             });
 
         });

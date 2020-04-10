@@ -1,11 +1,12 @@
 import { service } from "./service";
-import { SpinnerCard, GenericMessageCard, InstallGoggleCard, } from "./infoCard";
+import { SpinnerCard, GenericMessageCard, InstallGoggleCard } from "./infoCard";
 import { utils } from "./utils";
 import { AB } from "./types";
+import { userSettings } from "./usersettings";
 
 export namespace templates {
 
-    let aspectcounter = 0;
+    let aspectcounter: number;
     let aspectLabelPrefix = '#';
 
     export function InnerCard(title: string, body: string, id: string, tooltipOn: boolean, dismissable: boolean, comparable: boolean): string {
@@ -93,6 +94,35 @@ export namespace templates {
                     <span class="sr-only">Loading...</span>
                 </div>
             </div>`;
+    }
+
+    export function Check(id: string, msg: string): string {
+        return `
+        <div id="${id}" class="d-flex flex-column fade">
+            <h3 class="d-flex justify-content-center">${msg}</h3>
+            <span class="d-flex justify-content-center">
+                <i class="fa fa-check-circle fa-4x text-success"></i>
+            </span>
+        </div>`;
+    }
+
+    export function Error(id: string, msg: string): string {
+        return `
+        <div id="${id}" class="d-flex flex-column fade">
+            <h3 class="d-flex justify-content-center">${msg}</h3>
+            <span class="d-flex justify-content-center">
+                <i class="fa fa-times-circle fa-4x text-danger"></i>
+            </span>
+        </div>`;
+    }
+
+    export function ButtonWithSpinner(msg: string) {
+        return `
+        <button class="btn btn-primary mt-3 submitform" type="button" disabled>
+            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+            ${msg}
+        </button>
+        `;
     }
 
     export function SuccessAlert(msg: string): string {
@@ -433,7 +463,7 @@ export namespace templates {
 
                 if (utils.isUrl(userInput)) {
                     service.checkIfCrawled(userInput, (crawled) => {
-                        console.log('cr',crawled);
+                        console.log('cr', crawled);
                         if (crawled) {
                             input.classList.remove(...commonClasses);
                             input.classList.add('is-valid');
@@ -522,6 +552,9 @@ export namespace templates {
                 removeTooltips();
 
                 let aspects = document.getElementsByClassName('aspect');
+
+                if (aspects.length === 0)
+                    aspectcounter = 0;
 
                 for (let i = 0; i < aspects.length; i++) {
                     let label = aspectLabelPrefix + (i + 1);
@@ -617,66 +650,127 @@ export namespace templates {
         return ret;
     }
 
+    function selection(value: string) {
+        return `
+            <option value="${value}">${value}</option>
+        `;
+    }
+    export function selections(domainTypes: Array<string>) {
+        let selectionList = '';
+
+        domainTypes.forEach((value) => {
+            selectionList += selection(value);
+        });
+
+        return selectionList;
+    }
+
     export function GoggleCreator(): HTMLElement {
-        let formHTML = `    
-        <div class="dropdown-divider"></div>
-        <div class="container-fluid">
-            <div class="row">
-                <label for="new-goggle-name">Goggle Name:</label>
-                <input type="text" class="form-control new-goggle-name" id="new-goggle-name" placeholder="Enter name for this goggle">
-                <small id="new-goggle-help" class="form-text text-muted">Should be descriptive of the goggle in order
-                    to help the community
-                </small>
-            </div>
+        aspectcounter = 0;
+        let formHTML = `
+        <div class="row">
+            <div class="dropdown-divider"></div>
+        </div>
 
-            <div class="row">
-                <label for="goggle-description">Description:</label>
-                <textarea class="form-control goggle-description" id="goggle-description" rows="4"
-                    placeholder="Enter complete description of the goggle and try to be concise..."></textarea>
-            </div>
+        <div class="row">
+            <label for="new-goggle-name">Goggle Name:</label>
+            <input type="text" class="form-control new-goggle-name" id="new-goggle-name" placeholder="Enter name for this goggle">
+            <small id="new-goggle-help" class="form-text text-muted">Should be descriptive of the goggle in order
+                to help the community
+            </small>
+        </div>
 
-            <div class="row" id="aspectslist">
-                <label class="aspectslist col-12" for="aspectslist">Add aspects:</label>
-            </div>
+        <div class="row">
+            <label for="goggle-description">Description:</label>
+            <textarea class="form-control goggle-description" id="goggle-description" rows="4"
+                placeholder="Enter complete description of the goggle and try to be concise..."></textarea>
+        </div>
 
-            <div class="row">
-                <div class="col-3">
-                    <button id="add-aspect" type="button" class="btn btn-outline-success mt-3 add-aspect" data-toggle="tooltip"
-                        data-placement="right" title="insert aspect">
-                        <i class="fa fa-plus"></i>
-                    </button>
-                </div>
-            </div>
+        <div class="row">
+            <label for="domain-selection">Domain:</label>
+            <select class="custom-select domain-selection" id="domain-selection">
+                <option selected>Select domain for this goggle...</option>
+            </select>
+        </div>
 
+        <div class="row" id="aspectslist">
+            <label class="aspectslist" for="aspectslist">Add aspects:</label>
+        </div>
+
+        <div class="row">
+                <button id="add-aspect" type="button" class="btn btn-outline-success mt-3 add-aspect" data-toggle="tooltip"
+                    data-placement="right" title="insert aspect">
+                    <i class="fa fa-plus"></i>
+                </button>
+        </div>
+        
+        <div class="row">
             <button type="button" class="btn btn-primary mt-3 submitform">Create Goggle</button>
         </div>
-        <div class="dropdown-divider"></div>`;
+
+        <div class="row">
+            <div class="dropdown-divider"></div>
+        </div>`;
 
         let ret = document.createElement("div");
         ret.insertAdjacentHTML("afterbegin", formHTML);
+        ret.classList.add('fade');
+
+        setTimeout(() => {
+            ret.classList.add('show')
+        }, 250);
 
         ret.getElementsByClassName('add-aspect')[0].addEventListener('click', () => {
             ret.getElementsByClassName('aspectslist')[0].insertAdjacentElement('beforeend', templates.AddAspect());
+        });
+
+        service.getDomainTypes((domainTypes) => {
+            ret.getElementsByClassName('custom-select')[0].insertAdjacentHTML('beforeend', selections(domainTypes));
         });
 
         //initial aspect
         (<HTMLButtonElement>ret.getElementsByClassName('add-aspect')[0]).click();
 
         ret.getElementsByClassName('submitform')[0].addEventListener('click', () => {
-            let goggleName = <HTMLInputElement>ret.getElementsByClassName('new-goggle-name')[0];
-            let goggleDescription = <HTMLTextAreaElement>ret.getElementsByClassName('goggle-description')[0];
+            removeTooltips();
 
-            if (goggleName.value.trim() === '') {
-                goggleName.focus();
+            let goggleNameInput = <HTMLInputElement>ret.getElementsByClassName('new-goggle-name')[0];
+            let goggleDescriptionInput = <HTMLTextAreaElement>ret.getElementsByClassName('goggle-description')[0];
+            let domainTypeSelection = <HTMLSelectElement>ret.getElementsByClassName('domain-selection')[0];
+
+            let goggleName: string;
+            let goggleDescription: string;
+            let domainType: string;
+
+            if (goggleNameInput.value.trim() === '') {
+                goggleNameInput.focus();
                 return;
+            } else {
+                goggleName = goggleDescriptionInput.value.trim();
             }
 
-            if (goggleDescription.value.trim() === '') {
-                goggleDescription.focus();
+            if (goggleDescriptionInput.value.trim() === '') {
+                goggleDescriptionInput.focus();
                 return;
+            } else {
+                goggleDescription = goggleDescriptionInput.value.trim();
+            }
+
+            if (domainTypeSelection.selectedIndex === 0) {
+                domainTypeSelection.focus();
+                return;
+            } else {
+                domainType = domainTypeSelection.value;
             }
 
             let aspects = ret.getElementsByClassName('aspect');
+
+            if (aspects.length === 0) {
+                document.getElementById('add-aspect').focus();
+                return;
+            }
+
+            let aspectsOfBias = new Array<string>();
 
             for (let i = 0; i < aspects.length; i++) {
                 let invalid = aspects[i].getElementsByClassName('is-invalid');
@@ -688,22 +782,68 @@ export namespace templates {
                     return;
                 } else {
                     let valid = aspects[i].getElementsByClassName('is-valid');
-                    let seeds = new Array<String>();
+
+                    if (valid.length === 0) {
+                        (<HTMLButtonElement>aspects[i].getElementsByClassName('add-site')[0]).focus();
+                        return;
+                    }
+
+                    let seeds = new Set<String>();
 
                     for (let j = 0; j < valid.length; j++)
-                        seeds.push((<HTMLInputElement>valid[j]).value);
+                        seeds.add((<HTMLInputElement>valid[j]).value);
 
-                    service.postAB({seeds: seeds} as AB, () => {
-                        //collect all ab is
-                        //ad a use id and send it!
+                    service.postAB({ seeds: [...seeds] } as AB, (AbId) => {
+                        aspectsOfBias.push(AbId);
+
+                        if (aspectsOfBias.length === aspects.length) {
+                            let submitBtn = ret.getElementsByClassName('submitform')[0];
+                            let btnPos = submitBtn.parentElement;
+
+                            submitBtn.remove();
+                            btnPos.insertAdjacentHTML('beforeend', ButtonWithSpinner('Submitting...'));
+
+                            userSettings.get(items => {
+                                service.postCreatedGoggle({
+                                    abs: [...aspectsOfBias],
+                                    description: goggleDescription,
+                                    domain: domainType,
+                                    name: goggleName,
+                                    creator: items.userID
+                                }, (goggle) => {
+                                    console.log('google created');
+                                    console.log(goggle);
+
+                                    ret.classList.remove('show');
+                                    ret.classList.add('hide');
+
+                                    setTimeout(() => {
+                                        while (document.getElementById('goggle-creator').hasChildNodes())
+                                            document.getElementById('goggle-creator').lastChild.remove();
+
+                                        if (goggle) {
+                                            document.getElementById('goggle-creator').insertAdjacentHTML('beforeend', Check('creation-progress', 'Successfully created goggles!'));
+                                            document.getElementById('creation-progress').classList.add('show');
+                                        } else {
+                                            document.getElementById('goggle-creator').insertAdjacentHTML('beforeend', Error('creation-progress', 'Goggle creation failed!'));
+                                            document.getElementById('creation-progress').classList.add('show');
+                                        }
+
+
+                                        setTimeout(() => {
+                                            document.getElementById('creation-progress').classList.add('hide');
+                                            setTimeout(() => {
+                                                document.getElementById('creation-progress').remove();
+                                                document.getElementById('goggle-creator').insertAdjacentElement('beforeend', GoggleCreator());
+                                            }, 250)
+                                        }, 2000);
+                                    }, 250);
+                                });
+                            });
+                        }
                     });
                 }
-
             }
-
-
-            //abs
-            //domain
         });
 
         return ret;

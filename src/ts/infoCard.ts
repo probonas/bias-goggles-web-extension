@@ -7,7 +7,6 @@ import { extension } from "./storage";
 import { goggles } from "./goggles";
 import { utils } from "./utils";
 import { Goggle } from "./types";
-import { userSettings } from "./usersettings";
 
 const pollingInterval = 10; //ms
 
@@ -433,7 +432,7 @@ export class InstallGoggleCard extends Card {
     private add(card: HTMLElement) {
         goggles.add(this.goggle);
         card.getElementsByClassName('btn')[0].remove();
-        card.insertAdjacentHTML('beforeend',templates.TickBtn());
+        card.insertAdjacentHTML('beforeend', templates.TickBtn());
         (<HTMLButtonElement>card.getElementsByClassName('btn')[0]).addEventListener('click', () => {
             this.remove(card);
         });
@@ -443,9 +442,9 @@ export class InstallGoggleCard extends Card {
         goggles.remove(this.goggle.id);
 
         card.getElementsByClassName('btn')[0].remove();
-        card.insertAdjacentHTML('beforeend',templates.AddBtn());
+        card.insertAdjacentHTML('beforeend', templates.AddBtn());
 
-        (<HTMLButtonElement>card.getElementsByClassName('btn')[0]).addEventListener('click', ()=>{
+        (<HTMLButtonElement>card.getElementsByClassName('btn')[0]).addEventListener('click', () => {
             this.add(card);
         });
     }
