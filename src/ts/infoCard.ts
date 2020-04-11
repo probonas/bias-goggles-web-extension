@@ -218,7 +218,7 @@ export class ScoreCard extends ExploreCard {
         this.title = templates.TitleWithScores(title, this.score.scores[userSettings.DEFAULT_ALG].bias_score, this.score.scores[userSettings.DEFAULT_ALG].support_score);
     }
 
-    private getScoreDataVector(): {[key:string] : number} {
+    private getScoreDataVector(): { [key: string]: number } {
 
         //console.log('==============score vector==============');
         //console.log(userSettings.DEFAULT_ALG);
@@ -279,14 +279,14 @@ export class ExtensionDisabledCard extends GenericCard {
 }
 
 /**
- * Card shown when there are no data in service for a particular domain  
+ * Card shown when there are no data in service for a particular domain
  */
 export class UncrawledDomainCard extends GenericCard {
 
     constructor(tabID: string, domain: string) {
         super(tabID, 'uncrawled-' + domain, false);
 
-        this.setTitle('Too bad... :(');
+        this.setTitle('Not crawled yet:(! Saved for future crawling :)');
         this.setHTMLContent(uncrawled.create404Msg(domain, ['text-info']));
     }
 
