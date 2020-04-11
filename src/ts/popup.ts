@@ -370,11 +370,13 @@ function newTab(goggle: Goggle) {
 }
 
 function removeTab(goggle: Goggle) {
-    let thisTab = <HTMLElement>document.getElementById(goggle.name);
+    let thisTab = document.getElementById(goggle.name);
+    let contentTab = document.getElementById('content' + goggle.id);
+
     let sibling = thisTab.nextElementSibling || thisTab.previousElementSibling;
 
-    document.getElementById(goggle.id).remove();
-    document.getElementById(goggle.name).remove();
+    thisTab.remove();
+    contentTab.remove();
 
     if (sibling)
         (<HTMLElement>document.getElementById(sibling.id).lastElementChild).click();
