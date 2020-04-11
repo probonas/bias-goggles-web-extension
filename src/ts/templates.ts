@@ -14,15 +14,15 @@ export namespace templates {
 
         if (dismissable) {
             close = `
-                <button type="button" class="btn btn-link _close">
-                    <img src="icons/x.svg" width="18" height="18" title="Close" >
+                <button style="font-size: 0.5rem;" type="button" class="btn _close">
+                    <i class="far fa-window-close fa-3x"></i>
                 </button>`;
         };
 
         if (comparable) {
             compare = `
-                <button type="button" class="btn btn-link compare" data-toggle="modal" data-target="#compareModal">
-                    <img src="icons/edit.svg" width="18" height="18" title="Compare" >
+                <button style="font-size: 0.5rem;" type="button" class="btn compare" data-toggle="modal" data-target="#compareModal">
+                    <i class="fa fa-search-plus fa-3x"></i>
                 </button>`;
         }
 
