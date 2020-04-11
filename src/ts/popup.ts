@@ -546,6 +546,13 @@ document.body.addEventListener('compareCard', (e) => {
         });
     });
 
+    // Also add the same behavior to the enter key in the textbox
+    userInput.addEventListener("keyup", (event) => {
+        //enter key is pressed
+        if (event.keyCode === 13)
+            search.click();
+    });
+
 });
 
 const analyticsTabID = 'analytics';
