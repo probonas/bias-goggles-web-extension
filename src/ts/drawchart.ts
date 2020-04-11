@@ -18,8 +18,8 @@ import { Anchor, Font } from "chartjs-plugin-datalabels/types/options";
 
 export namespace chart {
 
-    const lightness = 45;
-    const saturation = 80;
+    const lightness = 65;
+    const saturation = 60;
     const opaque = 100;
 
     const green = 'rgb(133,229,133)';
