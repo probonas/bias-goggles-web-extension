@@ -11,8 +11,11 @@ export namespace goggles {
      */
     export function add(goggles: Goggle, callback?: () => void) {
         userSettings.get(settings => {
-            settings.gogglesList.push(goggles);
-            userSettings.update(settings, callback);
+            let goggleExists = settings.gogglesList.find((value) => { return value.id === goggles.id });
+            if (!goggleExists) {
+                settings.gogglesList.push(goggles);
+                userSettings.update(settings, callback);
+            }
         });
     }
 
@@ -23,7 +26,7 @@ export namespace goggles {
      */
     export function remove(gogglesID: string, callback?: () => void) {
         userSettings.get(settings => {
-            settings.gogglesList = settings.gogglesList.filter(value => value.id != gogglesID);
+            settings.gogglesList = [...settings.gogglesList].filter(value => value.id != gogglesID);
             extension.storage.getAllDomainDataPartialKey(gogglesID, (domainData) => {
                 if (domainData)
                     domainData.forEach((value, key) => {
