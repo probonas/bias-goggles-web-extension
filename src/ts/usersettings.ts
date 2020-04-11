@@ -6,6 +6,7 @@ export namespace userSettings {
 
     export const INITIAL_SCORE_INDEX = 0;
     export const settingsKey = 'settings';
+    export let DEFAULT_ALG = '';
 
     let scoreIndex: number = null;
 
@@ -31,9 +32,11 @@ export namespace userSettings {
         service.getUserID((userID) => {
             service.getDefaultGoggles((goggles) => {
                 service.getAvailablesAlgorithms((algs) => {
+                    DEFAULT_ALG = algs.filter(arg => arg.name.toLowerCase().includes('pagerank'))[0].id;
+
                     update({
                         userID: userID,
-                        method: 'pr',
+                        method: DEFAULT_ALG,
                         goggles: goggles[0].id,
                         gogglesList: goggles,
                         algs: algs,
@@ -50,11 +53,13 @@ export namespace userSettings {
     export function load(callback?: () => void) {
         service.getAvailablesAlgorithms((algs) => {
             userSettings.get((settings) => {
-                if(algs)
+                if (algs)
                     settings.algs = algs;
-                    
+
                 userSettings.update(settings, () => {
                     scoreIndex = settings.scoreIndex;
+                    DEFAULT_ALG = settings.method;
+         
                     if (callback)
                         callback();
                 });

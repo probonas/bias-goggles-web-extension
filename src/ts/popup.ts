@@ -38,7 +38,7 @@ const tabContent = 'tabcontent';
 let thisWindowID: number = null;
 
 let tabLabels = new Array();
-let tabIDs = new Array();
+let tabIDs = new Array<string>();
 
 let tempCards = new Array();
 
@@ -152,13 +152,13 @@ export function updateContent(url: string, cleanTab: boolean, temp?: boolean) {
 
     tabIDs.forEach(goggles => {
 
-        let spinner = new SpinnerCard(goggles);
+        //let spinner = new SpinnerCard(goggles);
 
-        spinner.render();
+        //spinner.render();
 
         utils.getBiasDataForGoggles(url, goggles, (scoreData, scoreIndex) => {
 
-            spinner.remove();
+            //spinner.remove();
 
             let card;
 
@@ -281,6 +281,7 @@ saveSettingsBtn.addEventListener('click', () => {
 });
 
 function showDomainDataUnderSettings() {
+    /*
     extension.storage.getAllDomainData((domainData) => {
         extension.storage.getAllScoreData(scores => {
             let domainCards: string = '';
@@ -350,6 +351,7 @@ function showDomainDataUnderSettings() {
             domainDataOverviewDiv.insertAdjacentHTML('afterbegin', domainCards);
         });
     });
+    */
 }
 
 document.getElementById('delete-data-btn').addEventListener('click', () => {
@@ -630,5 +632,5 @@ extension.storage.getAllScoreData((scores) => {
 
 }, true);
 
-document.getElementById("search").insertAdjacentElement("afterbegin",templates.GoggleSearch());
+document.getElementById("search").insertAdjacentElement("afterbegin", templates.GoggleSearch());
 document.getElementById('goggle-creator').insertAdjacentElement('afterbegin', templates.GoggleCreator());

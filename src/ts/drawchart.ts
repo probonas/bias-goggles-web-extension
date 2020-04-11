@@ -136,6 +136,12 @@ export namespace chart {
 
         });
 
+        //console.log('debug....');   
+        //console.log(dataLabels);
+        //console.log(data);
+        //console.log(vector);
+        
+
         if (showLabels) {
             new Chart(ctx, {
                 type: 'polarArea',

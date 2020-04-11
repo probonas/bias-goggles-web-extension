@@ -1,9 +1,9 @@
 import * as http from "http";
 import { userSettings } from "./usersettings";
-import { AppData, Goggle, AB, UserCreatedGoggle, Algorithm } from "./types";
+import { AppData, Goggle, UserCreatedGoggle, Algorithm, Bias, Scores } from "./types";
 import { utils } from "./utils";
 import { RequestOptions } from "https";
-
+import { stringify } from "querystringify"
 export namespace service {
     const REQUEST_TIMEOUT = 3000; //ms
 
@@ -13,7 +13,7 @@ export namespace service {
         "DOMAINS" = "/bias-goggles-api/domains/",
         "ASPECT_OF_BIAS" = "/bias-goggles-api/abs/",
         "BIAS_CONCEPT" = "/bias-goggles-api/bcs/",
-        "BIAS" = "/bias-goggles-api/bias/", //dummy, keep out!
+        "BIAS" = "/bias-goggles-api/bias/",
         "SEARCH" = "/bias-goggles-api/search/",
         "SEARCH_WITH_URL" = "/bias-goggles-api/search/bcs/",
         "CRAWL_CHECK" = "/bias-goggles-api/domains/",
@@ -55,8 +55,8 @@ export namespace service {
         );
     }
 
-    export function postAB(seeds: AB, callback: (AbId: string | null) => void) {
-        let postData = JSON.stringify(seeds);
+    export function postAB(seeds: Array<string>, callback: (AbId: string | null) => void) {
+        let postData = JSON.stringify({ seeds: seeds });
 
         postToService(
             postRequestOptions(ROUTES.ASPECT_OF_BIAS, postData), postData,
@@ -156,65 +156,55 @@ export namespace service {
         });
     }
 
-    function parseDataFromService(data: string, goggles: string, callback: (domainData: AppData, scoreData: AppData) => void) {
-        let ret = JSON.parse(data);
-
+    function parseDataFromService(data: Array<Bias>, callback: (domainData: AppData, scoreData: AppData) => void) {
         let scoreData = {} as AppData;
         let domainData = {} as AppData;
+        let scores = {} as Scores;
+        let vector: { [key: string]: number } = {};
+    
+        if(data.includes(null))
+            callback(null,null);
 
         let scoreIndex = userSettings.updateScoreIndex();
 
-        //the following are as returned from service
-        //if anything changes in service
-        //the following should be updated as well
-        //rank data are omitted
+        //console.log('before');
+        //console.log(data);
 
-        domainData[utils.makeKey(ret.doc.domain, goggles)] = {
+        domainData[utils.makeKey(data[0].domain, data[0].bcID)] = {
             scoreIndex: scoreIndex,
-            prevIndices: new Array<number>()
+            prevIndices: Array<number>()
         };
+
+        for (let i = 0; i < data[0].abs.length; i++)
+            vector[data[0].abs[i].seeds.join()] = data[0].abs[i].support;
+
+
+        data.forEach(dataForAlg => {
+            scores[dataForAlg.algID] = {
+                support_score: dataForAlg.support_score,
+                bias_score: dataForAlg.bias_score,
+                vector: vector
+            };
+        });
 
         scoreData[scoreIndex] = {
-            scores: {
-                'ic': {
-                    //@ts-ignore
-                    bias_score: ret.doc.ic.bias_score,
-                    support_score: ret.doc.ic.support_score,
-                    vector: ret.doc.ic.vector
-                },
-                'lt': {
-                    bias_score: ret.doc.lt.bias_score,
-                    support_score: ret.doc.lt.support_score,
-                    vector: ret.doc.lt.vector
-                },
-                'pr': {
-                    bias_score: ret.doc.pr.bias_score,
-                    support_score: ret.doc.pr.support_score,
-                    vector: ret.doc.pr.vector
-                }
-            },
+            scores: scores,
             hits: 1,
             date: new Date().valueOf(),
-            goggle: goggles
+            goggle: data[0].bcID
         };
 
+        //console.log('here');
+        //console.log(domainData);
+        //console.log(scoreData);
+
         callback(domainData, scoreData);
-
     };
-
-    function getRequestURL(domain: string, goggles: string): string {
-
-        const prefix = 'http://139.91.183.23:3000/results?domain=';
-
-        const suffix = '&bc=' + goggles;
-
-        return prefix + encodeURIComponent(domain) + suffix;
-    }
 
     function postToService(targetURL: string | http.RequestOptions, postData: string, callback: (data: any, res: http.IncomingMessage) => void) {
         let data: any = '';
 
-        console.log('requesting : ' + targetURL);
+        //console.log('requesting : ' + targetURL);
         let request = http.request(targetURL, res => {
 
             res.on('data', chunk => {
@@ -242,7 +232,7 @@ export namespace service {
     function requestFromService(targetURL: string | http.RequestOptions, callback: (data: any, res: http.IncomingMessage) => void) {
         let data: any = '';
 
-        console.log('requesting : ' + targetURL);
+        //console.log('requesting : ' + targetURL);
         let request = http.get(targetURL, res => {
 
             res.on('data', chunk => {
@@ -265,19 +255,34 @@ export namespace service {
     }
 
     export function query(url: string, goggles: string, callback?: (domainData: AppData, scoreData: AppData) => void): void {
-        //console.log('requesting: ' + goggles + ' ' + url);
 
-        let targetURL = getRequestURL(url, goggles);
+        console.log('requesting :' + url + ' ' + goggles);
 
-        requestFromService(targetURL, (data, res) => {
-            if (res.statusCode === 200 || res.statusCode === 304) {
-                parseDataFromService(data, goggles, (domainData, scoreData) => {
-                    callback(domainData, scoreData);
-                });
+        userSettings.get((items) => {
+            let retrieved = new Array<Bias>();
+
+            for (let i = 0; i < items.algs.length; i++) {
+                requestFromService(
+                    getRequestOptions(ROUTES.BIAS, stringify({
+                        bcID: goggles,
+                        algID: items.algs[i].id
+                    }, url + '?')),
+                    (data, res) => {
+                        if (res.statusCode === 200 || res.statusCode === 304)
+                            retrieved.push(data);
+                        else
+                            retrieved.push(null);
+
+                        if (retrieved.length === items.algs.length) {
+                            //console.log('retrieved');
+                            //console.log(data);
+
+                            parseDataFromService(retrieved, (domainData, scoreData) => {
+                                callback(domainData, scoreData);
+                            });
+                        }
+                    });
             }
-            else {
-                callback(null, null);
-            }
-        });
+        })
     }
 }

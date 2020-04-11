@@ -22,8 +22,18 @@ export type Algorithm = {
     name: string,
     description: string
 }
+export type Bias = {
+    domain: string,
+    algID:string,
+    bcID:string,
+    abs: Array<ABForBC>,
+    bias_score: number,
+    support_score: number;
+}
 
-export type AB = {
+export type ABForBC = {
+    abID: string,
+    support: number,
     seeds: Array<string>
 }
 
@@ -53,8 +63,8 @@ export interface UserSettings {
     userID: string,
     method: string;
     goggles: string;
-    gogglesList: Goggle[];
-    algs: Algorithm[];
+    gogglesList: Array<Goggle>;
+    algs: Array<Algorithm>;
     syncEnabled: boolean;
     enabled: boolean;
     scoreIndex: number;
@@ -81,15 +91,19 @@ export type Score = {
     hits: number;
 };
 
-type Scores = {
+export type Scores = {
     [key: string]: ScoreValue
 }
 
 export type ScoreValue = {
     bias_score: number;
     support_score: number;
-    vector: string[];
+    vector: {
+        [key:string] : number
+    };
 };
+
+
 
 export type MinMaxAvgScores = {
     [key: number]: PerGoggle

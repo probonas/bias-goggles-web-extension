@@ -7,6 +7,7 @@ import { extension } from "./storage";
 import { goggles } from "./goggles";
 import { utils } from "./utils";
 import { Goggle } from "./types";
+import { userSettings } from "./usersettings";
 
 const pollingInterval = 10; //ms
 
@@ -55,7 +56,7 @@ abstract class Card {
     protected tabID: string;
 
     constructor(tabID: string) {
-        this.tabID = tabID;
+        this.tabID = 'content' + tabID;
         this.cardID = (++id).toString();
     }
 
@@ -214,11 +215,19 @@ export class ScoreCard extends ExploreCard {
     }
 
     protected setTitle(title: string) {
-        this.title = templates.TitleWithScores(title, this.score.scores['pr'].bias_score, this.score.scores['pr'].support_score);
+        this.title = templates.TitleWithScores(title, this.score.scores[userSettings.DEFAULT_ALG].bias_score, this.score.scores[userSettings.DEFAULT_ALG].support_score);
     }
 
-    private getScoreDataVector(): string[] {
-        return this.score.scores['pr'].vector;
+    private getScoreDataVector(): {[key:string] : number} {
+
+        //console.log('==============score vector==============');
+        //console.log(userSettings.DEFAULT_ALG);
+        //console.log(this.group);
+        //console.log(this.tabID);
+        //console.log(this.score);
+        //console.log('==============end==============');
+
+        return this.score.scores[userSettings.DEFAULT_ALG].vector;
     }
 
     /**
@@ -342,7 +351,8 @@ export class CompareCard extends ExploreCard {
 
         urlsForScoredata.forEach((domain, index) => {
             extension.storage.getLatestScoreData(domain, goggles, (score) => {
-                this.data[domain] = score.scores['pr'].vector;
+
+                this.data[domain] = score.scores[userSettings.DEFAULT_ALG].vector;
 
                 if (index === urlsForScoredata.length - 1)
                     this.ready = true;

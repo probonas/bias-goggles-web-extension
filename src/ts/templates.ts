@@ -1,7 +1,6 @@
 import { service } from "./service";
 import { SpinnerCard, GenericMessageCard, InstallGoggleCard } from "./infoCard";
 import { utils } from "./utils";
-import { AB } from "./types";
 import { userSettings } from "./usersettings";
 
 export namespace templates {
@@ -244,8 +243,8 @@ export namespace templates {
         } else {
             return `
                 <li class="nav-item" id="${tabID}">
-                    <a href="#${contentTabID}" class="nav-link" data-toggle="tab" role="tab" 
-                    aria-controls="${contentTabID}" aria-selected="false">${tabID}</a>
+                    <a href="#content${contentTabID}" class="nav-link" data-toggle="tab" role="tab" 
+                    aria-controls="content${contentTabID}" aria-selected="false">${tabID}</a>
                 </li>`;
         }
     }
@@ -254,12 +253,12 @@ export namespace templates {
 
         if (active) {
             return `
-                <div class="tab-pane fade show active" id="${paneID}" 
+                <div class="tab-pane fade show active" id="content${paneID}"
                     role="tabpanel" aria-labelledby="${labelledby}">
                 </div>`;
         } else {
             return `
-                <div class="tab-pane fade" id="${paneID}" role="tabpanel" 
+                <div class="tab-pane fade" id="content${paneID}" role="tabpanel"
                     aria-labelledby="${labelledby}">
                 </div>`;
         }
@@ -791,12 +790,12 @@ export namespace templates {
                         return;
                     }
 
-                    let seeds = new Set<String>();
+                    let seeds = new Set<string>();
 
                     for (let j = 0; j < valid.length; j++)
                         seeds.add((<HTMLInputElement>valid[j]).value);
 
-                    service.postAB({ seeds: [...seeds] } as AB, (AbId) => {
+                    service.postAB([...seeds], (AbId) => {
                         aspectsOfBias.push(AbId);
 
                         if (aspectsOfBias.length === aspects.length) {

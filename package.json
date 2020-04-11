@@ -26,7 +26,8 @@
     "chartjs-plugin-zoom": "^0.7.5",
     "jquery": "^3.4.1",
     "node": "^13.5.0",
-    "popper.js": "^1.16.0"
+    "popper.js": "^1.16.0",
+    "querystringify": "^2.1.1"
   },
   "devDependencies": {
     "@types/bootstrap": "^4.3.1",
@@ -37,6 +38,7 @@
     "@types/jasmine": "^3.5.0",
     "@types/node": "^13.1.6",
     "@types/popper.js": "^1.11.0",
+    "@types/querystringify": "^2.0.0",
     "chartjs-plugin-draggable": "^0.1.6",
     "css-loader": "^3.4.0",
     "expect.js": "^0.3.1",
