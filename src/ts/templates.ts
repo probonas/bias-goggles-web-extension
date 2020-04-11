@@ -605,8 +605,8 @@ export namespace templates {
         let searchBtn = <HTMLButtonElement>ret.getElementsByClassName('searchgoggles')[0];
 
         function deleteRetrievedGoggles() {
-            while (document.getElementById('goggles-retrieved').hasChildNodes())
-                document.getElementById('goggles-retrieved').lastChild.remove();
+            while (document.getElementById('contentgoggles-retrieved').hasChildNodes())
+                document.getElementById('contentgoggles-retrieved').lastChild.remove();
         }
 
         let deleteBtn = <HTMLButtonElement>ret.getElementsByClassName('deleteretrieved')[0];
