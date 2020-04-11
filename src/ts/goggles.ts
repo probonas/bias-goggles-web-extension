@@ -26,7 +26,7 @@ export namespace goggles {
      */
     export function remove(gogglesID: string, callback?: () => void) {
         userSettings.get(settings => {
-            settings.gogglesList = [...settings.gogglesList].filter(value => value.id != gogglesID);
+            settings.gogglesList = settings.gogglesList.filter(value => value.id != gogglesID);
             extension.storage.getAllDomainDataPartialKey(gogglesID, (domainData) => {
                 if (domainData)
                     domainData.forEach((value, key) => {
