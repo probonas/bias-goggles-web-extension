@@ -48,9 +48,5 @@
 		"default_title": "bias goggles",
 		"default_panel": "popup.html",
 		"open_at_install": true
-	},
-	"web_accessible_resources": [
-		"icons/edit.svg",
-		"icons/x.svg"
-	]
+	}
 }
