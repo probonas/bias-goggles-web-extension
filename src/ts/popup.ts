@@ -44,6 +44,7 @@ let tempCards = new Array();
 
 //enable tooltips on dynamically created elements
 $('body').tooltip({
+    trigger: 'hover',
     selector: '[data-toggle="tooltip"]'
 });
 
