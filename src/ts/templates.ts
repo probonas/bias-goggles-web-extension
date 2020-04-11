@@ -140,7 +140,9 @@ export namespace templates {
             <li class="nav-item dropdown" id="${offBtnId}">
                 <button id="on-off-dropdown" class="btn" data-toggle="dropdown"
                     data-boundary="window" type="button" aria-haspopup="true" aria-expanded="false">
-                    <i class="fa fa-power-off" style="color:red" aria-hidden="true" data-trigger="hover" data-toggle="tooltip" data-placement="bottom" title="Disable plugin"></i>
+                    <div data-trigger="hover" data-toggle="tooltip" data-placement="bottom" title="Disable plugin">
+                        <i class="fa fa-power-off" style="color:red" aria-hidden="true"></i>
+                    </div>
                 </button>
                 <div class="dropdown-menu" aria-labelledby="on-off-dropdown">
                     <button class="dropdown-item" id="${sessionOnlyID}")">for this session</button>
