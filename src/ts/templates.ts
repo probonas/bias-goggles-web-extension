@@ -37,18 +37,18 @@ export namespace templates {
                     <br>
                     <div class="card fade">
                         <div class="card-body">
-                            
+
                             <div class="row float-right">
                                     ${compare}
                                     ${close}
                             </div>
-        
+
                             <div class="row">
                                 <span data-toggle="tooltip" title="${tooltipText}">
                                     <h3 class="card-title">${title}</h3>
                                 </span>
                             </div>
- 
+
                             <h5>
                                 <p class="card-text">${body}</p>
                             </h5>
@@ -64,17 +64,17 @@ export namespace templates {
                     <br>
                     <div class="card fade">
                         <div class="card-body">
-                            
+
                             <div class="row float-right">
                                 ${compare}
                                 ${close}
-                            </div>        
-
-                            <div class="row">
-                                <h3 class="card-title">${title}</h3>                            
                             </div>
 
-                            
+                            <div class="row">
+                                <h3 class="card-title">${title}</h3>
+                            </div>
+
+
                             <h5>
                                 <p class="card-text">${body}</p>
                             </h5>
@@ -137,17 +137,17 @@ export namespace templates {
     export function OffButton(offBtnId: string, oneHourID: string, twoHoursID: string,
         sessionOnlyID: string, permaID: string): string {
         return `
-            <li class="nav-item dropdown" id="${offBtnId}">
-                <button id="on-off-dropdown" class="btn" data-toggle="dropdown" 
+            <li class="nav-item dropdown" id="${offBtnId}" data-toggle="tooltip" data-placement="bottom" title="Disable plugin">
+                <button id="on-off-dropdown" class="btn" data-toggle="dropdown"
                     data-boundary="window" type="button" aria-haspopup="true" aria-expanded="false">
                     <i class="fa fa-power-off" style="color:red" aria-hidden="true"></i>
                 </button>
                 <div class="dropdown-menu" aria-labelledby="on-off-dropdown">
+                    <button class="dropdown-item" id="${sessionOnlyID}")">for this session</button>
+                    <button class="dropdown-item" id="${permaID}">permanently</button>
+                    <div class="dropdown-divider"></div>
                     <button class="dropdown-item" id="${oneHourID}">for 1 hour</button>
                     <button class="dropdown-item" id="${twoHoursID}">for 2 hours</button>
-                    <button class="dropdown-item" id="${sessionOnlyID}")">for this session only</button>
-                    <div class="dropdown-divider"></div>
-                    <button class="dropdown-item" id="${permaID}">until I re-enable it</button>
                 </div>
             </li>`;
     }
@@ -155,7 +155,7 @@ export namespace templates {
     export function OnButton(onBtnId: string, onElementId: string): string {
 
         return `
-            <li class="nav-item" id="${onBtnId}">
+            <li class="nav-item" id="${onBtnId}" data-toggle="tooltip" data-placement="bottom" title="Disable plugin">
                 <button class="btn" id="${onElementId}">
                     <i class="fa fa-power-off" style="color:green" aria-hidden="true"></i>
                 </button>
@@ -209,7 +209,7 @@ export namespace templates {
                     </button>
                 </h2>
                 </div>
-    
+
                 <div id="collapse${ascendingCardNum}" class="collapse" aria-labelledby="header${ascendingCardNum}" data-parent="#${dataparent}">
                 <div class="card-body">
                     ${body}
@@ -237,13 +237,13 @@ export namespace templates {
         if (active) {
             return `
                 <li class="nav-item" id="${tabID}">
-                    <a href="#${contentTabID}" class="nav-link active" data-toggle="tab" 
+                    <a href="#${contentTabID}" class="nav-link active" data-toggle="tab"
                     role="tab" aria-controls="${contentTabID}" aria-selected="true">${tabID}</a>
                 </li>`;
         } else {
             return `
                 <li class="nav-item" id="${tabID}">
-                    <a href="#content${contentTabID}" class="nav-link" data-toggle="tab" role="tab" 
+                    <a href="#content${contentTabID}" class="nav-link" data-toggle="tab" role="tab"
                     aria-controls="content${contentTabID}" aria-selected="false">${tabID}</a>
                 </li>`;
         }
@@ -335,14 +335,14 @@ export namespace templates {
         return `
             <div class="card" id="${id}">
                 <h5 class="card-header">
-                        ${header}                        
+                        ${header}
                         <div class="float-right">
                             <button type="button" class="btn _delete" data-toggle="modal" data-target="#${target}">
                                 <i class="fa fa-trash" data-toggle="tooltip" data-placement="top" title="Delete this Goggle"></i>
                             </button>
                         </div>
                 </h5>
-            
+
                 <div class="card-body">
                     <h5 class="card-title">${title}</h5>
                     <p class="card-text">${text}</p>
@@ -356,18 +356,18 @@ export namespace templates {
             <div class="modal fade" id="${id}" tabindex="-1" role="dialog" aria-hidden="true">
               <div class="modal-dialog" role="document">
                 <div class="modal-content">
-                  
+
                   <div class="modal-header">
                     <h5 class="modal-title" id="modal-title">
                        ${title}
                     </h5>
-                  
+
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
 
                   </div>
-                  
+
                   <div class="modal-body" id="modal-body">
                     ${body}
                   </div>
@@ -389,7 +389,7 @@ export namespace templates {
         } else {
             title = `
                 ${goggleName}
-                <i class="fa fa-exclamation-triangle" data-toggle="tooltip" data-placement="right" 
+                <i class="fa fa-exclamation-triangle" data-toggle="tooltip" data-placement="right"
                     title="You can add it, but you will not be able to use it immediately!"></i>`;
         }
 
@@ -398,7 +398,7 @@ export namespace templates {
                 <div class="card-header">
                     ${title}
                 </div>
-                
+
                 <div class="card-body">
                     <p class="card-text">${goggleDescription}</p>
                     ${AddBtn()}
@@ -704,7 +704,7 @@ export namespace templates {
                     <i class="fa fa-plus"></i>
                 </button>
         </div>
-        
+
         <div class="row">
             <button type="button" class="btn btn-primary mt-3 submitform">Create Goggle</button>
         </div>
@@ -851,4 +851,3 @@ export namespace templates {
         return ret;
     }
 }
-
