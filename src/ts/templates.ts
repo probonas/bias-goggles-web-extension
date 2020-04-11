@@ -137,10 +137,10 @@ export namespace templates {
     export function OffButton(offBtnId: string, oneHourID: string, twoHoursID: string,
         sessionOnlyID: string, permaID: string): string {
         return `
-            <li class="nav-item dropdown" id="${offBtnId}" data-toggle="tooltip" data-placement="bottom" title="Disable plugin">
+            <li class="nav-item dropdown" id="${offBtnId}">
                 <button id="on-off-dropdown" class="btn" data-toggle="dropdown"
                     data-boundary="window" type="button" aria-haspopup="true" aria-expanded="false">
-                    <i class="fa fa-power-off" style="color:red" aria-hidden="true"></i>
+                    <i class="fa fa-power-off" style="color:red" aria-hidden="true" data-trigger="hover" data-toggle="tooltip" data-placement="bottom" title="Disable plugin"></i>
                 </button>
                 <div class="dropdown-menu" aria-labelledby="on-off-dropdown">
                     <button class="dropdown-item" id="${sessionOnlyID}")">for this session</button>
