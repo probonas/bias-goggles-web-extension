@@ -22,9 +22,9 @@ export namespace chart {
     const saturation = 80;
     const opaque = 100;
 
-    const green = 'rgb(0,100,0)';
-    const red = 'rgb(139,0,0)';
-    const grey = 'rgba(128,128,128,0.6)';
+    const green = 'rgb(133,229,133)';
+    const red = 'rgb(229,133,133)';
+    const blue = 'rgba(133,133,229)';
 
     const dateOptions = {
         weekday: 'short',
@@ -105,7 +105,7 @@ export namespace chart {
         return canvas;
     }
 
-    //elem must be present in the dom tree for the canvas to 
+    //elem must be present in the dom tree for the canvas to
     //render properly
     export function drawPolar(vector: any, width: number, height: number, elem: HTMLElement, id: string, showLabels?: boolean) {
 
@@ -136,11 +136,11 @@ export namespace chart {
 
         });
 
-        //console.log('debug....');   
+        //console.log('debug....');
         //console.log(dataLabels);
         //console.log(data);
         //console.log(vector);
-        
+
 
         if (showLabels) {
             new Chart(ctx, {
@@ -491,6 +491,11 @@ export namespace chart {
                         }
                     }
                 },
+                legend: {
+                    labels: {
+                        usePointStyle: true
+                    }
+                },
                 scales: {
                     xAxes: [{
                         type: 'time',
@@ -571,8 +576,9 @@ export namespace chart {
                                     label: label,
                                     data: data_,
                                     borderColor: color,
+                                    backgroundColor: color,
                                     fill: false,
-                                    borderDash: [10, 10],
+                                    borderDash: [2],
                                     cubicInterpolationMode: 'monotone'
                                 } as ChartDataSets
                             } else {
@@ -580,6 +586,7 @@ export namespace chart {
                                     label: label,
                                     data: data_,
                                     borderColor: color,
+                                    backgroundColor: color,
                                     fill: false
                                 } as ChartDataSets
                             }
@@ -588,11 +595,11 @@ export namespace chart {
                         if (isBiasGraph) {
                             chart.data.datasets.push(datasetWrapper('Min Bias', minBiasDataSets, green, true));
                             chart.data.datasets.push(datasetWrapper('Max Bias', maxBiasDataSets, red, true));
-                            chart.data.datasets.push(datasetWrapper('Average Bias', avgBiasDataSets, grey, false));
+                            chart.data.datasets.push(datasetWrapper('Average Bias', avgBiasDataSets, blue, false));
                         } else {
                             chart.data.datasets.push(datasetWrapper('Min Support', minSupportDataSets, green, true));
                             chart.data.datasets.push(datasetWrapper('Max Support', maxSupportDataSets, red, true));
-                            chart.data.datasets.push(datasetWrapper('Average Support', avgSupportDataSets, grey, false));
+                            chart.data.datasets.push(datasetWrapper('Average Support', avgSupportDataSets, blue, false));
                         }
 
                         chart.update();
