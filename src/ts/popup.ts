@@ -218,6 +218,7 @@ chrome.windows.getCurrent((windowInfo) => {
     });
 });
 
+
 chrome.runtime.onMessage.addListener((msg: ContextBtnMsg, sender: chrome.runtime.MessageSender) => {
     if (msg.senderWindowID === thisWindowID || (sender.tab && sender.tab.windowId === thisWindowID)) {
         if (msg.url !== undefined) {
@@ -654,8 +655,12 @@ document.getElementById("search").insertAdjacentElement("afterbegin", templates.
 document.getElementById('goggle-creator').insertAdjacentElement('afterbegin', templates.GoggleCreator());
 
 userSettings.get((settings) => {
-    if(settings.googlesUsing)
-        settings.googlesUsing.forEach((goggle) => {
-                document.getElementById(goggle.id + '-create-tab-btn').click();
+    if (settings.googlesUsing)
+        settings.googlesUsing.forEach((goggle, index, goggleArr) => {
+            document.getElementById(goggle.id + '-create-tab-btn').click();  
+        });
+
+        chrome.tabs.query({ windowId: thisWindowID, active: true }, (tabs) => {
+            updateContent(utils.getDomainFromURL(tabs[0].url), true);
         });
 });
