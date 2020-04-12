@@ -287,7 +287,7 @@ export namespace templates {
                 <ul class="list-unstyled">
                     <li> ${title} </li>
                     <hr />
-                    li><h4 class="text-dark">Bias (avg): ${biasHuman}</h4></li>
+                    <li><h4 class="text-dark">Bias (avg): ${biasHuman}</h4></li>
                     <li><h4 class="text-dark">Support (avg): ${supportHuman}</h4></li>
                 </ul>`
         }

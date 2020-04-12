@@ -204,11 +204,11 @@ export class ScoreCard extends ExploreCard {
         super(goggles, domain, true, true, tooltipOn);
 
         this.ready = false;
-        this.title = domain;
 
         extension.storage.getLatestScoreData(domain, goggles, (score) => {
             this.score = score;
             this.ready = true;
+            this.setTitle(domain);
         });
 
         this.setStringContent('');
