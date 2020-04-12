@@ -286,7 +286,7 @@ export class UncrawledDomainCard extends GenericCard {
     constructor(tabID: string, domain: string) {
         super(tabID, 'uncrawled-' + domain, false);
 
-        this.setTitle('Not crawled yet:(! Saved for future crawling :)');
+        this.setTitle('&#128561; Saved for future crawling!');
         this.setHTMLContent(uncrawled.create404Msg(domain, ['text-info']));
     }
 
