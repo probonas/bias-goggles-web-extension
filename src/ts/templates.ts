@@ -235,7 +235,7 @@ export namespace templates {
 
         return `
             <div class="col-4">
-                <button id="${id}" type="button" class="btn btn-outline-primary btn-block bias-goggle-button text-right disabled" data-toggle="tooltip" title="${label}">
+                <button id="${id}" type="button" class="btn btn-outline-primary btn-block bias-goggle-button text-right  shadow-none disabled" data-toggle="tooltip" title="${label}">
                     ${txt}
                 </button>
             </div>`;
@@ -379,7 +379,7 @@ export namespace templates {
             <div class="input-group mb-3">
                 <input id="${inputID}" type="text" class="form-control" placeholder="${inputPlaceHolder}" aria-label="${inputPlaceHolder}" aria-describedby="basic-addon2">
                 <div class="input-group-append">
-                    <button id="${btnID}" class="btn btn-outline-secondary" type="button">${btnLabel}</button>
+                    <button id="${btnID}" class="btn btn-outline-secondary shadow-none" type="button">${btnLabel}</button>
                 </div>
             </div>`
     }
@@ -427,8 +427,8 @@ export namespace templates {
                   </div>
 
                   <div class="modal-footer">
-                      <button type="button" class="btn btn-primary" data-dismiss="modal">Cancel</button>
-                      <button type="button" class="btn btn-outline-danger _delete">Delete</button>
+                      <button type="button" class="btn btn-primary shadow-none" data-dismiss="modal">Cancel</button>
+                      <button type="button" class="btn btn-outline-danger shadow-none _delete">Delete</button>
                   </div>
 
                 </div>

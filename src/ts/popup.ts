@@ -611,7 +611,7 @@ extension.storage.getAllScoreData((scores) => {
                 This draws the average score for bias and support in a human readable way.
                 Dummy values, since I do not know how to get the average score from the timeline for the bias and the support
             */
-            analyticsTab.insertAdjacentHTML('beforeend', templates.AnalyticsScores(0.0001, 0.1));
+            analyticsTab.insertAdjacentHTML('beforeend', templates.AnalyticsScores(0.0, 0.0));
 
             analyticsCharts.push(
                 chart.drawLineChartForTimeline({
@@ -657,10 +657,10 @@ document.getElementById('goggle-creator').insertAdjacentElement('afterbegin', te
 userSettings.get((settings) => {
     if (settings.googlesUsing)
         settings.googlesUsing.forEach((goggle, index, goggleArr) => {
-            document.getElementById(goggle.id + '-create-tab-btn').click();  
+            document.getElementById(goggle.id + '-create-tab-btn').click();
         });
 
-        chrome.tabs.query({ windowId: thisWindowID, active: true }, (tabs) => {
-            updateContent(utils.getDomainFromURL(tabs[0].url), true);
-        });
+    chrome.tabs.query({ windowId: thisWindowID, active: true }, (tabs) => {
+        updateContent(utils.getDomainFromURL(tabs[0].url), true);
+    });
 });
