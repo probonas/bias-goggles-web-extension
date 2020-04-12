@@ -615,7 +615,7 @@ extension.storage.getAllScoreData((scores) => {
                 This draws the average score for bias and support in a human readable way.
                 Dummy values, since I do not know how to get the average score from the timeline for the bias and the support
             */
-            analyticsTab.insertAdjacentHTML('beforeend', templates.AnalyticsScores(0.0001, 0.1));
+            analyticsTab.insertAdjacentHTML('beforeend', templates.AnalyticsScores(0.0, 0.0));
 
             analyticsCharts.push(
                 chart.drawLineChartForTimeline({

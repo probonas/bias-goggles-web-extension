@@ -235,7 +235,7 @@ export namespace templates {
 
         return `
             <div class="col-4">
-                <button id="${id}" type="button" class="btn btn-primary btn-block disabled" data-toggle="tooltip" title="${label}">
+                <button id="${id}" type="button" class="btn btn-outline-primary btn-block bias-goggle-button text-right  shadow-none disabled" data-toggle="tooltip" title="${label}">
                     ${txt}
                 </button>
             </div>`;
@@ -300,9 +300,11 @@ export namespace templates {
      */
     function humanScore(score: number) {
 
-        if (score <= 0.0001)
+        if (score === 0)
+            return '<span class"text-info">' + readable(score) + '</span>';
+        else if (score <= 0.001)
             return '<span class"text-info">' + readable(score) + '</span>&nbsp;&#8208;&nbsp;<span class"text-info">LOW </span>';
-        else if (score >= 0.0001 && score <= 0.1)
+        else if (score >= 0.001 && score <= 0.1)
             return '<span class"text-info">' + readable(score) + '</span>&nbsp;&#8208;&nbsp;<span class"text-info"">MEDIUM </span>';
         else return '<span class"text-info">' + readable(score) + '</span>&nbsp;&#8208;&nbsp;<span class"text-info"">HIGH </span>';
 
@@ -311,6 +313,8 @@ export namespace templates {
          * @param score
          */
         function readable(score: number) {
+            if (score === 0.0)
+                return 0.0;
             if (score.toFixed(5) === '0.00000')
                 return score.toExponential(2);
             else
@@ -375,7 +379,7 @@ export namespace templates {
             <div class="input-group mb-3">
                 <input id="${inputID}" type="text" class="form-control" placeholder="${inputPlaceHolder}" aria-label="${inputPlaceHolder}" aria-describedby="basic-addon2">
                 <div class="input-group-append">
-                    <button id="${btnID}" class="btn btn-outline-secondary" type="button">${btnLabel}</button>
+                    <button id="${btnID}" class="btn btn-outline-secondary shadow-none" type="button">${btnLabel}</button>
                 </div>
             </div>`
     }
@@ -423,8 +427,8 @@ export namespace templates {
                   </div>
 
                   <div class="modal-footer">
-                      <button type="button" class="btn btn-primary" data-dismiss="modal">Cancel</button>
-                      <button type="button" class="btn btn-outline-danger _delete">Delete</button>
+                      <button type="button" class="btn btn-primary shadow-none" data-dismiss="modal">Cancel</button>
+                      <button type="button" class="btn btn-outline-danger shadow-none _delete">Delete</button>
                   </div>
 
                 </div>
