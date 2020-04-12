@@ -617,14 +617,16 @@ extension.storage.getAllScoreData((scores) => {
                 This draws the average score for bias and support in a human readable way.
                 Dummy values, since I do not know how to get the average score from the timeline for the bias and the support
             */
-            analyticsTab.insertAdjacentHTML('beforeend', templates.AnalyticsScores(0.0, 0.0));
+            let info = document.createElement('div');
+            info.insertAdjacentHTML('beforeend', templates.AnalyticsScores(0.0, 0.0));
+            analyticsTab.appendChild(info);
 
             analyticsCharts.push(
                 chart.drawLineChartForTimeline({
                     display: true,
                     text: 'bias for ' + settings.gogglesList[i].name,
                     position: 'bottom'
-                }, 400, 200, analyticsTab,
+                }, 400, 200, analyticsTab, info,
                     'bias', settings.gogglesList[i].id, settings.method)
             );
 
@@ -635,7 +637,7 @@ extension.storage.getAllScoreData((scores) => {
                     display: true,
                     text: 'support for ' + settings.gogglesList[i].name,
                     position: 'bottom'
-                }, 400, 200, analyticsTab,
+                }, 400, 200, analyticsTab, null,
                     'support', settings.gogglesList[i].id, settings.method)
             );
 

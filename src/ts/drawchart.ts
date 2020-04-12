@@ -472,11 +472,7 @@ export namespace chart {
     }
 
     export function drawLineChartForTimeline(title: ChartTitleOptions, width: number, height: number, pos: HTMLElement,
-        type: 'bias' | 'support', goggle: string, method: string) {
-
-        let info = document.createElement('div');
-        info.insertAdjacentHTML('beforeend', templates.AnalyticsScores(0.0, 0.0));
-        pos.appendChild(info);
+        info: HTMLElement, type: 'bias' | 'support', goggle: string, method: string) {
 
         let lineCanvas = createCanvas(type + goggle, width, height, pos);
 
@@ -609,29 +605,29 @@ export namespace chart {
                         }
 
 
-                        console.log('start');
+                        //console.log('start');
+                        if (info) {
+                            // Now since we have gotten the score get the average bias and support score
+                            let avgBias = 0.0;
+                            let avgSupport = 0.0;
 
-                        // Now since we have gotten the score get the average bias and support score
-                        let avgBias = 0.0;
-                        let avgSupport = 0.0;
+                            scores.forEach((score) => {
+                                //keep as is for now
+                                avgBias += score.scores['3a16ca06-3525-417f-b743-06f9845dfe1b'].bias_score;
+                                avgSupport += score.scores['3a16ca06-3525-417f-b743-06f9845dfe1b'].support_score;
+                            });
 
-                        scores.forEach((score) => {
-                            //keep as is for now
-                            avgBias += score.scores['3a16ca06-3525-417f-b743-06f9845dfe1b'].bias_score;
-                            avgSupport += score.scores['3a16ca06-3525-417f-b743-06f9845dfe1b'].support_score;
-                        });
+                            avgBias = avgBias / scores.size;
+                            avgSupport = avgSupport / scores.size;
 
-                        avgBias = avgBias / scores.size;
-                        avgSupport = avgSupport / scores.size;
+                            //console.log('debug');
+                            //console.log(avgBias);
+                            //console.log(avgSupport);
 
-                        //console.log('debug');
-                        //console.log(avgBias);
-                        //console.log(avgSupport);
-
-                        // Update the elements that show the average scores
-                        info.getElementsByClassName('bias')[0].innerHTML = avgBias.toString();
-                        info.getElementsByClassName('support')[0].innerHTML = avgBias.toString();
-
+                            // Update the elements that show the average scores
+                            info.getElementsByClassName('bias')[0].innerHTML = avgBias.toString();
+                            info.getElementsByClassName('support')[0].innerHTML = avgBias.toString();
+                        }
                         chart.update();
                     }
                 }
