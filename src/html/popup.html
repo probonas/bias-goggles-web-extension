@@ -186,7 +186,8 @@
                   </select>
                 </li>
                 <li class="list-group-item">
-                  <div class="col-auto">
+                  <div class="col-auto" data-toggle="tooltip" data-placement="bottom"
+                    title="Save cross-device syncing setting">
                     <button class="btn btn-outline-primary shadow-none mb-2" id='saveSettingsBtn'>Save</button>
                   </div>
                 </li>
@@ -206,9 +207,10 @@
 
             <br>
 
-            <button type="button" class="btn shadow-none btn-outline-danger" id='deleteDataBtn' data-toggle="modal"
-              data-target="#deleteDataModal">Delete saved data</button>
-
+            <div data-toggle="tooltip" data-placement="bottom" title="Delete all data from plugin!">
+              <button type="button" class="btn shadow-none btn-outline-danger" id='deleteDataBtn' data-toggle="modal"
+                data-target="#deleteDataModal">Delete saved data</button>
+            </div>
             <button style="display: none;" type="button" id='syncModalBtn' data-toggle="modal"
               data-target="#syncModal"></button>
 
