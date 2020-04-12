@@ -275,17 +275,41 @@ export namespace templates {
                     <hr />
                 </ul>`;
         } else {
+            let biasHuman = humanScore(bias_score);
+            let supportHuman = humanScore(support_score);
             return `
                 <ul class="list-unstyled">
                     <li> ${title} </li>
                     <hr />
-                    <li><h4 class="text-info">Bias Score: ${Math.fround(bias_score * 100).toFixed(2)} %</h4></li>
-                    <li><h4 class="text-info">Support Score: ${Math.fround(support_score * 100).toFixed(2)} %</h4></li>
+                    li><h4 class="text-dark">Bias (avg): ${biasHuman}</h4></li>
+                    <li><h4 class="text-dark">Support (avg): ${supportHuman}</h4></li>
                 </ul>`
         }
         ;
     }
 
+    /**
+     * Creates a human readable interpretation of the score
+     * @param score
+     */
+    function humanScore(score: number) {
+        if (score <= 0.0001)
+            return '<span style="color: green">LOW! </span><span style="color: black">(' + readable(score) + ')</span>';
+        else if (score >= 0.0001 && score <= 0.1)
+            return '<span style="color: orange">MEDIUM! </span><span style="color: black">(' + readable(score) + ')</span>';
+        else return '<span style="color: red">HIGH! </span><span style="color: black">(' + readable(score) + ')</span>';
+
+        /**
+         * function that converts a number to exponenetial form when it is too small
+         * @param score
+         */
+        function readable(score: number) {
+            if (score.toFixed(5) === '0.00000')
+                return score.toExponential(2);
+            else
+                return score;
+        }
+    }
 
     /**
      * function that returns the human readable scores based on the average scores given
@@ -296,24 +320,11 @@ export namespace templates {
     export function AnalyticsScores(avg_bias_score?: number, avg_support_score?: number) {
         let biasHuman = humanScore(avg_bias_score);
         let supportHuman = humanScore(avg_support_score);
-        return `<hr>
+        return `<hr />
                 <ul class="list-unstyled">
                     <li><h4 class="text-dark">Bias (avg): ${biasHuman}</h4></li>
                     <li><h4 class="text-dark">Support (avg): ${supportHuman}</h4></li>
-                </ul><br>`
-
-        /**
-         * Creates a human readable interpretation of the score
-         * @param score
-         */
-        function humanScore(score: number) {
-            if (score <= 0.0001)
-                return '<span style="color: green">LOW! </span><span style="color: black">(' + score + ')</span>';
-            else if (score >= 0.0001 && score <= 0.1)
-                return '<span style="color: orange">MEDIUM! </span><span style="color: black">(' + score + ')</span>';
-            else return '<span style="color: red">HIGH! </span><span style="color: black">(' + score + ')</span>';
-
-        }
+                </ul><br>`;
     }
 
     export function checkWithLabel(label: string, id: string, preChecked?: boolean, isHidden?: boolean) {
