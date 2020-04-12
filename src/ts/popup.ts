@@ -652,3 +652,10 @@ extension.storage.getAllScoreData((scores) => {
 
 document.getElementById("search").insertAdjacentElement("afterbegin", templates.GoggleSearch());
 document.getElementById('goggle-creator').insertAdjacentElement('afterbegin', templates.GoggleCreator());
+
+userSettings.get((settings) => {
+    if(settings.googlesUsing)
+        settings.googlesUsing.forEach((goggle) => {
+                document.getElementById(goggle.id + '-create-tab-btn').click();
+        });
+});
