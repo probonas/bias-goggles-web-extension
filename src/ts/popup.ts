@@ -282,7 +282,9 @@ userSettings.get((settings) => {
             }
         });
 
-        new GoggleCard(settingsTab, value.id, value.name, value.description).render();
+        //disable for now
+        //goggles can be uninstalled under the search tab
+        //new GoggleCard(settingsTab, value.id, value.name, value.description).render();
     });
 
 });
