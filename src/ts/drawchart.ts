@@ -285,6 +285,8 @@ export namespace chart {
 
         let timelineCtx = timelineCanvas.getContext('2d');
 
+        timelineCtx.canvas.height = height;
+        
         type SelectionData = {
             a: Date,
             b: Date
