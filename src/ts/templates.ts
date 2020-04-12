@@ -624,7 +624,7 @@ export namespace templates {
     export function TickBtn(): string {
         removeTooltips();
         return `
-            <button type="button" class="btn btn btn-success" placement="right" data-toggle="tooltip" data-placement="right" title="Remove this Goggle!">
+            <button type="button" class="btn btn btn-success" placement="right" data-toggle="tooltip" data-placement="right" title="Remove this goggle!">
                 <i class="fa fa-check"></i>
             </button>
         `;
@@ -633,7 +633,7 @@ export namespace templates {
     export function AddBtn(): string {
         removeTooltips();
         return `
-            <button type="button" class="btn btn-outline-primary" data-toggle="tooltip" data-placement="right" title="Add this Goggle">
+            <button type="button" class="btn btn-outline-primary" data-toggle="tooltip" data-placement="right" title="Add this goggle">
                 <i class="fa fa-plus"></i>
             </button>`;
     }
