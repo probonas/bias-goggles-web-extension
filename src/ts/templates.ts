@@ -300,7 +300,9 @@ export namespace templates {
      */
     function humanScore(score: number) {
 
-        if (score <= 0.0001)
+        if (score === 0)
+            return '<span class"text-info">' + readable(score) + '</span>';
+        else if (score <= 0.0001)
             return '<span class"text-info">' + readable(score) + '</span>&nbsp;&#8208;&nbsp;<span class"text-info">LOW </span>';
         else if (score >= 0.0001 && score <= 0.1)
             return '<span class"text-info">' + readable(score) + '</span>&nbsp;&#8208;&nbsp;<span class"text-info"">MEDIUM </span>';
@@ -311,6 +313,8 @@ export namespace templates {
          * @param score
          */
         function readable(score: number) {
+            if (score === 0.0)
+                return 0.0;
             if (score.toFixed(5) === '0.00000')
                 return score.toExponential(2);
             else
