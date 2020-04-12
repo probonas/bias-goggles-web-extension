@@ -145,6 +145,13 @@ function showSuccessAlert(msg: string) {
     }, 2000);
 }
 
+function restoreTabs() {
+    userSettings.get((settings) => {
+        settings.googlesUsing?.forEach((goggle) => {
+            document.getElementById(goggle.id + '-create-tab-btn').click();
+        });
+    });
+}
 
 export function updateContent(url: string, cleanTab: boolean, temp?: boolean) {
 
@@ -212,15 +219,20 @@ chrome.tabs.onUpdated.addListener((tabID, chageInfo, tab) => {
 });
 
 chrome.windows.getCurrent((windowInfo) => {
-    thisWindowID = windowInfo.id;
-    chrome.tabs.query({ windowId: thisWindowID, active: true }, (tabs) => {
-        updateContent(utils.getDomainFromURL(tabs[0].url), true);
-    });
+    //If it's a popup, windowID will be set via a message from the parent window.
+    //Because popup is window itself, it has a different windowID from its parent,
+    //(i.e. the window that opened it and to which the popup belongs) and so 
+    //getCurrent() will lead to the popup being disconnected from its parent.
+    if (windowInfo.type !== 'popup') {
+        thisWindowID = windowInfo.id;
+        restoreTabs();
+    }
 });
 
-
 chrome.runtime.onMessage.addListener((msg: ContextBtnMsg, sender: chrome.runtime.MessageSender) => {
-    if (msg.senderWindowID === thisWindowID || (sender.tab && sender.tab.windowId === thisWindowID)) {
+    if ((msg.senderWindowID && msg.senderWindowID === thisWindowID) || (sender.tab && sender.tab.windowId === thisWindowID)) {
+        console.log('here');
+
         if (msg.url !== undefined) {
             console.log(msg.url);
             updateContent(utils.getDomainFromURL(msg.url), false, true);
@@ -232,33 +244,48 @@ chrome.runtime.onMessage.addListener((msg: ContextBtnMsg, sender: chrome.runtime
 
             tempCards = new Array();
         }
-    } else if (msg.updateWindowID !== undefined) {
+    } else if (msg.updateWindowID) {
         thisWindowID = msg.updateWindowID;
+        restoreTabs();
     }
 });
 
 let sync = <HTMLSelectElement>document.getElementById('syncSelect');
 let syncModal = <HTMLButtonElement>document.getElementById('syncModalBtn');
-const settingsTab = "gogglesList";
+const settingsTab = "contentgogglesList";
 
 sync.addEventListener('change', () => {
-
     if (sync.value === 'Yes') {
         syncModal.click();
     }
-
 });
 
-setTimeout(() => {
-    userSettings.get((settings) => {
+userSettings.get((settings) => {
 
-        for (let i = 0; i < settings.gogglesList.length; i++) {
-            new GoggleCard(settingsTab, settings.gogglesList[i].id, settings.gogglesList[i].name, settings.gogglesList[i].description).render();
-        }
+    settings.gogglesList.forEach(value => {
+        tabLabels.push(value.name);
+        tabIDs.push(value.id);
 
+        let id = value.id + '-create-tab-btn';
+
+        document.getElementById(liveInfoGoggles).insertAdjacentHTML('beforeend', templates.MutedButton(id, value.name));
+
+        document.getElementById(id).addEventListener('click', (elem) => {
+            let btn = <HTMLButtonElement>elem.target;
+            if (btn.classList.contains('disabled')) {
+                btn.classList.remove('disabled');
+                newTab(value);
+            }
+            else {
+                btn.classList.add('disabled');
+                removeTab(value);
+            }
+        });
+
+        new GoggleCard(settingsTab, value.id, value.name, value.description).render();
     });
-}, 1000);
 
+});
 
 let saveSettingsBtn = <HTMLButtonElement>document.getElementById('saveSettingsBtn');
 
@@ -287,15 +314,15 @@ function showDomainDataUnderSettings() {
     extension.storage.getAllDomainData((domainData) => {
         extension.storage.getAllScoreData(scores => {
             let domainCards: string = '';
-
+ 
             let domainDataOverviewDiv = document.getElementById('domainDataOverview');
-
+ 
             let formatted = new Map<string, Score[]>();
-
+ 
             if (domainData)
-
+ 
                 domainData.forEach((value, key) => {
-
+ 
                     if (!formatted.has(utils.getDomainFromKey(key))) {
                         let scoresArr = new Array<Score>();
                         scoresArr.push(scores.get(value.scoreIndex));
@@ -303,53 +330,53 @@ function showDomainDataUnderSettings() {
                     } else {
                         formatted.get(utils.getDomainFromKey(key)).push(scores.get(value.scoreIndex));
                     }
-
+ 
                     //console.log(value, key, utils.getDomainFromKey(key), utils.getGoggleIDFromKey(key));
                 });
-
+ 
             //console.log(formatted);
-
+ 
             formatted.forEach((value, key) => {
                 let innerTables = '';
-
+ 
                 value.forEach((scoreValue) => {
-
+ 
                     //@ts-ignore
                     let pr = scoreValue.scores['pr'];
                     //@ts-ignore
                     let lt = scoreValue.scores['lt'];
                     //@ts-ignore
                     let ic = scoreValue.scores['ic'];
-
+ 
                     let unrollscore = (scoreValue: any) => {
                         let ret = '';
-
+ 
                         for (let property in Object.keys(scoreValue)) {
                             let propertyName = Object.keys(scoreValue)[property];
-
+ 
                             if (propertyName === 'vector') {
                                 ret += templates.TableRow('Vectors', 'Support', true);
-
+ 
                                 for (let vectorKey in Object.keys(scoreValue[propertyName])) {
                                     let vectorName = Object.keys(scoreValue[propertyName])[vectorKey];
-
+ 
                                     ret += templates.TableRow(vectorName, scoreValue[propertyName][vectorName], false);
                                 }
-
+ 
                             } else {
                                 ret += templates.TableRow(propertyName, scoreValue[propertyName], false);
                             }
                         }
-
+ 
                         return ret;
                     }
-
+ 
                     let rows = unrollscore(pr);
                     innerTables += templates.Table('Goggles:', scoreValue.goggle, rows) + '<br>';
                 });
                 domainCards += templates.AccordionCard(key, innerTables, cards.getUniqueID(), 'domainDataOverview');
             });
-
+ 
             domainDataOverviewDiv.insertAdjacentHTML('afterbegin', domainCards);
         });
     });
@@ -370,6 +397,11 @@ function newTab(goggle: Goggle) {
     content.insertAdjacentHTML('beforeend', templates.TabPane(goggle.id, goggle.name, false));
 
     (<HTMLElement>document.getElementById(goggle.name).lastElementChild).click();
+
+    //when a new tab is created, relevant data is shown
+    chrome.tabs.query({ windowId: thisWindowID, active: true }, (tabs) => {
+        updateContent(utils.getDomainFromURL(tabs[0].url), true);
+    });
 }
 
 function removeTab(goggle: Goggle) {
@@ -386,36 +418,6 @@ function removeTab(goggle: Goggle) {
         (<HTMLElement>document.getElementById(sibling.id).lastElementChild).click();
 }
 
-userSettings.get((settings) => {
-
-    settings.gogglesList.forEach(value => {
-        tabLabels.push(value.name);
-        tabIDs.push(value.id);
-
-        let id = value.id + '-create-tab-btn';
-
-        document.getElementById(liveInfoGoggles).insertAdjacentHTML('beforeend', templates.MutedButton(id, value.name));
-
-        document.getElementById(id).addEventListener('click', (elem) => {
-            let btn = <HTMLButtonElement>elem.target;
-            if (btn.classList.contains('disabled')) {
-                btn.classList.remove('disabled');
-                newTab(value);
-            }
-            else {
-                btn.classList.add('disabled');
-                removeTab(value);
-            }
-        });
-    });
-
-    //let tabs = templates.CreateTabs(tabLabels, tabIDs);
-
-    //document.getElementById('live-info').insertAdjacentHTML('beforeend', tabs);
-});
-
-showDomainDataUnderSettings();
-
 //update data under settings without the need to reload popup/sidebar
 chrome.storage.onChanged.addListener((changes, areaName) => {
     /*
@@ -431,6 +433,8 @@ chrome.storage.onChanged.addListener((changes, areaName) => {
     }
     */
 });
+
+showDomainDataUnderSettings();
 
 let uncrawledMsgInModal = false;
 let modalBody = document.getElementById(compareModal).getElementsByClassName('modal-body')[0];
@@ -653,14 +657,3 @@ extension.storage.getAllScoreData((scores) => {
 
 document.getElementById("search").insertAdjacentElement("afterbegin", templates.GoggleSearch());
 document.getElementById('goggle-creator').insertAdjacentElement('afterbegin', templates.GoggleCreator());
-
-userSettings.get((settings) => {
-    if (settings.googlesUsing)
-        settings.googlesUsing.forEach((goggle, index, goggleArr) => {
-            document.getElementById(goggle.id + '-create-tab-btn').click();  
-        });
-
-        chrome.tabs.query({ windowId: thisWindowID, active: true }, (tabs) => {
-            updateContent(utils.getDomainFromURL(tabs[0].url), true);
-        });
-});
