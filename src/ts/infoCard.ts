@@ -312,7 +312,7 @@ export class NotAWebpageCard extends GenericCard {
     constructor(tabID: string) {
         super(tabID, 'notawebpage', false);
 
-        this.setTitle('This isn\'t a webpage!');
+        this.setTitle('&#129327; This isn\'t a webpage!');
         this.setStringContent('');
     }
 
