@@ -15,6 +15,7 @@ import { extension } from "./storage";
 import { utils } from "./utils";
 
 import { Anchor, Font } from "chartjs-plugin-datalabels/types/options";
+import { userSettings } from "./usersettings";
 
 export namespace chart {
 
@@ -452,24 +453,8 @@ export namespace chart {
                                 let scoresForSelection = utils.filterScoreData(scores, selectedChartData.a, selectedChartData.b);
                                 //console.log('filtered scores', scoresForSelection);
 
-                                // Now since we have gotten the score get the average bias and support score
-                                let avgBias = 0.0;
-                                let avgSupport = 0.0;
-                                for (let elem of scoresForSelection.values()) {
-                                    avgBias += elem.scores.entries.bias_score;
-                                    avgSupport += elem.scores.entries.support_score;
-                                }
-
-                                avgBias = avgBias / scoresForSelection.size;
-                                avgSupport = avgSupport / scoresForSelection.size;
-
-                                // Update the elements that show the average scores
-                                document.getElementById('timeline-average-bias').innerHTML = avgBias.toString();
-                                document.getElementById('timeline-average-support').innerHTML = avgBias.toString();
-
                                 let domainsForSelection = utils.filterDomainData(scoresForSelection, domains);
                                 //console.log('filtered domains', domainsForSelection);
-
 
                                 bindedWith.forEach((chart) => {
                                     chart.options.plugins.updateData(chart, scoresForSelection, domainsForSelection);
@@ -488,6 +473,10 @@ export namespace chart {
 
     export function drawLineChartForTimeline(title: ChartTitleOptions, width: number, height: number, pos: HTMLElement,
         type: 'bias' | 'support', goggle: string, method: string) {
+
+        let info = document.createElement('div');
+        info.insertAdjacentHTML('beforeend', templates.AnalyticsScores(0.0, 0.0));
+        pos.appendChild(info);
 
         let lineCanvas = createCanvas(type + goggle, width, height, pos);
 
@@ -618,6 +607,30 @@ export namespace chart {
                             chart.data.datasets.push(datasetWrapper('Max Support', maxSupportDataSets, red, true));
                             chart.data.datasets.push(datasetWrapper('Average Support', avgSupportDataSets, blue, false));
                         }
+
+
+                        console.log('start');
+
+                        // Now since we have gotten the score get the average bias and support score
+                        let avgBias = 0.0;
+                        let avgSupport = 0.0;
+
+                        scores.forEach((score) => {
+                            //keep as is for now
+                            avgBias += score.scores['3a16ca06-3525-417f-b743-06f9845dfe1b'].bias_score;
+                            avgSupport += score.scores['3a16ca06-3525-417f-b743-06f9845dfe1b'].support_score;
+                        });
+
+                        avgBias = avgBias / scores.size;
+                        avgSupport = avgSupport / scores.size;
+
+                        //console.log('debug');
+                        //console.log(avgBias);
+                        //console.log(avgSupport);
+
+                        // Update the elements that show the average scores
+                        info.getElementsByClassName('bias')[0].innerHTML = avgBias.toString();
+                        info.getElementsByClassName('support')[0].innerHTML = avgBias.toString();
 
                         chart.update();
                     }
