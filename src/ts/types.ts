@@ -63,6 +63,7 @@ export interface UserSettings {
     userID: string,
     method: string;
     gogglesList: Array<Goggle>;
+    googlesUsing: Array<Goggle>;
     algs: Array<Algorithm>;
     syncEnabled: boolean;
     enabled: boolean;

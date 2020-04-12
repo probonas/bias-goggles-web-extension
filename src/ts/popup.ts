@@ -361,6 +361,7 @@ document.getElementById('delete-data-btn').addEventListener('click', () => {
 });
 
 function newTab(goggle: Goggle) {
+    userSettings.addToSelectedGoggles(goggle);
     let tabs = document.getElementById(tablist);
     let content = document.getElementById(tabContent);
 
@@ -371,6 +372,7 @@ function newTab(goggle: Goggle) {
 }
 
 function removeTab(goggle: Goggle) {
+    userSettings.removeFromSelectedGoggles(goggle);
     let thisTab = document.getElementById(goggle.name);
     let contentTab = document.getElementById('content' + goggle.id);
 

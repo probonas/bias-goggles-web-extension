@@ -2,6 +2,7 @@ import {
     UserSettings, UserSettingsMap, Goggle, Algorithm
 } from "./types";
 import { service } from "./service"
+
 export namespace userSettings {
 
     export const INITIAL_SCORE_INDEX = 0;
@@ -24,8 +25,8 @@ export namespace userSettings {
     }
 
     export function update(settings: UserSettings, callback?: () => void) {
-        save(settings.userID, settings.method, settings.syncEnabled,
-            settings.enabled, settings.scoreIndex, settings.gogglesList, settings.algs, callback);
+        save(settings.userID, settings.method, settings.syncEnabled, settings.enabled,
+            settings.scoreIndex, settings.googlesUsing, settings.gogglesList, settings.algs, callback);
     }
 
     export function initialize(callback?: () => void) {
@@ -38,6 +39,7 @@ export namespace userSettings {
                         userID: userID,
                         method: DEFAULT_ALG,
                         gogglesList: goggles,
+                        googlesUsing: new Array<Goggle>(),
                         algs: algs,
                         syncEnabled: false,
                         scoreIndex: INITIAL_SCORE_INDEX,
@@ -58,7 +60,7 @@ export namespace userSettings {
                 userSettings.update(settings, () => {
                     scoreIndex = settings.scoreIndex;
                     DEFAULT_ALG = settings.method;
-         
+
                     if (callback)
                         callback();
                 });
@@ -66,8 +68,8 @@ export namespace userSettings {
         });
     }
 
-    function save(userID: string, method: string, syncEnabled: boolean, 
-        enabled: boolean, scoreIndex_: number,
+    function save(userID: string, method: string, syncEnabled: boolean,
+        enabled: boolean, scoreIndex_: number, gogglesUsing: Array<Goggle>,
         gogglesList: Goggle[], algs: Algorithm[], callback?: () => void) {
 
         let settings = {} as UserSettingsMap;
@@ -80,6 +82,7 @@ export namespace userSettings {
             scoreIndex: scoreIndex_,
             forceOn: false,
             gogglesList: gogglesList,
+            googlesUsing: gogglesUsing,
             algs: algs
         };
 
@@ -99,4 +102,20 @@ export namespace userSettings {
         });
     };
 
+    export function addToSelectedGoggles(goggle: Goggle) {
+        userSettings.get((item) => {
+            let found = item.googlesUsing.find((value) => { return value.id === goggle.id });
+            if (!found) {
+                item.googlesUsing.push(goggle);
+                userSettings.update(item);
+            }
+        });
+    }
+
+    export function removeFromSelectedGoggles(goggle: Goggle) {
+        userSettings.get((item) => {
+            item.googlesUsing = item.googlesUsing.filter((value) => {return value.id !== goggle.id});
+            userSettings.update(item);
+        });
+    }
 }
