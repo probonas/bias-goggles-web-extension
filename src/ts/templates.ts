@@ -235,7 +235,7 @@ export namespace templates {
 
         return `
             <div class="col-4">
-                <button id="${id}" type="button" class="btn btn-primary btn-block bias-goggle-button text-right disabled" data-toggle="tooltip" title="${label}">
+                <button id="${id}" type="button" class="btn btn-outline-primary btn-block bias-goggle-button text-right disabled" data-toggle="tooltip" title="${label}">
                     ${txt}
                 </button>
             </div>`;
