@@ -224,12 +224,12 @@ export namespace templates {
 
     export function MutedButton(id: string, label: string): string {
         let txt = label;
-        if (label.length > 12)
-            txt = label.slice(0, 12) + '...';
+        if (label.length > 15)
+            txt = label.slice(0, 15) + '...';
 
         return `
             <div class="col-4">
-                <button id="${id}" type="button" class="btn btn-primary disabled" data-toggle="tooltip" title="${label}">
+                <button id="${id}" type="button" class="btn btn-primary btn-block disabled" data-toggle="tooltip" title="${label}">
                     ${txt}
                 </button>
             </div>`;
