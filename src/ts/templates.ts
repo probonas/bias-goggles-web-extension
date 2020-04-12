@@ -14,16 +14,22 @@ export namespace templates {
 
         if (dismissable) {
             close = `
-                <button style="font-size: 0.5rem;" type="button" class="btn _close">
-                    <i class="far fa-window-close fa-3x"></i>
-                </button>`;
+                <div data-toggle="tooltip" title="Close">
+                    <button style="font-size: 0.5rem;" type="button" class="btn _close">
+                        <i class="far fa-window-close fa-3x"></i>
+                    </button>
+                </div>
+                `;
         };
 
         if (comparable) {
             compare = `
-                <button style="font-size: 0.5rem;" type="button" class="btn compare" data-toggle="modal" data-target="#compareModal">
-                    <i class="fa fa-search-plus fa-3x"></i>
-                </button>`;
+                <div data-toggle="tooltip" title="Compare with other sites!">
+                    <button style="font-size: 0.5rem;" type="button" class="btn compare" data-toggle="modal" data-target="#compareModal">
+                        <i class="fa fa-search-plus fa-3x"></i>
+                    </button>
+                </div>
+                `;
         }
 
         if (tooltipOn) {
@@ -568,7 +574,7 @@ export namespace templates {
                     <button type="button" class="btn btn-outline-success add-site" data-toggle="tooltip" data-placement="right" title="add supporting site for this aspect">
                         <i class="fa fa-plus"></i>
                     </button>
-                </div>`
+                </div><hr />`
 
         let ret = document.createElement('div');
         ret.classList.add('aspect')
@@ -750,7 +756,7 @@ export namespace templates {
         </div>
 
         <div class="row">
-            <button type="button" class="btn btn-primary mt-3 submitform">Create Goggle</button>
+            <button type="button" class="btn btn-outline-primary mt-3 submitform">Create goggle</button>
         </div>
 
         <div class="row">
