@@ -284,11 +284,11 @@ export namespace templates {
             let biasHuman = humanScore(bias_score);
             let supportHuman = humanScore(support_score);
             return `
-                <ul class="list-unstyled">
+                <ul class="list-unstyled text-left">
                     <li> ${title} </li>
                     <hr />
-                    <li><h4 class="text-dark">Bias (avg): ${biasHuman}</h4></li>
-                    <li><h4 class="text-dark">Support (avg): ${supportHuman}</h4></li>
+                    <li><h3>Bias: ${biasHuman}</h3></li>
+                    <li><h5>Support: ${supportHuman}</h5></li>
                 </ul>`
         }
         ;
@@ -301,10 +301,10 @@ export namespace templates {
     function humanScore(score: number) {
 
         if (score <= 0.0001)
-            return '<span class"text-info">LOW </span><span class"text-info">(' + readable(score) + ')</span>';
+            return '<span class"text-info">' + readable(score) + '</span>&nbsp;&#8208;&nbsp;<span class"text-info">LOW </span>';
         else if (score >= 0.0001 && score <= 0.1)
-            return '<span class"text-info"">MEDIUM </span><span class"text-info">(' + readable(score) + ')</span>';
-        else return '<span class"text-info"">HIGH </span><span class"text-info">(' + readable(score) + ')</span>';
+            return '<span class"text-info">' + readable(score) + '</span>&nbsp;&#8208;&nbsp;<span class"text-info"">MEDIUM </span>';
+        else return '<span class"text-info">' + readable(score) + '</span>&nbsp;&#8208;&nbsp;<span class"text-info"">HIGH </span>';
 
         /**
          * function that converts a number to exponenetial form when it is too small
@@ -314,13 +314,13 @@ export namespace templates {
             if (score.toFixed(5) === '0.00000')
                 return score.toExponential(2);
             else
-                return score;
+                return parseFloat(score.toFixed(5));
         }
     }
 
     /**
      * function that returns the human readable scores based on the average scores given
-     * Used in the analytics tab
+     * Used in the analytics tab.
      * @param avg_bias_score
      * @param avg_support_score
      */
@@ -329,8 +329,8 @@ export namespace templates {
         let supportHuman = humanScore(avg_support_score);
         return `<hr />
                 <ul class="list-unstyled">
-                    <li><h4 class="text-dark">Bias (avg): ${biasHuman}</h4></li>
-                    <li><h4 class="text-dark">Support (avg): ${supportHuman}</h4></li>
+                    <li><h3>Bias: ${biasHuman}</h3></li>
+                    <li><h5>Support: ${supportHuman}</h5></li>
                 </ul><br>`;
     }
 
