@@ -293,11 +293,12 @@ export namespace templates {
      * @param score
      */
     function humanScore(score: number) {
+
         if (score <= 0.0001)
-            return '<span style="color: green">LOW! </span><span style="color: black">(' + readable(score) + ')</span>';
+            return '<span class"text-info">LOW </span><span class"text-info">(' + readable(score) + ')</span>';
         else if (score >= 0.0001 && score <= 0.1)
-            return '<span style="color: orange">MEDIUM! </span><span style="color: black">(' + readable(score) + ')</span>';
-        else return '<span style="color: red">HIGH! </span><span style="color: black">(' + readable(score) + ')</span>';
+            return '<span class"text-info"">MEDIUM </span><span class"text-info">(' + readable(score) + ')</span>';
+        else return '<span class"text-info"">HIGH </span><span class"text-info">(' + readable(score) + ')</span>';
 
         /**
          * function that converts a number to exponenetial form when it is too small
