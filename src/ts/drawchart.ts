@@ -462,7 +462,10 @@ export namespace chart {
 
                                 avgBias = avgBias / scoresForSelection.size;
                                 avgSupport = avgSupport / scoresForSelection.size;
-                                ////////////////////////////////////////////////////////////////////////////
+
+                                // Update the elements that show the average scores
+                                document.getElementById('timeline-average-bias').innerHTML = avgBias.toString();
+                                document.getElementById('timeline-average-support').innerHTML = avgBias.toString();
 
                                 let domainsForSelection = utils.filterDomainData(scoresForSelection, domains);
                                 //console.log('filtered domains', domainsForSelection);
