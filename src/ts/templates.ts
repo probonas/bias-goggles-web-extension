@@ -286,6 +286,36 @@ export namespace templates {
         ;
     }
 
+
+    /**
+     * function that returns the human readable scores based on the average scores given
+     * Used in the analytics tab
+     * @param avg_bias_score
+     * @param avg_support_score
+     */
+    export function AnalyticsScores(avg_bias_score?: number, avg_support_score?: number) {
+        let biasHuman = humanScore(avg_bias_score);
+        let supportHuman = humanScore(avg_support_score);
+        return `<hr>
+                <ul class="list-unstyled">
+                    <li><h4 class="text-dark">Bias (avg): ${biasHuman}</h4></li>
+                    <li><h4 class="text-dark">Support (avg): ${supportHuman}</h4></li>
+                </ul><br>`
+
+        /**
+         * Creates a human readable interpretation of the score
+         * @param score
+         */
+        function humanScore(score: number) {
+            if (score <= 0.0001)
+                return '<span style="color: green">LOW! </span><span style="color: black">(' + score + ')</span>';
+            else if (score >= 0.0001 && score <= 0.1)
+                return '<span style="color: orange">MEDIUM! </span><span style="color: black">(' + score + ')</span>';
+            else return '<span style="color: red">HIGH! </span><span style="color: black">(' + score + ')</span>';
+
+        }
+    }
+
     export function checkWithLabel(label: string, id: string, preChecked?: boolean, isHidden?: boolean) {
         let checked = '';
         let hidden = '';
