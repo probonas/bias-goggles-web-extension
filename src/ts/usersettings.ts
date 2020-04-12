@@ -24,7 +24,7 @@ export namespace userSettings {
     }
 
     export function update(settings: UserSettings, callback?: () => void) {
-        save(settings.userID, settings.method, settings.goggles, settings.syncEnabled,
+        save(settings.userID, settings.method, settings.syncEnabled,
             settings.enabled, settings.scoreIndex, settings.gogglesList, settings.algs, callback);
     }
 
@@ -37,7 +37,6 @@ export namespace userSettings {
                     update({
                         userID: userID,
                         method: DEFAULT_ALG,
-                        goggles: goggles[0].id,
                         gogglesList: goggles,
                         algs: algs,
                         syncEnabled: false,
@@ -67,8 +66,8 @@ export namespace userSettings {
         });
     }
 
-    function save(userID: string, method: string, googlesToUse: string,
-        syncEnabled: boolean, enabled: boolean, scoreIndex_: number,
+    function save(userID: string, method: string, syncEnabled: boolean, 
+        enabled: boolean, scoreIndex_: number,
         gogglesList: Goggle[], algs: Algorithm[], callback?: () => void) {
 
         let settings = {} as UserSettingsMap;
@@ -76,7 +75,6 @@ export namespace userSettings {
         settings[settingsKey] = {
             userID: userID,
             method: method,
-            goggles: googlesToUse,
             syncEnabled: syncEnabled,
             enabled: enabled,
             scoreIndex: scoreIndex_,
