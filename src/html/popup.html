@@ -71,6 +71,10 @@
               <a href="#settings" id="settings-tab" data-toggle='tab' role='tab' aria-controls="settings"
                 aria-selected="false" class="nav-link">Settings</a>
             </li>
+            <li class="nav-item" data-toggle="tooltip" data-placement="bottom" title="About">
+              <a href="#about" id="about-tab" data-toggle='tab' role='tab' aria-controls="about" aria-selected="false"
+                class="nav-link">About</a>
+            </li>
             <!--
                 <li class="nav-item">
                 <a style="opacity: 0%; width: 50%;" role='tab' aria-selected="false" class="nav-link"></a>
@@ -249,13 +253,63 @@
               </div>
             </div>
           </div>
+          <div class="tab-pane fade" id="about" role="tabpanel" aria-labelledby="about-tab">
+            <div class="container-fluid" id="about-info">
+              <div class="row">
+                <div id="about-general" class="text-muted text-center col-sm-12">
+                  <p class="text-center">
+                    <b>bias goggle</b>
+                    <br>
+                    <b>browser extension</b>
+                  </p>
+                  <p class="text-center">
+                    <b>Plugin version:</b> Development<br>
+                    <b>Supported browsers:</b> Chrome/Firefox
+                  </p>
+                </div>
+              </div>
+              <div class="row">
+                <h4>Development</h4>
+                <div id="about-development" class="text-muted text-left col-sm-12">
+                  <p class="about_paragraph ml-1"></p>
+                  This plugin was developed by <b>Giannis Promponas</b> as his undergraduate thesis in the
+                  <b>Computer
+                    Science Department of University of Crete</b> in Greece. It is based on the <a
+                    href="https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions"
+                    target="_blank">WebExtensions API</a>, and also uses the user-friendlier <a
+                    href="https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/user_interface/Sidebars"
+                    target="_blank">Sidebars API</a> on firefox.
+                  <br>
+                  <b>email:</b> csd3522 at csd dot uoc second dot gr
+                  </p>
+                </div>
+              </div>
+              <div class="row">
+                <h4>bias goggles</h4>
+                <div id="about-bias-goggles" class="text-muted text-left col-sm-12">
+                  <p class="about_paragraph ml-1">
+                    <b>bias goggles</b> is a rapidly evolving prototype system that enables users to explore the
+                    <b>bias characteristics</b> of 2LD / 3LD web domains for a specific user-defined <b>concept
+                      (i.e. a bias goggle)</b>. Since there is no
+                    objective definition about what bias and biased concepts are, users are able to
+                    define their own. For these concepts, the approach computes the <b>support</b>
+                    and the <b>bias score</b> of a web domain, by considering the <b>support</b> of this domain
+                    for each aspect of the biased concept. These <b>support</b> scores are currently computed
+                    by <b>graph-based</b> algorithms that exploit the structure of the web graph and a set of
+                    user-defined seeds for each aspect of bias.
+                    For more information about the bias goggles approach please <a
+                      href="http://pangaia.ics.forth.gr/bias-goggles/about.html" target="_blank">visit our
+                      homepage</a>
+                    <br></p>
+                  <b>Contact info:</b> Panagiotis Papadakos email: papadako at ics dot forth second dot gr
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
-
+        <script src="popup.js"></script>
       </div>
-
-      <script src="popup.js"></script>
     </div>
-  </div>
 
 </body>
 
