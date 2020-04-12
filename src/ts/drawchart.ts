@@ -286,7 +286,7 @@ export namespace chart {
         let timelineCtx = timelineCanvas.getContext('2d');
 
         timelineCtx.canvas.height = height;
-        
+
         type SelectionData = {
             a: Date,
             b: Date
@@ -451,6 +451,18 @@ export namespace chart {
 
                                 let scoresForSelection = utils.filterScoreData(scores, selectedChartData.a, selectedChartData.b);
                                 //console.log('filtered scores', scoresForSelection);
+
+                                // Now since we have gotten the score get the average bias and support score
+                                let avgBias = 0.0;
+                                let avgSupport = 0.0;
+                                for (let elem of scoresForSelection.values()) {
+                                    avgBias += elem.scores.entries.bias_score;
+                                    avgSupport += elem.scores.entries.support_score;
+                                }
+
+                                avgBias = avgBias / scoresForSelection.size;
+                                avgSupport = avgSupport / scoresForSelection.size;
+                                ////////////////////////////////////////////////////////////////////////////
 
                                 let domainsForSelection = utils.filterDomainData(scoresForSelection, domains);
                                 //console.log('filtered domains', domainsForSelection);

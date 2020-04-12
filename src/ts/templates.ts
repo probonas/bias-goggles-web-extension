@@ -329,8 +329,8 @@ export namespace templates {
         let supportHuman = humanScore(avg_support_score);
         return `<hr />
                 <ul class="list-unstyled">
-                    <li><h3>Bias: ${biasHuman}</h3></li>
-                    <li><h5>Support: ${supportHuman}</h5></li>
+                    <li><h3>Average Bias: <span id='timeline-average-bias'>${biasHuman}</span></h3></li>
+                    <li><h5>Average Support: <span id='timeline-average-support>'${supportHuman}</span></h5></li>
                 </ul><br>`;
     }
 
