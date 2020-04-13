@@ -2,6 +2,7 @@ import { service } from "./service";
 import { SpinnerCard, GenericMessageCard, InstallGoggleCard } from "./infoCard";
 import { utils } from "./utils";
 import { userSettings } from "./usersettings";
+import { Goggle } from "./types";
 
 export namespace templates {
 
@@ -408,16 +409,17 @@ export namespace templates {
             </div>`
     }
 
-    export function GoggleCard(goggleName: string, goggleDescription: string, active: boolean) {
+    export function GoggleCard(goggle: Goggle) {
         let title = '';
-        if (active) {
-            title = goggleName;
+        if (goggle.active) {
+            title = goggle.name;
         } else {
             title = `
-                ${goggleName}
+                ${goggle.name}
                 <i class="fa fa-exclamation-triangle" data-toggle="tooltip" data-placement="right"
                     title="You can add it, but you will not be able to use it immediately!"></i>`;
         }
+
 
         return `
             <div class="card">
@@ -426,7 +428,10 @@ export namespace templates {
                 </div>
 
                 <div class="card-body">
-                    <p class="card-text">${goggleDescription}</p>
+                    <p class="card-text"><small class="text-muted">id: <i>${goggle.id}</i></small></p>
+                    <p class="card-text">Topics: ${goggle.domain}</p>
+                    <p class="card-text">${goggle.description}</p>
+                    <p class="card-text"><small class="text-muted">Created on: <i>${goggle.timestamp}</i></small></p>
                     ${AddBtn()}
                 </div>
             </div>`;

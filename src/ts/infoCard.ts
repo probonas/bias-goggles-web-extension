@@ -463,9 +463,9 @@ export class InstallGoggleCard extends Card {
     public render() {
         let pos = document.getElementById(this.tabID);
         pos.insertAdjacentHTML('beforeend', '<br>');
-        let capitalizedName = utils.toTitleCase(this.goggle.name.replace(/-/g, ' '));
+        //let capitalizedName = utils.toTitleCase(this.goggle.name.replace(/-/g, ' '));
 
-        pos.insertAdjacentHTML('beforeend', templates.GoggleCard(capitalizedName, this.goggle.description, this.goggle.active));
+        pos.insertAdjacentHTML('beforeend', templates.GoggleCard(this.goggle));
 
         let card = <HTMLElement>(<HTMLElement>pos.lastChild).getElementsByClassName('card-body')[0];
         card.getElementsByClassName('btn')[0].addEventListener('click', () => {
