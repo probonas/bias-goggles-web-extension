@@ -31,7 +31,7 @@ var configScaffold = {
         extensions: ['.tsx', '.ts', '.js'],
     },
     plugins: [
-        new webpack.IgnorePlugin(/^\.\/locale$/, /moment$/),
+        new webpack.IgnorePlugin(/^\.\/locale$/),
         new FileManagerPlugin(
             {
                 onStart: {

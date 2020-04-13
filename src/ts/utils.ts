@@ -2,7 +2,8 @@ import { AppData, DomainData, UserSettings, Score, OffOptions, MinMaxAvgScores, 
 import { extension } from "./storage";
 import { service } from './service';
 import { userSettings } from './usersettings';
-
+import "moment";
+import moment from 'moment';
 export namespace utils {
     const MAX_SIZE = 10;
     let recentDomains = new Array<string>();  //keeps track of last 10 domains
@@ -62,10 +63,10 @@ export namespace utils {
     }
 
     export function areScoreDataObsolete(score: Score): boolean {
-        let now = new Date();
-        let scoreDate = new Date(score.date);
+        let now = moment();
+        let daysDiff = now.diff(score.date, 'd');
 
-        if (now > scoreDate)
+        if (daysDiff > 1)
             return true;
         else
             return false;
