@@ -282,8 +282,8 @@ export namespace templates {
                     <hr />
                 </ul>`;
         } else {
-            let biasHuman = humanScore(bias_score);
-            let supportHuman = humanScore(support_score);
+            let biasHuman = utils.humanScore(bias_score);
+            let supportHuman = utils.humanScore(support_score);
             return `
                 <ul class="list-unstyled text-left">
                     <li> ${title} </li>
@@ -295,42 +295,14 @@ export namespace templates {
     }
 
     /**
-     * Creates a human readable interpretation of the score
-     * @param score
-     */
-    function humanScore(score: number) {
-
-        if (score === 0)
-            return '<span class"text-info">' + readable(score) + '</span>';
-        else if (score <= 0.001)
-            return '<span class"text-info">' + readable(score) + '</span>&nbsp;&#8208;&nbsp;<span class"text-info">LOW </span>';
-        else if (score >= 0.001 && score <= 0.1)
-            return '<span class"text-info">' + readable(score) + '</span>&nbsp;&#8208;&nbsp;<span class"text-info"">MEDIUM </span>';
-        else return '<span class"text-info">' + readable(score) + '</span>&nbsp;&#8208;&nbsp;<span class"text-info"">HIGH </span>';
-
-        /**
-         * function that converts a number to exponenetial form when it is too small
-         * @param score
-         */
-        function readable(score: number) {
-            if (score === 0.0)
-                return 0.0;
-            if (score.toFixed(5) === '0.00000')
-                return score.toExponential(2);
-            else
-                return parseFloat(score.toFixed(5));
-        }
-    }
-
-    /**
      * function that returns the human readable scores based on the average scores given
      * Used in the analytics tab.
      * @param avg_bias_score
      * @param avg_support_score
      */
     export function AnalyticsScores(avg_bias_score?: number, avg_support_score?: number) {
-        let biasHuman = humanScore(avg_bias_score);
-        let supportHuman = humanScore(avg_support_score);
+        let biasHuman = utils.humanScore(avg_bias_score);
+        let supportHuman = utils.humanScore(avg_support_score);
         return `<hr />
                 <ul class="list-unstyled">
                     <li><h3>Average Bias: <span id='timeline-average-bias' class="bias">${biasHuman}</span></h3></li>

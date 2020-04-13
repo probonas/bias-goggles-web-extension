@@ -606,8 +606,6 @@ export namespace chart {
                             chart.data.datasets.push(datasetWrapper('Average Support', avgSupportDataSets, blue, false));
                         }
 
-
-                        //console.log('start');
                         if (info) {
                             // Now since we have gotten the score get the average bias and support score
                             let avgBias = 0.0;
@@ -622,13 +620,9 @@ export namespace chart {
                             avgBias = avgBias / scores.size;
                             avgSupport = avgSupport / scores.size;
 
-                            //console.log('debug');
-                            //console.log(avgBias);
-                            //console.log(avgSupport);
-
                             // Update the elements that show the average scores
-                            info.getElementsByClassName('bias')[0].innerHTML = avgBias.toString();
-                            info.getElementsByClassName('support')[0].innerHTML = avgBias.toString();
+                            info.getElementsByClassName('bias')[0].innerHTML = utils.humanScore(avgBias).toString();
+                            info.getElementsByClassName('support')[0].innerHTML = utils.humanScore(avgBias).toString();
                         }
                         chart.update();
                     }
