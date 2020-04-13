@@ -15,7 +15,6 @@ import { extension } from "./storage";
 import { utils } from "./utils";
 
 import { Anchor, Font } from "chartjs-plugin-datalabels/types/options";
-import { userSettings } from "./usersettings";
 
 export namespace chart {
 
@@ -453,12 +452,13 @@ export namespace chart {
                             extension.storage.getAllDomainDataInverse((domains) => {
 
                                 let scoresForSelection = utils.filterScoreData(scores, selectedChartData.a, selectedChartData.b);
-                                //console.log('filtered scores', scoresForSelection);
+                                console.log('filtered scores', scoresForSelection);
 
                                 let domainsForSelection = utils.filterDomainData(scoresForSelection, domains);
-                                //console.log('filtered domains', domainsForSelection);
+                                console.log('filtered domains', domainsForSelection);
 
                                 bindedWith.forEach((chart) => {
+                                    console.log('binded chart',chart);
                                     chart.options.plugins.updateData(chart, scoresForSelection, domainsForSelection);
                                 });
 
@@ -520,6 +520,10 @@ export namespace chart {
                 plugins: {
                     updateData: (chart: Chart, scores: Map<number, Score>) => {
                         let minMaxAvgData = utils.calculateMinMaxAvgScores(scores, goggle, method);
+
+                        console.log('goggle:',goggle);
+                        console.log('method:',method);
+                        console.log('minMaxAvgData',minMaxAvgData);
 
                         while (chart.data.labels.length !== 0)
                             chart.data.labels.pop();
@@ -612,6 +616,9 @@ export namespace chart {
                             let avgSupport = 0.0;
 
                             scores.forEach((score) => {
+                                if(score.goggle !== goggle)
+                                    return;
+
                                 //keep as is for now
                                 avgBias += score.scores['3a16ca06-3525-417f-b743-06f9845dfe1b'].bias_score;
                                 avgSupport += score.scores['3a16ca06-3525-417f-b743-06f9845dfe1b'].support_score;
@@ -693,7 +700,7 @@ export namespace chart {
                         while (chart.data.datasets.length !== 0)
                             chart.data.datasets.pop();
 
-                        let top = utils.getTopSupportive(scores, method);
+                        let top = utils.getTopSupportive(scores, goggle,method);
 
                         scoresToDomains = new Map([...scoresToDomains].filter(value => goggle === value[1].split(' ')[0]));
 

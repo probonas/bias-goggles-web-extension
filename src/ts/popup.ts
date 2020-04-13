@@ -590,10 +590,9 @@ sync.addEventListener('change', () => {
     }
 });
 
-const analyticsTabID = 'analytics';
 
-let analyticsTab = document.getElementById(analyticsTabID);
-
+let timeline = document.getElementById('timelinepos');
+let charts = document.getElementById('chartdatapos')
 let analyticsCharts = Array<Chart>();
 
 extension.storage.getAllScoreData((scores) => {
@@ -616,6 +615,54 @@ extension.storage.getAllScoreData((scores) => {
 
     });
 
+    userSettings.get((settings) => {
+
+        for (let i = 0; i < settings.gogglesList.length; i++) {
+
+            /*
+                This draws the average score for bias and support in a human readable way.
+                Dummy values, since I do not know how to get the average score from the timeline for the bias and the support
+            */
+            let info = document.createElement('div');
+            info.insertAdjacentHTML('beforeend', templates.AnalyticsScores(0.0, 0.0));
+            charts.appendChild(info);
+
+            analyticsCharts.push(
+                chart.drawLineChartForTimeline({
+                    display: true,
+                    text: 'bias for ' + settings.gogglesList[i].name,
+                    position: 'bottom'
+                }, 400, 200, charts, info,
+                    'bias', settings.gogglesList[i].id, settings.method)
+            );
+
+            charts.insertAdjacentHTML('beforeend', '<br>');
+
+            analyticsCharts.push(
+                chart.drawLineChartForTimeline({
+                    display: true,
+                    text: 'support for ' + settings.gogglesList[i].name,
+                    position: 'bottom'
+                }, 400, 200, charts, null,
+                    'support', settings.gogglesList[i].id, settings.method)
+            );
+
+            charts.insertAdjacentHTML('beforeend', '<br>');
+
+            analyticsCharts.push(
+                chart.drawStackedBar({
+                    display: true,
+                    text: 'top biased domains for ' + settings.gogglesList[i].name,
+                    position: 'bottom'
+                }, 400, 200, charts,
+                    settings.gogglesList[i].id, settings.method)
+            );
+
+            charts.insertAdjacentHTML('beforeend', '<br>');
+        }
+
+    });
+
     chart.drawTimeline(
         {
             //@ts-ignore
@@ -633,55 +680,7 @@ extension.storage.getAllScoreData((scores) => {
             text: 'Extension Usage',
             position: 'top'
         },
-        300, 100, analyticsTab, analyticsCharts);
-
-    userSettings.get((settings) => {
-
-        for (let i = 0; i < settings.gogglesList.length; i++) {
-
-            /*
-                This draws the average score for bias and support in a human readable way.
-                Dummy values, since I do not know how to get the average score from the timeline for the bias and the support
-            */
-            let info = document.createElement('div');
-            info.insertAdjacentHTML('beforeend', templates.AnalyticsScores(0.0, 0.0));
-            analyticsTab.appendChild(info);
-
-            analyticsCharts.push(
-                chart.drawLineChartForTimeline({
-                    display: true,
-                    text: 'bias for ' + settings.gogglesList[i].name,
-                    position: 'bottom'
-                }, 400, 200, analyticsTab, info,
-                    'bias', settings.gogglesList[i].id, settings.method)
-            );
-
-            analyticsTab.insertAdjacentHTML('beforeend', '<br>');
-
-            analyticsCharts.push(
-                chart.drawLineChartForTimeline({
-                    display: true,
-                    text: 'support for ' + settings.gogglesList[i].name,
-                    position: 'bottom'
-                }, 400, 200, analyticsTab, null,
-                    'support', settings.gogglesList[i].id, settings.method)
-            );
-
-            analyticsTab.insertAdjacentHTML('beforeend', '<br>');
-
-            analyticsCharts.push(
-                chart.drawStackedBar({
-                    display: true,
-                    text: 'top biased domains for ' + settings.gogglesList[i].name,
-                    position: 'bottom'
-                }, 400, 200, analyticsTab,
-                    settings.gogglesList[i].id, settings.method)
-            );
-
-            analyticsTab.insertAdjacentHTML('beforeend', '<br>');
-        }
-
-    });
+        300, 100, timeline, analyticsCharts);
 
 }, true);
 

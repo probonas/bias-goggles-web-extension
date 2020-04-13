@@ -278,7 +278,12 @@ export namespace utils {
         if (scores === null)
             return null;
 
+        console.log('scores', scores);
+
         scores.forEach((scoreObj) => {
+
+            if(scoreObj.goggle !== goggle)
+                return;
 
             if (minMaxAvgData[scoreObj.date] !== undefined &&
                 minMaxAvgData[scoreObj.date][goggle] !== undefined) {
@@ -336,7 +341,7 @@ export namespace utils {
         return minMaxAvgData;
     }
 
-    export function getTopSupportive(scores: Map<number, Score>, method: string): Array<Map<number, Score>> {
+    export function getTopSupportive(scores: Map<number, Score>,goggle: string, method: string): Array<Map<number, Score>> {
 
         let splittedPerDay = new Array<Map<number, Score>>();
         let perDayMap = new Map<number, Score>();
@@ -344,6 +349,9 @@ export namespace utils {
         let date: number = null;
 
         scores.forEach((value, key) => {
+            if(value.goggle !== goggle)
+                return;
+
             if (date === null)
                 date = value.date;
 
