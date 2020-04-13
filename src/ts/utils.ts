@@ -278,7 +278,7 @@ export namespace utils {
         if (scores === null)
             return null;
 
-        console.log('scores', scores);
+        //console.log('scores', scores);
 
         scores.forEach((scoreObj) => {
 

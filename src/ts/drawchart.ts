@@ -452,13 +452,13 @@ export namespace chart {
                             extension.storage.getAllDomainDataInverse((domains) => {
 
                                 let scoresForSelection = utils.filterScoreData(scores, selectedChartData.a, selectedChartData.b);
-                                console.log('filtered scores', scoresForSelection);
+                                //console.log('filtered scores', scoresForSelection);
 
                                 let domainsForSelection = utils.filterDomainData(scoresForSelection, domains);
-                                console.log('filtered domains', domainsForSelection);
+                                //console.log('filtered domains', domainsForSelection);
 
                                 bindedWith.forEach((chart) => {
-                                    console.log('binded chart',chart);
+                                    //console.log('binded chart',chart);
                                     chart.options.plugins.updateData(chart, scoresForSelection, domainsForSelection);
                                 });
 
@@ -521,9 +521,9 @@ export namespace chart {
                     updateData: (chart: Chart, scores: Map<number, Score>) => {
                         let minMaxAvgData = utils.calculateMinMaxAvgScores(scores, goggle, method);
 
-                        console.log('goggle:',goggle);
-                        console.log('method:',method);
-                        console.log('minMaxAvgData',minMaxAvgData);
+                        //console.log('goggle:',goggle);
+                        //console.log('method:',method);
+                        //console.log('minMaxAvgData',minMaxAvgData);
 
                         while (chart.data.labels.length !== 0)
                             chart.data.labels.pop();
