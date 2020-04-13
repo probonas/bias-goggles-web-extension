@@ -161,44 +161,46 @@ export namespace service {
         let domainData = {} as AppData;
         let scores = {} as Scores;
         let vector: { [key: string]: number } = {};
-    
-        if(data.includes(null))
-            callback(null,null);
 
-        let scoreIndex = userSettings.updateScoreIndex();
+        if (data.includes(null)) {
+            callback(null, null);
+        } else {
 
-        //console.log('before');
-        //console.log(data);
+            let scoreIndex = userSettings.updateScoreIndex();
 
-        domainData[utils.makeKey(data[0].domain, data[0].bcID)] = {
-            scoreIndex: scoreIndex,
-            prevIndices: Array<number>()
-        };
+            //console.log('before');
+            //console.log(data);
 
-        for (let i = 0; i < data[0].abs.length; i++)
-            vector[data[0].abs[i].seeds.join()] = data[0].abs[i].support;
-
-
-        data.forEach(dataForAlg => {
-            scores[dataForAlg.algID] = {
-                support_score: dataForAlg.support_score,
-                bias_score: dataForAlg.bias_score,
-                vector: vector
+            domainData[utils.makeKey(data[0].domain, data[0].bcID)] = {
+                scoreIndex: scoreIndex,
+                prevIndices: Array<number>()
             };
-        });
 
-        scoreData[scoreIndex] = {
-            scores: scores,
-            hits: 1,
-            date: new Date().valueOf(),
-            goggle: data[0].bcID
-        };
+            for (let i = 0; i < data[0].abs.length; i++)
+                vector[data[0].abs[i].seeds.join()] = data[0].abs[i].support;
 
-        //console.log('here');
-        //console.log(domainData);
-        //console.log(scoreData);
 
-        callback(domainData, scoreData);
+            data.forEach(dataForAlg => {
+                scores[dataForAlg.algID] = {
+                    support_score: dataForAlg.support_score,
+                    bias_score: dataForAlg.bias_score,
+                    vector: vector
+                };
+            });
+
+            scoreData[scoreIndex] = {
+                scores: scores,
+                hits: 1,
+                date: new Date().valueOf(),
+                goggle: data[0].bcID
+            };
+
+            //console.log('here');
+            //console.log(domainData);
+            //console.log(scoreData);
+
+            callback(domainData, scoreData);
+        }
     };
 
     function postToService(targetURL: string | http.RequestOptions, postData: string, callback: (data: any, res: http.IncomingMessage) => void) {
