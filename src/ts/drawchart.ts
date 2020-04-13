@@ -109,7 +109,7 @@ export namespace chart {
     //elem must be present in the dom tree for the canvas to
     //render properly
     export function drawPolar(vector: any, width: number, height: number, elem: HTMLElement, id: string, showLabels?: boolean) {
-
+        
         let canvas = createCanvas(id, width, height, elem);
         let ctx = canvas.getContext('2d');
 
@@ -140,6 +140,8 @@ export namespace chart {
         //console.log('debug....');
         //console.log(dataLabels);
         //console.log(data);
+        //console.log('pos');
+        //console.log(elem);
         //console.log(vector);
 
 
