@@ -33,8 +33,8 @@ export namespace userSettings {
         service.getUserID((userID) => {
             service.getDefaultGoggles((goggles) => {
                 service.getAvailablesAlgorithms((algs) => {
-                    DEFAULT_ALG = algs.filter(arg => arg.name.toLowerCase().includes('pagerank'))[0].id;
-
+                    //DEFAULT_ALG = algs.filter(arg => arg.name.toLowerCase().includes('pagerank'))[0].id;
+                    DEFAULT_ALG = '3a16ca06-3525-417f-b743-06f9845dfe1b';
                     update({
                         userID: userID,
                         method: DEFAULT_ALG,
@@ -102,20 +102,22 @@ export namespace userSettings {
         });
     };
 
-    export function addToSelectedGoggles(goggle: Goggle) {
+    export function addToSelectedGoggles(goggle: Goggle, callback: () => void) {
         userSettings.get((item) => {
             let found = item.googlesUsing.find((value) => { return value.id === goggle.id });
             if (!found) {
                 item.googlesUsing.push(goggle);
-                userSettings.update(item);
+                userSettings.update(item, callback);
+            } else {
+                callback();
             }
         });
     }
 
-    export function removeFromSelectedGoggles(goggle: Goggle) {
+    export function removeFromSelectedGoggles(goggle: Goggle, callback: () => void) {
         userSettings.get((item) => {
-            item.googlesUsing = item.googlesUsing.filter((value) => {return value.id !== goggle.id});
-            userSettings.update(item);
+            item.googlesUsing = item.googlesUsing.filter((value) => { return value.id !== goggle.id });
+            userSettings.update(item, callback);
         });
     }
 }
