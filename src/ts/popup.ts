@@ -309,7 +309,7 @@ saveSettingsBtn.addEventListener('click', () => {
 });
 
 function showDomainDataUnderSettings() {
-/*
+
     extension.storage.getAllDomainData((domainData) => {
         extension.storage.getAllScoreData(scores => {
             let domainCards: string = '';
@@ -343,6 +343,7 @@ function showDomainDataUnderSettings() {
                     //@ts-ignore
                     let pr = scoreValue.scores[userSettings.DEFAULT_ALG];
                     //@ts-ignore
+                    //TODO: fix the following
                     //let lt = scoreValue.scores['lt'];
                     //@ts-ignore
                     //let ic = scoreValue.scores['ic'];
@@ -379,7 +380,6 @@ function showDomainDataUnderSettings() {
             domainDataOverviewDiv.insertAdjacentHTML('afterbegin', domainCards);
         });
     });
-*/
 }
 
 document.getElementById('delete-data-btn').addEventListener('click', () => {
