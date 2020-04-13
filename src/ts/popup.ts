@@ -687,3 +687,19 @@ extension.storage.getAllScoreData((scores) => {
 
 document.getElementById("search").insertAdjacentElement("afterbegin", templates.GoggleSearch());
 document.getElementById('goggle-creator').insertAdjacentElement('afterbegin', templates.GoggleCreator());
+
+userSettings.get(settings => {
+    let algsNames = new Array<string>();
+    algsNames.push('Choose an algorithm...');
+    
+    settings.algs.forEach(alg => {
+        algsNames.push(alg.name);
+    });
+
+    let selectionList = document.createElement('select');
+    selectionList.classList.add('custom-select');
+
+    selectionList.insertAdjacentHTML('afterbegin',templates.selections(algsNames));
+    
+    document.getElementById('settings').insertAdjacentElement('afterbegin',selectionList);
+});
