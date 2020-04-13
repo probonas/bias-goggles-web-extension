@@ -207,15 +207,15 @@ export class ScoreCard extends ExploreCard {
 
         extension.storage.getLatestScoreData(domain, goggles, (score) => {
             this.score = score;
+            this.setTitle(templates.TitleWithScores(domain, this.score.scores[userSettings.DEFAULT_ALG].bias_score, this.score.scores[userSettings.DEFAULT_ALG].support_score));
             this.ready = true;
-            this.setTitle(domain);
         });
 
         this.setStringContent('');
     }
 
     protected setTitle(title: string) {
-        this.title = templates.TitleWithScores(title, this.score.scores[userSettings.DEFAULT_ALG].bias_score, this.score.scores[userSettings.DEFAULT_ALG].support_score);
+        this.title = title;
     }
 
     private getScoreDataVector(): { [key: string]: number } {
@@ -225,6 +225,7 @@ export class ScoreCard extends ExploreCard {
         //console.log(this.group);
         //console.log(this.tabID);
         //console.log(this.score);
+        //console.log('Default alg ', userSettings.DEFAULT_ALG);
         //console.log('==============end==============');
 
         return this.score.scores[userSettings.DEFAULT_ALG].vector;
