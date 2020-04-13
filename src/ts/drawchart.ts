@@ -622,7 +622,7 @@ export namespace chart {
 
                             // Update the elements that show the average scores
                             info.getElementsByClassName('bias')[0].innerHTML = utils.humanScore(avgBias).toString();
-                            info.getElementsByClassName('support')[0].innerHTML = utils.humanScore(avgBias).toString();
+                            info.getElementsByClassName('support')[0].innerHTML = utils.humanScore(avgSupport).toString();
                         }
                         chart.update();
                     }
