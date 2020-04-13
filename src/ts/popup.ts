@@ -8,7 +8,7 @@ import { templates } from "./templates";
 
 import {
     ScoreCard, UncrawledDomainCard, ExtensionDisabledCard,
-    NotAWebpageCard, SpinnerCard, CompareCard, GoggleCard, cards
+    NotAWebpageCard, CompareCard, cards, SpinnerCard
 } from "./infoCard";
 
 import "bootstrap"; //all bootstrap functions along their requirements
@@ -37,16 +37,16 @@ const tabContent = 'tabcontent';
 
 let thisWindowID: number = null;
 
-let tabLabels = new Array();
-let tabIDs = new Array<string>();
-
 let tempCards = new Array();
+let forceDraw = true;
 
 //enable tooltips on dynamically created elements
 $('body').tooltip({
     trigger: 'hover',
     selector: '[data-toggle="tooltip"]'
 });
+
+userSettings.load();
 
 function showBtn(on: boolean) {
 
@@ -145,11 +145,17 @@ function showSuccessAlert(msg: string) {
     }, 2000);
 }
 
+/**
+ * Restores the tabs by programmatically clicking on goggle buttons and then draws contents.
+ */
 function restoreTabs() {
     userSettings.get((settings) => {
-        settings.googlesUsing?.forEach((goggle) => {
-            document.getElementById(goggle.id + '-create-tab-btn').click();
-        });
+
+        for (let i = 0; i < settings.googlesUsing.length; i++) {
+            forceDraw = (i === settings.googlesUsing.length - 1);
+            (<HTMLButtonElement>document.getElementById(settings.googlesUsing[i].id + '-create-tab-btn')).click();
+        }
+
     });
 }
 
@@ -158,44 +164,36 @@ export function updateContent(url: string, cleanTab: boolean, temp?: boolean) {
     if (cleanTab)
         cards.clearAllCards();
 
-    tabIDs.forEach(goggles => {
+    userSettings.get((settings) => {
+        settings.googlesUsing?.forEach(goggles => {
+            utils.getBiasDataForGoggles(url, goggles.id, (scoreData, scoreIndex) => {
 
-        //let spinner = new SpinnerCard(goggles);
+                let card;
 
-        //spinner.render();
+                switch (scoreIndex) {
+                    case INVALID_URL:
+                        card = new NotAWebpageCard(goggles.id);
+                        break;
+                    case EXTENSION_DISABLED:
+                        card = new ExtensionDisabledCard(goggles.id);
+                        break;
+                    case UNCRAWLED_URL:
+                        card = new UncrawledDomainCard(goggles.id, url);
+                        break;
+                    default:
+                        card = new ScoreCard(goggles.id, false, url);
+                        break;
+                }
 
-        utils.getBiasDataForGoggles(url, goggles, (scoreData, scoreIndex) => {
+                card.render();
 
-            //spinner.remove();
+                if (temp)
+                    tempCards.push(card);
 
-            let card;
-
-            switch (scoreIndex) {
-                case INVALID_URL:
-                    card = new NotAWebpageCard(goggles);
-                    break;
-                case EXTENSION_DISABLED:
-                    card = new ExtensionDisabledCard(goggles);
-                    break;
-                case UNCRAWLED_URL:
-                    card = new UncrawledDomainCard(goggles, url);
-                    break;
-                default:
-                    card = new ScoreCard(goggles, false, url);
-                    break;
-            }
-
-            card.render();
-
-            if (temp)
-                tempCards.push(card);
-
+            });
         });
-
     });
 }
-
-userSettings.load();
 
 createToggleBtn();
 
@@ -225,6 +223,7 @@ chrome.windows.getCurrent((windowInfo) => {
     //getCurrent() will lead to the popup being disconnected from its parent.
     if (windowInfo.type !== 'popup') {
         thisWindowID = windowInfo.id;
+        createGoggleSelectionButtons();
         restoreTabs();
     }
 });
@@ -246,48 +245,46 @@ chrome.runtime.onMessage.addListener((msg: ContextBtnMsg, sender: chrome.runtime
         }
     } else if (msg.updateWindowID) {
         thisWindowID = msg.updateWindowID;
+        createGoggleSelectionButtons();
         restoreTabs();
     }
 });
 
-let sync = <HTMLSelectElement>document.getElementById('syncSelect');
-let syncModal = <HTMLButtonElement>document.getElementById('syncModalBtn');
-const settingsTab = "contentgogglesList";
 
-sync.addEventListener('change', () => {
-    if (sync.value === 'Yes') {
-        syncModal.click();
-    }
-});
 
-userSettings.get((settings) => {
+function createGoggleSelectionButton(goggle: Goggle) {
+    let btnID = goggle.id + '-create-tab-btn';
+    document.getElementById(liveInfoGoggles).insertAdjacentHTML('beforeend', templates.MutedButton(goggle.id + '-create-tab-btn', goggle.name));
 
-    settings.gogglesList.forEach(value => {
-        tabLabels.push(value.name);
-        tabIDs.push(value.id);
+    document.getElementById(btnID).addEventListener('click', (elem) => {
+        let btn = <HTMLButtonElement>elem.target;
 
-        let id = value.id + '-create-tab-btn';
+        if (btn.classList.contains('disabled')) {
+            btn.classList.remove('disabled');
+            newTab(goggle, forceDraw);
+        }
+        else {
+            btn.classList.add('disabled');
+            removeTab(goggle);
+        }
 
-        document.getElementById(liveInfoGoggles).insertAdjacentHTML('beforeend', templates.MutedButton(id, value.name));
+    });
+}
 
-        document.getElementById(id).addEventListener('click', (elem) => {
-            let btn = <HTMLButtonElement>elem.target;
-            if (btn.classList.contains('disabled')) {
-                btn.classList.remove('disabled');
-                newTab(value);
-            }
-            else {
-                btn.classList.add('disabled');
-                removeTab(value);
-            }
+function createGoggleSelectionButtons() {
+
+    userSettings.get((settings) => {
+        settings.gogglesList.forEach(value => {
+            createGoggleSelectionButton(value);
+
+            //disable for now
+            //goggles can be uninstalled under the search tab
+            //new GoggleCard(settingsTab, value.id, value.name, value.description).render();
         });
 
-        //disable for now
-        //goggles can be uninstalled under the search tab
-        //new GoggleCard(settingsTab, value.id, value.name, value.description).render();
     });
 
-});
+}
 
 let saveSettingsBtn = <HTMLButtonElement>document.getElementById('saveSettingsBtn');
 
@@ -312,19 +309,19 @@ saveSettingsBtn.addEventListener('click', () => {
 });
 
 function showDomainDataUnderSettings() {
-    /*
+/*
     extension.storage.getAllDomainData((domainData) => {
         extension.storage.getAllScoreData(scores => {
             let domainCards: string = '';
- 
+
             let domainDataOverviewDiv = document.getElementById('domainDataOverview');
- 
+
             let formatted = new Map<string, Score[]>();
- 
+
             if (domainData)
- 
+
                 domainData.forEach((value, key) => {
- 
+
                     if (!formatted.has(utils.getDomainFromKey(key))) {
                         let scoresArr = new Array<Score>();
                         scoresArr.push(scores.get(value.scoreIndex));
@@ -332,57 +329,57 @@ function showDomainDataUnderSettings() {
                     } else {
                         formatted.get(utils.getDomainFromKey(key)).push(scores.get(value.scoreIndex));
                     }
- 
+
                     //console.log(value, key, utils.getDomainFromKey(key), utils.getGoggleIDFromKey(key));
                 });
- 
+
             //console.log(formatted);
- 
+
             formatted.forEach((value, key) => {
                 let innerTables = '';
- 
+
                 value.forEach((scoreValue) => {
- 
+
                     //@ts-ignore
-                    let pr = scoreValue.scores['pr'];
+                    let pr = scoreValue.scores[userSettings.DEFAULT_ALG];
                     //@ts-ignore
-                    let lt = scoreValue.scores['lt'];
+                    //let lt = scoreValue.scores['lt'];
                     //@ts-ignore
-                    let ic = scoreValue.scores['ic'];
- 
+                    //let ic = scoreValue.scores['ic'];
+
                     let unrollscore = (scoreValue: any) => {
                         let ret = '';
- 
+
                         for (let property in Object.keys(scoreValue)) {
                             let propertyName = Object.keys(scoreValue)[property];
- 
+
                             if (propertyName === 'vector') {
                                 ret += templates.TableRow('Vectors', 'Support', true);
- 
+
                                 for (let vectorKey in Object.keys(scoreValue[propertyName])) {
                                     let vectorName = Object.keys(scoreValue[propertyName])[vectorKey];
- 
+
                                     ret += templates.TableRow(vectorName, scoreValue[propertyName][vectorName], false);
                                 }
- 
+
                             } else {
                                 ret += templates.TableRow(propertyName, scoreValue[propertyName], false);
                             }
                         }
- 
+
                         return ret;
                     }
- 
+
                     let rows = unrollscore(pr);
                     innerTables += templates.Table('Goggles:', scoreValue.goggle, rows) + '<br>';
                 });
                 domainCards += templates.AccordionCard(key, innerTables, cards.getUniqueID(), 'domainDataOverview');
             });
- 
+
             domainDataOverviewDiv.insertAdjacentHTML('afterbegin', domainCards);
         });
     });
-    */
+*/
 }
 
 document.getElementById('delete-data-btn').addEventListener('click', () => {
@@ -390,34 +387,53 @@ document.getElementById('delete-data-btn').addEventListener('click', () => {
     extension.storage.clear();
 });
 
-function newTab(goggle: Goggle) {
-    userSettings.addToSelectedGoggles(goggle);
-    let tabs = document.getElementById(tablist);
-    let content = document.getElementById(tabContent);
+function newTab(goggle: Goggle, forceDraw: boolean) {
+    userSettings.addToSelectedGoggles(goggle, () => {
 
-    tabs.insertAdjacentHTML('beforeend', templates.Tab(goggle.name, goggle.id, false));
-    content.insertAdjacentHTML('beforeend', templates.TabPane(goggle.id, goggle.name, false));
+        let tabs = document.getElementById(tablist);
+        let content = document.getElementById(tabContent);
 
-    (<HTMLElement>document.getElementById(goggle.name).lastElementChild).click();
+        tabs.insertAdjacentHTML('beforeend', templates.Tab(goggle.name, goggle.id, false));
+        content.insertAdjacentHTML('beforeend', templates.TabPane(goggle.id, goggle.name, false));
 
-    //when a new tab is created, relevant data is shown
-    chrome.tabs.query({ windowId: thisWindowID, active: true }, (tabs) => {
-        updateContent(utils.getDomainFromURL(tabs[0].url), true);
+        (<HTMLElement>document.getElementById(goggle.name).lastElementChild).click();
+
+        userSettings.get((settings) => {
+            console.log('===== opened: TABS ====');
+            console.log(settings.googlesUsing);
+        });
+
+        //when a new tab is created, relevant data is shown
+        if (forceDraw)
+            chrome.tabs.query({ windowId: thisWindowID, active: true }, (tabs) => {
+                updateContent(utils.getDomainFromURL(tabs[0].url), true);
+            });
     });
 }
 
 function removeTab(goggle: Goggle) {
-    userSettings.removeFromSelectedGoggles(goggle);
-    let thisTab = document.getElementById(goggle.name);
-    let contentTab = document.getElementById('content' + goggle.id);
+    userSettings.removeFromSelectedGoggles(goggle, () => {
+        let thisTab = document.getElementById(goggle.name);
+        let contentTab = document.getElementById('content' + goggle.id);
 
-    let sibling = thisTab.nextElementSibling || thisTab.previousElementSibling;
+        userSettings.get(settings => {
+            console.log('===== closed : TABS ====');
+            console.log(settings.googlesUsing);
+        });
 
-    thisTab.remove();
-    contentTab.remove();
 
-    if (sibling)
-        (<HTMLElement>document.getElementById(sibling.id).lastElementChild).click();
+        console.log('===== THIS =====');
+        console.log(thisTab);
+        console.log(contentTab);
+
+        let sibling = thisTab.nextElementSibling || thisTab.previousElementSibling;
+
+        thisTab.remove();
+        contentTab.remove();
+
+        if (sibling)
+            (<HTMLElement>document.getElementById(sibling.id).lastElementChild).click();
+    });
 }
 
 //update data under settings without the need to reload popup/sidebar
@@ -564,6 +580,16 @@ document.body.addEventListener('compareCard', (e) => {
 
 });
 
+let sync = <HTMLSelectElement>document.getElementById('syncSelect');
+let syncModal = <HTMLButtonElement>document.getElementById('syncModalBtn');
+const settingsTab = "contentgogglesList";
+
+sync.addEventListener('change', () => {
+    if (sync.value === 'Yes') {
+        syncModal.click();
+    }
+});
+
 const analyticsTabID = 'analytics';
 
 let analyticsTab = document.getElementById(analyticsTabID);
@@ -577,7 +603,7 @@ extension.storage.getAllScoreData((scores) => {
     let total: number = 0;
     let prevValue: number = null;
 
-    scores.forEach((currValue, key) => {
+    scores?.forEach((currValue, key) => {
 
         if (prevValue && prevValue !== currValue.date) {
             x.push(new Date(prevValue));
