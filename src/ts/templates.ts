@@ -889,12 +889,31 @@ export namespace templates {
     export function humanScore(score: number) {
 
         if (score === 0)
-            return '<span class"text-info">' + readable(score) + '</span>';
+            return `
+                    <span class"text-info">
+                        ${readable(score)}
+                    </span>
+                `;
         else if (score <= 0.001)
-            return '<span class"text-info">' + readable(score) + '</span>&nbsp;&#8208;&nbsp;<span class"text-info">LOW </span>';
+            return `
+                    <span class"text-info">
+                        ${readable(score)}
+                        </span>&nbsp;&#8208;&nbsp;
+                    <span class"text-info">LOW </span>
+                `;
         else if (score >= 0.001 && score <= 0.1)
-            return '<span class"text-info">' + readable(score) + '</span>&nbsp;&#8208;&nbsp;<span class"text-info"">MEDIUM </span>';
-        else return '<span class"text-info">' + readable(score) + '</span>&nbsp;&#8208;&nbsp;<span class"text-info"">HIGH </span>';
+            return `
+                    <span class"text-info">
+                        ${readable(score)}
+                        </span>&nbsp;&#8208;&nbsp;
+                    <span class"text-info"">MEDIUM </span>
+                `;
+        else return `
+                <span class"text-info">
+                    ${readable(score)}
+                    </span>&nbsp;&#8208;&nbsp;
+                <span class"text-info"">HIGH </span>
+            `;
 
         /**
          * function that converts a number to exponenetial form when it is too small
