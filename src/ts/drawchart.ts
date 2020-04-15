@@ -108,7 +108,7 @@ export namespace chart {
     //elem must be present in the dom tree for the canvas to
     //render properly
     export function drawPolar(vector: any, width: number, height: number, elem: HTMLElement, id: string, showLabels?: boolean) {
-        
+
         let canvas = createCanvas(id, width, height, elem);
         let ctx = canvas.getContext('2d');
 
@@ -616,7 +616,7 @@ export namespace chart {
                             let avgSupport = 0.0;
 
                             scores.forEach((score) => {
-                                if(score.goggle !== goggle)
+                                if (score.goggle !== goggle)
                                     return;
 
                                 //keep as is for now
@@ -628,8 +628,8 @@ export namespace chart {
                             avgSupport = avgSupport / scores.size;
 
                             // Update the elements that show the average scores
-                            info.getElementsByClassName('bias')[0].innerHTML = utils.humanScore(avgBias).toString();
-                            info.getElementsByClassName('support')[0].innerHTML = utils.humanScore(avgSupport).toString();
+                            info.getElementsByClassName('bias')[0].innerHTML = templates.humanScore(avgBias).toString();
+                            info.getElementsByClassName('support')[0].innerHTML = templates.humanScore(avgSupport).toString();
                         }
                         chart.update();
                     }
@@ -700,7 +700,7 @@ export namespace chart {
                         while (chart.data.datasets.length !== 0)
                             chart.data.datasets.pop();
 
-                        let top = utils.getTopSupportive(scores, goggle,method);
+                        let top = utils.getTopSupportive(scores, goggle, method);
 
                         scoresToDomains = new Map([...scoresToDomains].filter(value => goggle === value[1].split(' ')[0]));
 

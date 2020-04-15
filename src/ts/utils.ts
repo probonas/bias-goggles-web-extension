@@ -244,34 +244,6 @@ export namespace utils {
         }
     }
 
-    /**
-    * Creates a human readable interpretation of the score
-    * @param score
-    */
-    export function humanScore(score: number) {
-
-        if (score === 0)
-            return '<span class"text-info">' + readable(score) + '</span>';
-        else if (score <= 0.001)
-            return '<span class"text-info">' + readable(score) + '</span>&nbsp;&#8208;&nbsp;<span class"text-info">LOW </span>';
-        else if (score >= 0.001 && score <= 0.1)
-            return '<span class"text-info">' + readable(score) + '</span>&nbsp;&#8208;&nbsp;<span class"text-info"">MEDIUM </span>';
-        else return '<span class"text-info">' + readable(score) + '</span>&nbsp;&#8208;&nbsp;<span class"text-info"">HIGH </span>';
-
-        /**
-         * function that converts a number to exponenetial form when it is too small
-         * @param score
-         */
-        function readable(score: number) {
-            if (score === 0.0)
-                return 0.0;
-            if (score.toFixed(5) === '0.00000')
-                return score.toExponential(2);
-            else
-                return parseFloat(score.toFixed(5));
-        }
-    }
-
     export function calculateMinMaxAvgScores(scores: Map<number, Score>, goggle: string, method: string): MinMaxAvgScores {
         let minMaxAvgData: MinMaxAvgScores = {};
 
@@ -282,7 +254,7 @@ export namespace utils {
 
         scores.forEach((scoreObj) => {
 
-            if(scoreObj.goggle !== goggle)
+            if (scoreObj.goggle !== goggle)
                 return;
 
             if (minMaxAvgData[scoreObj.date] !== undefined &&
@@ -341,7 +313,7 @@ export namespace utils {
         return minMaxAvgData;
     }
 
-    export function getTopSupportive(scores: Map<number, Score>,goggle: string, method: string): Array<Map<number, Score>> {
+    export function getTopSupportive(scores: Map<number, Score>, goggle: string, method: string): Array<Map<number, Score>> {
 
         let splittedPerDay = new Array<Map<number, Score>>();
         let perDayMap = new Map<number, Score>();
@@ -349,7 +321,7 @@ export namespace utils {
         let date: number = null;
 
         scores.forEach((value, key) => {
-            if(value.goggle !== goggle)
+            if (value.goggle !== goggle)
                 return;
 
             if (date === null)
